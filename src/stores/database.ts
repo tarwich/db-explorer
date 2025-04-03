@@ -32,6 +32,8 @@ interface DatabaseStore {
     columns: TableColumn[];
     rows: Record<string, unknown>[];
     totalRows: number;
+    currentPage: number;
+    pageSize: number;
   } | null;
   isLoadingTableData: boolean;
 
@@ -50,7 +52,7 @@ interface DatabaseStore {
   loadTables: () => Promise<void>;
   clearTables: () => void;
   setActiveTable: (table: Table | null) => void;
-  loadTableData: () => Promise<void>;
+  loadTableData: (page?: number, pageSize?: number) => Promise<void>;
 }
 
 export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
@@ -148,11 +150,11 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   setActiveTable: (table) => {
     set({ activeTable: table, tableData: null });
     if (table) {
-      get().loadTableData();
+      get().loadTableData(1, 50);
     }
   },
 
-  loadTableData: async () => {
+  loadTableData: async (page = 1, pageSize = 50) => {
     const { activeConnection, activeTable } = get();
     if (!activeConnection || !activeTable) return;
 
@@ -162,7 +164,9 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       const result = await window.electronAPI.tables.getData(
         activeConnection,
         activeTable.schema,
-        activeTable.name
+        activeTable.name,
+        page,
+        pageSize
       );
 
       if (
@@ -176,6 +180,8 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
             columns: result.columns,
             rows: result.rows,
             totalRows: result.totalRows,
+            currentPage: page,
+            pageSize: pageSize,
           },
         });
       } else {

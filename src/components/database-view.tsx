@@ -14,6 +14,7 @@ export function DatabaseView() {
     setActiveTable,
     tableData,
     isLoadingTableData,
+    loadTableData,
   } = useDatabaseStore();
 
   useEffect(() => {
@@ -30,6 +31,10 @@ export function DatabaseView() {
     acc[table.schema].push(table);
     return acc;
   }, {} as Record<string, typeof tables>);
+
+  const handlePageChange = (page: number) => {
+    loadTableData(page, tableData?.pageSize ?? 50);
+  };
 
   if (!activeConnection) return null;
 
@@ -124,10 +129,10 @@ export function DatabaseView() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 bg-white p-6 overflow-hidden flex flex-col">
+      <div className="flex-1 bg-white flex flex-col overflow-hidden">
         {activeTable ? (
           <>
-            <div className="mb-6">
+            <div className="p-6 pb-0">
               <h2 className="text-xl font-medium text-gray-900">
                 {activeTable.schema}.{activeTable.name}
               </h2>
@@ -138,14 +143,19 @@ export function DatabaseView() {
               )}
             </div>
             {tableData ? (
-              <TableDataView
-                columns={tableData.columns}
-                rows={tableData.rows}
-                totalRows={tableData.totalRows}
-                isLoading={isLoadingTableData}
-              />
+              <div className="flex-1 flex flex-col min-h-0 px-6">
+                <TableDataView
+                  columns={tableData.columns}
+                  rows={tableData.rows}
+                  totalRows={tableData.totalRows}
+                  currentPage={tableData.currentPage}
+                  pageSize={tableData.pageSize}
+                  isLoading={isLoadingTableData}
+                  onPageChange={handlePageChange}
+                />
+              </div>
             ) : (
-              <div className="text-center text-gray-600">
+              <div className="p-6 text-center text-gray-600">
                 {isLoadingTableData
                   ? 'Loading table data...'
                   : 'No data available'}
@@ -153,7 +163,7 @@ export function DatabaseView() {
             )}
           </>
         ) : (
-          <div className="text-center text-gray-600">
+          <div className="p-6 text-center text-gray-600">
             Select a table to view its records
           </div>
         )}

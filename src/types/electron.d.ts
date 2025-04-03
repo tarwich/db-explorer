@@ -51,7 +51,9 @@ declare global {
         getData: (
           connection: DatabaseConnection,
           schema: string,
-          table: string
+          table: string,
+          page: number,
+          pageSize: number
         ) => Promise<TableDataResponse>;
       };
     };

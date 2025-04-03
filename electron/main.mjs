@@ -91,7 +91,13 @@ async function getTables(connection) {
   }
 }
 
-async function getTableData(connection, schema, table) {
+async function getTableData(
+  connection,
+  schema,
+  table,
+  page = 1,
+  pageSize = 50
+) {
   const client = new pg.Client({
     host: connection.host,
     port: connection.port,
@@ -121,19 +127,31 @@ async function getTableData(connection, schema, table) {
       [schema, table]
     );
 
-    // Then get the actual data
-    const dataResult = await client.query(`
+    // Get total count
+    const countResult = await client.query(
+      `SELECT COUNT(*) as total FROM ${client.escapeIdentifier(
+        schema
+      )}.${client.escapeIdentifier(table)}`
+    );
+
+    // Then get the actual data with pagination
+    const offset = (page - 1) * pageSize;
+    const dataResult = await client.query(
+      `
       SELECT *
       FROM ${client.escapeIdentifier(schema)}.${client.escapeIdentifier(table)}
-      LIMIT 1000
-    `);
+      LIMIT $1
+      OFFSET $2
+    `,
+      [pageSize, offset]
+    );
 
     await client.end();
     return {
       success: true,
       columns: columnsResult.rows,
       rows: dataResult.rows,
-      totalRows: dataResult.rowCount,
+      totalRows: parseInt(countResult.rows[0].total),
     };
   } catch (error) {
     console.error('Error getting table data:', error);
@@ -174,9 +192,12 @@ app.whenReady().then(() => {
     return getTables(connection);
   });
 
-  ipcMain.handle('tables:getData', async (event, connection, schema, table) => {
-    return getTableData(connection, schema, table);
-  });
+  ipcMain.handle(
+    'tables:getData',
+    async (event, connection, schema, table, page, pageSize) => {
+      return getTableData(connection, schema, table, page, pageSize);
+    }
+  );
 
   createWindow();
 

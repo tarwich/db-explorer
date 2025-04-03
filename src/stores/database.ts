@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { DatabaseConnection } from '@/types/connections';
 
 export interface Table {
+  id: string;
   name: string;
   type: string;
   schema?: string;
@@ -87,8 +88,8 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       // Temporary mock data
       set({
         tables: [
-          { name: 'users', type: 'table' },
-          { name: 'products', type: 'table' },
+          { id: '1', name: 'users', type: 'table' },
+          { id: '2', name: 'products', type: 'table' },
         ],
       });
     } catch (error) {

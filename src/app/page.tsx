@@ -5,22 +5,25 @@ import { ConnectionCard } from '@/components/connection-card';
 import { DatabaseConnection } from '@/types/connections';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { useDatabaseStore } from '@/stores/database';
 
 export default function Home() {
-  const [connections, setConnections] = useState<DatabaseConnection[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedConnection, setSelectedConnection] =
     useState<DatabaseConnection | null>(null);
 
+  const {
+    connections,
+    activeConnection,
+    loadConnections,
+    addConnection,
+    updateConnection,
+    setActiveConnection,
+  } = useDatabaseStore();
+
   useEffect(() => {
     loadConnections();
-  }, []);
-
-  const loadConnections = async () => {
-    const connections = await window.electronAPI?.connections.getAll();
-    setConnections(connections || []);
-  };
+  }, [loadConnections]);
 
   const handleSaveConnection = async (
     connection: Omit<DatabaseConnection, 'id' | 'createdAt' | 'updatedAt'>
@@ -32,26 +35,15 @@ export default function Home() {
         ...connection,
         updatedAt: new Date().toISOString(),
       };
-      await window.electronAPI.connections.update(
-        selectedConnection.id,
-        updatedConnection
-      );
+      await updateConnection(selectedConnection.id, updatedConnection);
     } else {
       // Add new connection
-      const newConnection: DatabaseConnection = {
-        ...connection,
-        id: uuidv4(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      await window.electronAPI.connections.add(newConnection);
+      await addConnection(connection);
     }
-    await loadConnections();
   };
 
-  const handleSelectConnection = (connection: DatabaseConnection) => {
-    // TODO: Implement connection selection
-    console.log('Selected connection:', connection);
+  const handleSelectConnection = async (connection: DatabaseConnection) => {
+    await setActiveConnection(connection);
   };
 
   const handleEditConnection = (connection: DatabaseConnection) => {
@@ -95,6 +87,7 @@ export default function Home() {
               <ConnectionCard
                 key={connection.id}
                 connection={connection}
+                isActive={activeConnection?.id === connection.id}
                 onEdit={handleEditConnection}
                 onSelect={handleSelectConnection}
               />

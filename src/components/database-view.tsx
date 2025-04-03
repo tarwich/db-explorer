@@ -1,5 +1,5 @@
 import { useDatabaseStore } from '@/stores/database';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { useEffect } from 'react';
 
 export function DatabaseView() {
@@ -16,6 +16,15 @@ export function DatabaseView() {
       loadTables();
     }
   }, [activeConnection, loadTables]);
+
+  // Group tables by schema
+  const tablesBySchema = tables.reduce((acc, table) => {
+    if (!acc[table.schema]) {
+      acc[table.schema] = [];
+    }
+    acc[table.schema].push(table);
+    return acc;
+  }, {} as Record<string, typeof tables>);
 
   if (!activeConnection) return null;
 
@@ -47,33 +56,62 @@ export function DatabaseView() {
 
         {/* Tables List */}
         <div className="flex-1 overflow-y-auto p-2">
-          <h3 className="px-3 py-2 text-sm font-medium text-gray-500">
-            Tables
-          </h3>
+          <div className="px-3 py-2 flex items-center justify-between">
+            <h3 className="text-sm font-medium text-gray-500">
+              Database Objects
+            </h3>
+            <button
+              onClick={() => loadTables()}
+              className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-md"
+              title="Refresh tables"
+              disabled={isLoadingTables}
+            >
+              <ArrowPathIcon
+                className={`h-4 w-4 ${isLoadingTables ? 'animate-spin' : ''}`}
+              />
+            </button>
+          </div>
           {isLoadingTables ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : (
-            <ul className="space-y-1">
-              {tables.map((table) => (
-                <li key={table.id}>
-                  <button
-                    className="w-full px-3 py-2 text-left text-sm rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    onClick={() => {
-                      // TODO: Handle table selection
-                    }}
-                  >
-                    {table.name}
-                  </button>
-                </li>
+            <div className="space-y-4">
+              {Object.entries(tablesBySchema).map(([schema, schemaTables]) => (
+                <div key={schema}>
+                  <h4 className="px-3 py-1 text-xs font-medium text-gray-400 uppercase">
+                    {schema}
+                  </h4>
+                  <ul className="mt-1 space-y-1">
+                    {schemaTables.map((table) => (
+                      <li key={table.id}>
+                        <button
+                          className="w-full px-3 py-2 text-left text-sm rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 group"
+                          onClick={() => {
+                            // TODO: Handle table selection
+                          }}
+                          title={table.description || undefined}
+                        >
+                          <div className="flex items-center">
+                            <span className="flex-1 truncate">
+                              {table.name}
+                            </span>
+                            <span className="ml-2 text-xs text-gray-400 invisible group-hover:visible">
+                              {table.type}
+                            </span>
+                          </div>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
               {tables.length === 0 && (
-                <li className="px-3 py-2 text-sm text-gray-500">
+                <div className="px-3 py-2 text-sm text-gray-500">
                   No tables found
-                </li>
+                </div>
               )}
-            </ul>
+            </div>
           )}
         </div>
       </div>

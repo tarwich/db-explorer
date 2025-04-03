@@ -91,7 +91,6 @@ export default function Home() {
                 <ConnectionCard
                   key={connection.id}
                   connection={connection}
-                  isActive={activeConnection?.id === connection.id}
                   onEdit={handleEditConnection}
                   onSelect={handleSelectConnection}
                 />

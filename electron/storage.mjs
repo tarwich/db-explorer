@@ -1,68 +1,42 @@
-import { app } from 'electron';
-import fs from 'fs/promises';
-import path from 'path';
+import Store from 'electron-store';
 
-const CONNECTIONS_FILE = 'connections.json';
+const store = new Store({
+  name: 'connections',
+  defaults: {
+    connections: [],
+  },
+});
 
-class ConnectionStorage {
-  constructor() {
-    this.storagePath = path.join(app.getPath('userData'), CONNECTIONS_FILE);
-  }
+export const connectionStorage = {
+  getAll: () => {
+    return store.get('connections');
+  },
 
-  async initialize() {
-    try {
-      await fs.access(this.storagePath);
-    } catch {
-      // File doesn't exist, create it with empty array
-      await this.saveConnections([]);
-    }
-  }
-
-  async getConnections() {
-    try {
-      const data = await fs.readFile(this.storagePath, 'utf8');
-      return JSON.parse(data);
-    } catch (error) {
-      console.error('Error reading connections:', error);
-      return [];
-    }
-  }
-
-  async saveConnections(connections) {
-    try {
-      await fs.writeFile(
-        this.storagePath,
-        JSON.stringify(connections, null, 2),
-        'utf8'
-      );
-      return true;
-    } catch (error) {
-      console.error('Error saving connections:', error);
-      return false;
-    }
-  }
-
-  async addConnection(connection) {
-    const connections = await this.getConnections();
+  add: (connection) => {
+    const connections = store.get('connections');
     connections.push(connection);
-    return this.saveConnections(connections);
-  }
+    store.set('connections', connections);
+    return true;
+  },
 
-  async updateConnection(id, updatedConnection) {
-    const connections = await this.getConnections();
-    const index = connections.findIndex((conn) => conn.id === id);
+  update: (id, connection) => {
+    const connections = store.get('connections');
+    const index = connections.findIndex((c) => c.id === id);
     if (index !== -1) {
-      connections[index] = { ...connections[index], ...updatedConnection };
-      return this.saveConnections(connections);
+      connections[index] = { ...connections[index], ...connection };
+      store.set('connections', connections);
+      return true;
     }
     return false;
-  }
+  },
 
-  async deleteConnection(id) {
-    const connections = await this.getConnections();
-    const filteredConnections = connections.filter((conn) => conn.id !== id);
-    return this.saveConnections(filteredConnections);
-  }
-}
-
-export const connectionStorage = new ConnectionStorage();
+  delete: (id) => {
+    const connections = store.get('connections');
+    const filtered = connections.filter((c) => c.id !== id);
+    if (filtered.length !== connections.length) {
+      store.set('connections', filtered);
+      return true;
+    }
+    return false;
+  },
+};

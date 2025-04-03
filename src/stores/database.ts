@@ -4,8 +4,9 @@ import { DatabaseConnection } from '@/types/connections';
 export interface Table {
   id: string;
   name: string;
+  schema: string;
   type: string;
-  schema?: string;
+  description?: string;
 }
 
 interface DatabaseStore {
@@ -78,23 +79,36 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     const { activeConnection } = get();
     if (!activeConnection) return;
 
-    set({ isLoadingTables: true });
-    try {
-      // TODO: Implement actual table loading from the database
-      // This will need to be implemented based on your electron API
-      // const tables = await window.electronAPI.tables.getAll(activeConnection.id);
-      // set({ tables });
+    if (!window.electronAPI?.tables?.getAll) {
+      console.error('Tables API not available');
+      return;
+    }
 
-      // Temporary mock data
-      set({
-        tables: [
-          { id: '1', name: 'users', type: 'table' },
-          { id: '2', name: 'products', type: 'table' },
-        ],
-      });
+    set({ isLoadingTables: true });
+
+    try {
+      const result = await window.electronAPI.tables.getAll(activeConnection);
+
+      if (result?.success && Array.isArray(result.tables)) {
+        const tables = result.tables.map((table) => ({
+          id: `${table.schema}.${table.name}`,
+          name: table.name,
+          schema: table.schema,
+          type:
+            table.type === 'BASE TABLE' ? 'table' : table.type.toLowerCase(),
+          description: table.description || undefined,
+        }));
+        set({ tables });
+      } else {
+        console.error(
+          'Failed to load tables:',
+          result?.error || 'Unknown error'
+        );
+        set({ tables: [] });
+      }
     } catch (error) {
-      console.error('Failed to load tables:', error);
-      // You might want to set an error state here
+      console.error('Error loading tables:', error);
+      set({ tables: [] });
     } finally {
       set({ isLoadingTables: false });
     }

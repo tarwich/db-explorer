@@ -2,11 +2,14 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   connections: {
-    getAll: () => ipcRenderer.invoke('get-connections'),
-    add: (connection) => ipcRenderer.invoke('add-connection', connection),
+    getAll: () => ipcRenderer.invoke('connections:getAll'),
+    add: (connection) => ipcRenderer.invoke('connections:add', connection),
     update: (id, connection) =>
-      ipcRenderer.invoke('update-connection', { id, connection }),
-    delete: (id) => ipcRenderer.invoke('delete-connection', id),
-    test: (connection) => ipcRenderer.invoke('test-connection', connection),
+      ipcRenderer.invoke('connections:update', id, connection),
+    delete: (id) => ipcRenderer.invoke('connections:delete', id),
+    test: (connection) => ipcRenderer.invoke('connections:test', connection),
+  },
+  tables: {
+    getAll: (connection) => ipcRenderer.invoke('tables:getAll', connection),
   },
 });

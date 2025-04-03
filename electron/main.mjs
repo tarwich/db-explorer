@@ -51,33 +51,80 @@ async function testConnection(connection) {
   }
 }
 
-// Initialize storage and IPC handlers
-async function initialize() {
-  await connectionStorage.initialize();
-
-  // IPC handlers for connection management
-  ipcMain.handle('get-connections', () => connectionStorage.getConnections());
-
-  ipcMain.handle('add-connection', (_, connection) =>
-    connectionStorage.addConnection(connection)
-  );
-
-  ipcMain.handle('update-connection', (_, { id, connection }) =>
-    connectionStorage.updateConnection(id, connection)
-  );
-
-  ipcMain.handle('delete-connection', (_, id) =>
-    connectionStorage.deleteConnection(id)
-  );
-
-  ipcMain.handle('test-connection', async (_, connection) => {
-    return testConnection(connection);
+async function getTables(connection) {
+  const client = new pg.Client({
+    host: connection.host,
+    port: connection.port,
+    database: connection.database,
+    user: connection.username,
+    password: connection.password,
   });
+
+  try {
+    await client.connect();
+
+    const result = await client.query(`
+      SELECT
+        t.table_schema as schema,
+        t.table_name as name,
+        t.table_type as type,
+        obj_description(
+          (quote_ident(t.table_schema) || '.' || quote_ident(t.table_name))::regclass::oid,
+          'pg_class'
+        ) as description
+      FROM information_schema.tables t
+      WHERE t.table_schema NOT IN ('pg_catalog', 'information_schema')
+      ORDER BY t.table_schema, t.table_name
+    `);
+
+    await client.end();
+    return { success: true, tables: result.rows };
+  } catch (error) {
+    console.error('Error getting tables:', error);
+    try {
+      await client.end();
+    } catch {}
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
 }
 
+// Initialize storage and IPC handlers
 app.whenReady().then(() => {
-  initialize();
+  // Connection handlers
+  ipcMain.handle('connections:getAll', async () => {
+    return connectionStorage.getAll();
+  });
+
+  ipcMain.handle('connections:add', async (event, connection) => {
+    return connectionStorage.add(connection);
+  });
+
+  ipcMain.handle('connections:update', async (event, id, connection) => {
+    return connectionStorage.update(id, connection);
+  });
+
+  ipcMain.handle('connections:delete', async (event, id) => {
+    return connectionStorage.delete(id);
+  });
+
+  ipcMain.handle('connections:test', async (event, connection) => {
+    return testConnection(connection);
+  });
+
+  ipcMain.handle('tables:getAll', async (event, connection) => {
+    return getTables(connection);
+  });
+
   createWindow();
+
+  // Enable DevTools in development
+  if (isDev) {
+    const mainWindow = BrowserWindow.getAllWindows()[0];
+    mainWindow.webContents.openDevTools();
+  }
 });
 
 app.on('window-all-closed', () => {

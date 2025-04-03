@@ -1,5 +1,18 @@
 import { DatabaseConnection } from './connections';
 
+interface DatabaseTable {
+  schema: string;
+  name: string;
+  type: string;
+  description: string | null;
+}
+
+interface TablesResponse {
+  success: boolean;
+  error?: string;
+  tables?: DatabaseTable[];
+}
+
 declare global {
   interface Window {
     electronAPI: {
@@ -16,6 +29,9 @@ declare global {
         test: (
           connection: Omit<DatabaseConnection, 'id' | 'createdAt' | 'updatedAt'>
         ) => Promise<{ success: boolean; error?: string }>;
+      };
+      tables: {
+        getAll: (connection: DatabaseConnection) => Promise<TablesResponse>;
       };
     };
   }

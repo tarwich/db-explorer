@@ -1,7 +1,7 @@
 'use client';
 
-import { AddConnectionDialog } from '@/components/AddConnectionDialog';
-import { ConnectionCard } from '@/components/ConnectionCard';
+import { AddConnectionDialog } from '@/components/add-connection-dialog';
+import { ConnectionCard } from '@/components/connection-card';
 import { DatabaseConnection } from '@/types/connections';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';

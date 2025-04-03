@@ -10,6 +10,8 @@ interface AddConnectionDialogProps {
   ) => void;
 }
 
+const DEFAULT_POSTGRES_PORT = 5432;
+
 export function AddConnectionDialog({
   isOpen,
   onClose,
@@ -18,20 +20,56 @@ export function AddConnectionDialog({
   const [formData, setFormData] = useState({
     name: '',
     type: 'postgres' as DatabaseConnection['type'],
-    host: '',
-    port: '',
+    host: 'localhost',
+    port: DEFAULT_POSTGRES_PORT.toString(),
     database: '',
     username: '',
     password: '',
   });
 
+  const [error, setError] = useState<string | null>(null);
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      setError('Connection name is required');
+      return false;
+    }
+    if (!formData.host.trim()) {
+      setError('Host is required');
+      return false;
+    }
+    if (!formData.database.trim()) {
+      setError('Database name is required');
+      return false;
+    }
+    if (!formData.username.trim()) {
+      setError('Username is required');
+      return false;
+    }
+    setError(null);
+    return true;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     onAdd({
       ...formData,
-      port: formData.port ? parseInt(formData.port, 10) : undefined,
+      port: formData.port ? parseInt(formData.port, 10) : DEFAULT_POSTGRES_PORT,
     });
     onClose();
+    // Reset form
+    setFormData({
+      name: '',
+      type: 'postgres',
+      host: 'localhost',
+      port: DEFAULT_POSTGRES_PORT.toString(),
+      database: '',
+      username: '',
+      password: '',
+    });
+    setError(null);
   };
 
   return (
@@ -68,6 +106,12 @@ export function AddConnectionDialog({
                   Add New Connection
                 </Dialog.Title>
 
+                {error && (
+                  <div className="mt-2 rounded-md bg-red-50 p-3">
+                    <p className="text-sm text-red-600">{error}</p>
+                  </div>
+                )}
+
                 <form onSubmit={handleSubmit} className="mt-4 space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
@@ -75,6 +119,7 @@ export function AddConnectionDialog({
                       <input
                         type="text"
                         required
+                        placeholder="My PostgreSQL Database"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         value={formData.name}
                         onChange={(e) =>
@@ -101,6 +146,8 @@ export function AddConnectionDialog({
                       Host
                       <input
                         type="text"
+                        required
+                        placeholder="localhost"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         value={formData.host}
                         onChange={(e) =>
@@ -115,6 +162,8 @@ export function AddConnectionDialog({
                       Port
                       <input
                         type="number"
+                        required
+                        placeholder={DEFAULT_POSTGRES_PORT.toString()}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         value={formData.port}
                         onChange={(e) =>
@@ -129,6 +178,8 @@ export function AddConnectionDialog({
                       Database
                       <input
                         type="text"
+                        required
+                        placeholder="postgres"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         value={formData.database}
                         onChange={(e) =>
@@ -143,6 +194,8 @@ export function AddConnectionDialog({
                       Username
                       <input
                         type="text"
+                        required
+                        placeholder="postgres"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         value={formData.username}
                         onChange={(e) =>

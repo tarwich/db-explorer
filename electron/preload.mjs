@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     update: (id, connection) =>
       ipcRenderer.invoke('update-connection', { id, connection }),
     delete: (id) => ipcRenderer.invoke('delete-connection', id),
+    test: (connection) => ipcRenderer.invoke('test-connection', connection),
   },
 });

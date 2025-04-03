@@ -1,9 +1,9 @@
 import { DatabaseConnection } from '@/types/connections';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { PencilIcon } from '@heroicons/react/24/outline';
 
 interface ConnectionCardProps {
   connection: DatabaseConnection;
-  onDelete: (id: string) => void;
+  onEdit: (connection: DatabaseConnection) => void;
   onSelect: (connection: DatabaseConnection) => void;
 }
 
@@ -11,7 +11,7 @@ const TYPE_COLOR = 'bg-blue-100 text-blue-800';
 
 export function ConnectionCard({
   connection,
-  onDelete,
+  onEdit,
   onSelect,
 }: ConnectionCardProps) {
   return (
@@ -31,11 +31,11 @@ export function ConnectionCard({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onDelete(connection.id);
+            onEdit(connection);
           }}
           className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
         >
-          <TrashIcon className="w-4 h-4" />
+          <PencilIcon className="w-4 h-4" />
         </button>
       </div>
       <div className="mt-2 text-sm text-gray-600">

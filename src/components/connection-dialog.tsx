@@ -1,6 +1,6 @@
 import { DatabaseConnection } from '@/types/connections';
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 
 interface ConnectionDialogProps {
   isOpen: boolean;
@@ -46,14 +46,38 @@ export function ConnectionDialog({
   initialData,
 }: ConnectionDialogProps) {
   const [formData, setFormData] = useState({
-    name: initialData?.name ?? '',
+    name: '',
     type: 'postgres' as DatabaseConnection['type'],
-    host: initialData?.host ?? 'localhost',
-    port: (initialData?.port ?? DEFAULT_POSTGRES_PORT).toString(),
-    database: initialData?.database ?? '',
-    username: initialData?.username ?? '',
-    password: initialData?.password ?? '',
+    host: 'localhost',
+    port: DEFAULT_POSTGRES_PORT.toString(),
+    database: '',
+    username: '',
+    password: '',
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name,
+        type: initialData.type,
+        host: initialData.host ?? 'localhost',
+        port: (initialData.port ?? DEFAULT_POSTGRES_PORT).toString(),
+        database: initialData.database ?? '',
+        username: initialData.username ?? '',
+        password: initialData.password ?? '',
+      });
+    } else {
+      setFormData({
+        name: '',
+        type: 'postgres',
+        host: 'localhost',
+        port: DEFAULT_POSTGRES_PORT.toString(),
+        database: '',
+        username: '',
+        password: '',
+      });
+    }
+  }, [initialData]);
 
   const [error, setError] = useState<string | null>(null);
   const [connectionString, setConnectionString] = useState('');

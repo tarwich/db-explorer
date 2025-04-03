@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { connectionStorage } from './storage.mjs';
+import pg from 'pg';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,6 +27,30 @@ function createWindow() {
   mainWindow.loadURL(startUrl);
 }
 
+async function testConnection(connection) {
+  const client = new pg.Client({
+    host: connection.host,
+    port: connection.port,
+    database: connection.database,
+    user: connection.username,
+    password: connection.password,
+    // Timeout after 5 seconds
+    connectionTimeoutMillis: 5000,
+  });
+
+  try {
+    await client.connect();
+    await client.query('SELECT 1');
+    await client.end();
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+}
+
 // Initialize storage and IPC handlers
 async function initialize() {
   await connectionStorage.initialize();
@@ -44,6 +69,10 @@ async function initialize() {
   ipcMain.handle('delete-connection', (_, id) =>
     connectionStorage.deleteConnection(id)
   );
+
+  ipcMain.handle('test-connection', async (_, connection) => {
+    return testConnection(connection);
+  });
 }
 
 app.whenReady().then(() => {

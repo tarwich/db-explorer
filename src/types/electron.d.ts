@@ -13,6 +13,9 @@ declare global {
           connection: Partial<DatabaseConnection>
         ) => Promise<boolean>;
         delete: (id: string) => Promise<boolean>;
+        test: (
+          connection: Omit<DatabaseConnection, 'id' | 'createdAt' | 'updatedAt'>
+        ) => Promise<{ success: boolean; error?: string }>;
       };
     };
   }

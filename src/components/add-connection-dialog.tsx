@@ -17,7 +17,7 @@ export function AddConnectionDialog({
 }: AddConnectionDialogProps) {
   const [formData, setFormData] = useState({
     name: '',
-    type: 'mysql' as DatabaseConnection['type'],
+    type: 'postgres' as DatabaseConnection['type'],
     host: '',
     port: '',
     database: '',
@@ -87,21 +87,12 @@ export function AddConnectionDialog({
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Type
-                      <select
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        value={formData.type}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            type: e.target.value as DatabaseConnection['type'],
-                          })
-                        }
-                      >
-                        <option value="mysql">MySQL</option>
-                        <option value="postgres">PostgreSQL</option>
-                        <option value="sqlite">SQLite</option>
-                        <option value="mongodb">MongoDB</option>
-                      </select>
+                      <input
+                        type="text"
+                        readOnly
+                        className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        value="PostgreSQL"
+                      />
                     </label>
                   </div>
 

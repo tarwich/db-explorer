@@ -7,12 +7,7 @@ interface ConnectionCardProps {
   onSelect: (connection: DatabaseConnection) => void;
 }
 
-const TYPE_COLORS = {
-  mysql: 'bg-orange-100 text-orange-800',
-  postgres: 'bg-blue-100 text-blue-800',
-  sqlite: 'bg-gray-100 text-gray-800',
-  mongodb: 'bg-green-100 text-green-800',
-} as const;
+const TYPE_COLOR = 'bg-blue-100 text-blue-800';
 
 export function ConnectionCard({
   connection,
@@ -28,9 +23,7 @@ export function ConnectionCard({
         <div>
           <h3 className="font-medium text-gray-900">{connection.name}</h3>
           <span
-            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-              TYPE_COLORS[connection.type]
-            }`}
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${TYPE_COLOR}`}
           >
             {connection.type}
           </span>

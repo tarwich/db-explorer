@@ -13,6 +13,22 @@ interface TablesResponse {
   tables?: DatabaseTable[];
 }
 
+interface TableDataResponse {
+  success: boolean;
+  error?: string;
+  columns?: {
+    column_name: string;
+    data_type: string;
+    is_nullable: string;
+    column_default: string | null;
+    character_maximum_length: number | null;
+    numeric_precision: number | null;
+    numeric_scale: number | null;
+  }[];
+  rows?: Record<string, unknown>[];
+  totalRows?: number;
+}
+
 declare global {
   interface Window {
     electronAPI: {
@@ -32,6 +48,11 @@ declare global {
       };
       tables: {
         getAll: (connection: DatabaseConnection) => Promise<TablesResponse>;
+        getData: (
+          connection: DatabaseConnection,
+          schema: string,
+          table: string
+        ) => Promise<TableDataResponse>;
       };
     };
   }

@@ -91,6 +91,62 @@ async function getTables(connection) {
   }
 }
 
+async function getTableData(connection, schema, table) {
+  const client = new pg.Client({
+    host: connection.host,
+    port: connection.port,
+    database: connection.database,
+    user: connection.username,
+    password: connection.password,
+  });
+
+  try {
+    await client.connect();
+
+    // First get the column information
+    const columnsResult = await client.query(
+      `
+      SELECT
+        column_name,
+        data_type,
+        is_nullable,
+        column_default,
+        character_maximum_length,
+        numeric_precision,
+        numeric_scale
+      FROM information_schema.columns
+      WHERE table_schema = $1 AND table_name = $2
+      ORDER BY ordinal_position
+    `,
+      [schema, table]
+    );
+
+    // Then get the actual data
+    const dataResult = await client.query(`
+      SELECT *
+      FROM ${client.escapeIdentifier(schema)}.${client.escapeIdentifier(table)}
+      LIMIT 1000
+    `);
+
+    await client.end();
+    return {
+      success: true,
+      columns: columnsResult.rows,
+      rows: dataResult.rows,
+      totalRows: dataResult.rowCount,
+    };
+  } catch (error) {
+    console.error('Error getting table data:', error);
+    try {
+      await client.end();
+    } catch {}
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+}
+
 // Initialize storage and IPC handlers
 app.whenReady().then(() => {
   // Connection handlers
@@ -116,6 +172,10 @@ app.whenReady().then(() => {
 
   ipcMain.handle('tables:getAll', async (event, connection) => {
     return getTables(connection);
+  });
+
+  ipcMain.handle('tables:getData', async (event, connection, schema, table) => {
+    return getTableData(connection, schema, table);
   });
 
   createWindow();

@@ -11,5 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   tables: {
     getAll: (connection) => ipcRenderer.invoke('tables:getAll', connection),
+    getData: (connection, schema, table) =>
+      ipcRenderer.invoke('tables:getData', connection, schema, table),
   },
 });

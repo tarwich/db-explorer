@@ -1,6 +1,7 @@
 import { useDatabaseStore } from '@/stores/database';
 import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { useEffect } from 'react';
+import { TableDataView } from './table-data-view';
 
 export function DatabaseView() {
   const {
@@ -9,6 +10,10 @@ export function DatabaseView() {
     isLoadingTables,
     loadTables,
     setActiveConnection,
+    activeTable,
+    setActiveTable,
+    tableData,
+    isLoadingTableData,
   } = useDatabaseStore();
 
   useEffect(() => {
@@ -86,10 +91,12 @@ export function DatabaseView() {
                     {schemaTables.map((table) => (
                       <li key={table.id}>
                         <button
-                          className="w-full px-3 py-2 text-left text-sm text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600 group"
-                          onClick={() => {
-                            // TODO: Handle table selection
-                          }}
+                          className={`w-full px-3 py-2 text-left text-sm rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600 group ${
+                            activeTable?.id === table.id
+                              ? 'bg-gray-200 text-gray-900'
+                              : 'text-gray-700'
+                          }`}
+                          onClick={() => setActiveTable(table)}
                           title={table.description || undefined}
                         >
                           <div className="flex items-center">
@@ -117,10 +124,39 @@ export function DatabaseView() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 bg-white p-6">
-        <div className="text-center text-gray-600">
-          Select a table to view its records
-        </div>
+      <div className="flex-1 bg-white p-6 overflow-hidden flex flex-col">
+        {activeTable ? (
+          <>
+            <div className="mb-6">
+              <h2 className="text-xl font-medium text-gray-900">
+                {activeTable.schema}.{activeTable.name}
+              </h2>
+              {activeTable.description && (
+                <p className="mt-1 text-sm text-gray-600">
+                  {activeTable.description}
+                </p>
+              )}
+            </div>
+            {tableData ? (
+              <TableDataView
+                columns={tableData.columns}
+                rows={tableData.rows}
+                totalRows={tableData.totalRows}
+                isLoading={isLoadingTableData}
+              />
+            ) : (
+              <div className="text-center text-gray-600">
+                {isLoadingTableData
+                  ? 'Loading table data...'
+                  : 'No data available'}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="text-center text-gray-600">
+            Select a table to view its records
+          </div>
+        )}
       </div>
     </div>
   );

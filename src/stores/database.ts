@@ -9,6 +9,16 @@ export interface Table {
   description?: string;
 }
 
+export interface TableColumn {
+  column_name: string;
+  data_type: string;
+  is_nullable: string;
+  column_default: string | null;
+  character_maximum_length: number | null;
+  numeric_precision: number | null;
+  numeric_scale: number | null;
+}
+
 interface DatabaseStore {
   // Connection state
   connections: DatabaseConnection[];
@@ -17,6 +27,13 @@ interface DatabaseStore {
   // Tables state
   tables: Table[];
   isLoadingTables: boolean;
+  activeTable: Table | null;
+  tableData: {
+    columns: TableColumn[];
+    rows: Record<string, unknown>[];
+    totalRows: number;
+  } | null;
+  isLoadingTableData: boolean;
 
   // Connection actions
   loadConnections: () => Promise<void>;
@@ -32,6 +49,8 @@ interface DatabaseStore {
   // Table actions
   loadTables: () => Promise<void>;
   clearTables: () => void;
+  setActiveTable: (table: Table | null) => void;
+  loadTableData: () => Promise<void>;
 }
 
 export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
@@ -40,6 +59,9 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   activeConnection: null,
   tables: [],
   isLoadingTables: false,
+  activeTable: null,
+  tableData: null,
+  isLoadingTableData: false,
 
   // Connection actions
   loadConnections: async () => {
@@ -66,7 +88,12 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
 
   setActiveConnection: async (connection) => {
     // Clear existing table data when changing connections
-    set({ tables: [], activeConnection: connection });
+    set({
+      tables: [],
+      activeConnection: connection,
+      activeTable: null,
+      tableData: null,
+    });
 
     // Load tables for the new connection if one is selected
     if (connection) {
@@ -116,5 +143,53 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
 
   clearTables: () => {
     set({ tables: [] });
+  },
+
+  setActiveTable: (table) => {
+    set({ activeTable: table, tableData: null });
+    if (table) {
+      get().loadTableData();
+    }
+  },
+
+  loadTableData: async () => {
+    const { activeConnection, activeTable } = get();
+    if (!activeConnection || !activeTable) return;
+
+    set({ isLoadingTableData: true });
+
+    try {
+      const result = await window.electronAPI.tables.getData(
+        activeConnection,
+        activeTable.schema,
+        activeTable.name
+      );
+
+      if (
+        result?.success &&
+        result.columns &&
+        result.rows &&
+        result.totalRows !== undefined
+      ) {
+        set({
+          tableData: {
+            columns: result.columns,
+            rows: result.rows,
+            totalRows: result.totalRows,
+          },
+        });
+      } else {
+        console.error(
+          'Failed to load table data:',
+          result?.error || 'Unknown error'
+        );
+        set({ tableData: null });
+      }
+    } catch (error) {
+      console.error('Error loading table data:', error);
+      set({ tableData: null });
+    } finally {
+      set({ isLoadingTableData: false });
+    }
   },
 }));

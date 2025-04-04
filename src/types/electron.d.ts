@@ -29,6 +29,11 @@ interface TableDataResponse {
   totalRows?: number;
 }
 
+interface UpdateRecordResponse {
+  success: boolean;
+  error?: string;
+}
+
 declare global {
   interface Window {
     electronAPI: {
@@ -55,6 +60,12 @@ declare global {
           page: number,
           pageSize: number
         ) => Promise<TableDataResponse>;
+        updateRecord: (
+          connection: DatabaseConnection,
+          schema: string,
+          table: string,
+          record: Record<string, unknown>
+        ) => Promise<UpdateRecordResponse>;
       };
     };
   }

@@ -30,6 +30,7 @@ export function TableDataView({
     selectRecord,
     toggleSidebarPin,
     closeSidebar,
+    saveRecord,
   } = useDatabaseStore();
 
   if (isLoading) {
@@ -189,6 +190,7 @@ export function TableDataView({
         onPin={toggleSidebarPin}
         record={selectedRecord}
         columns={columns}
+        onSave={saveRecord}
       />
     </div>
   );

@@ -62,6 +62,7 @@ interface DatabaseStore {
   clearTables: () => void;
   setActiveTable: (table: Table | null) => void;
   loadTableData: (page?: number, pageSize?: number) => Promise<void>;
+  saveRecord: (updatedRecord: Record<string, unknown>) => Promise<void>;
 
   // Sidebar actions
   selectRecord: (record: Record<string, unknown> | null) => void;
@@ -218,6 +219,49 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       set({ tableData: null });
     } finally {
       set({ isLoadingTableData: false });
+    }
+  },
+
+  saveRecord: async (updatedRecord: Record<string, unknown>) => {
+    const { activeConnection, activeTable, tableData } = get();
+    if (!activeConnection || !activeTable || !tableData) return;
+
+    try {
+      const result = await window.electronAPI.tables.updateRecord(
+        activeConnection,
+        activeTable.schema,
+        activeTable.name,
+        updatedRecord
+      );
+
+      if (result?.success) {
+        // Optimistically update the record in the table
+        set((state) => ({
+          tableData: state.tableData
+            ? {
+                ...state.tableData,
+                rows: state.tableData.rows.map((row) =>
+                  row === get().selectedRecord ? updatedRecord : row
+                ),
+              }
+            : null,
+        }));
+
+        // Update the selected record
+        set((state) => ({
+          selectedRecord: updatedRecord,
+          pinnedRecords: state.pinnedRecords.map((pinned) =>
+            pinned.record === get().selectedRecord
+              ? { ...pinned, record: updatedRecord }
+              : pinned
+          ),
+        }));
+      } else {
+        throw new Error(result?.error || 'Failed to update record');
+      }
+    } catch (error) {
+      console.error('Error updating record:', error);
+      throw error;
     }
   },
 

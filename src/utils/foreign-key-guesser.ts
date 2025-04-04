@@ -84,11 +84,19 @@ export function guessForeignKeys(
         (table) => table.name === matches[0].original
       )!;
 
+      const idColumn =
+        originalTable.columns?.find(isIdColumn)?.column_name ||
+        originalTable.primaryKey?.[0];
+
+      if (!idColumn) {
+        return NO_MATCH;
+      }
+
       return {
         sourceColumn: column.column_name,
         targetSchema: originalTable.schema,
         targetTable: originalTable.name,
-        targetColumn: 'id',
+        targetColumn: idColumn,
         confidence: 1,
       };
     }
@@ -102,7 +110,7 @@ export function combineActualAndGuessedForeignKeys(
   guessedForeignKeys: ForeignKeyGuess[]
 ): TableColumn {
   // If it's already a foreign key, return as is
-  if (column.foreign_table_name) {
+  if (column.foreignKey) {
     return column;
   }
 
@@ -117,10 +125,13 @@ export function combineActualAndGuessedForeignKeys(
 
   return {
     ...column,
-    foreign_table_schema: guess.targetSchema,
-    foreign_table_name: guess.targetTable,
-    foreign_column_name: guess.targetColumn,
-    is_guessed_foreign_key: true,
-    foreign_key_confidence: guess.confidence,
+    foreignKey: {
+      columnName: guess.sourceColumn,
+      targetSchema: guess.targetSchema,
+      targetTable: guess.targetTable,
+      targetColumn: guess.targetColumn,
+      isGuessed: true,
+      confidence: guess.confidence,
+    },
   };
 }

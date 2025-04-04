@@ -33,11 +33,14 @@ export interface TableColumn {
   character_maximum_length: number | null;
   numeric_precision: number | null;
   numeric_scale: number | null;
-  foreign_table_schema: string | null;
-  foreign_table_name: string | null;
-  foreign_column_name: string | null;
-  is_guessed_foreign_key?: boolean;
-  foreign_key_confidence?: number;
+  foreignKey?: {
+    columnName: string;
+    targetSchema: string;
+    targetTable: string;
+    targetColumn: string;
+    isGuessed?: boolean;
+    confidence?: number;
+  };
 }
 
 interface TableData {

@@ -186,6 +186,18 @@ export async function getTables(connection: DatabaseConnection) {
             (fk) => !existingColumns.has(fk.columnName)
           ),
         ];
+
+        // Update the columns with their foreign key information
+        if (table.columns) {
+          for (const column of table.columns) {
+            const foreignKey = table.foreignKeys.find(
+              (fk) => fk.columnName === column.column_name
+            );
+            if (foreignKey) {
+              column.foreignKey = foreignKey;
+            }
+          }
+        }
       }
 
       await client.end();
@@ -263,7 +275,15 @@ export async function getTableData(
         [pageSize, offset]
       );
 
+      // Go through the columns and add the foreign key information
+      for (const column of targetTable.columns || []) {
+        column.foreignKey = targetTable.foreignKeys?.find(
+          (fk) => fk.columnName === column.column_name
+        );
+      }
+
       await client.end();
+
       return {
         success: true,
         columns: targetTable.columns || [],

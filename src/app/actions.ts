@@ -313,9 +313,20 @@ export async function getTableData(
 
       // Go through the columns and add the foreign key information
       for (const column of targetTable.columns || []) {
-        column.foreignKey = targetTable.foreignKeys?.find(
+        const foreignKey = targetTable.foreignKeys?.find(
           (fk) => fk.columnName === column.column_name
         );
+        if (foreignKey) {
+          const targetForeignTable = tableMetadata.tables.find(
+            (t) =>
+              t.schema === foreignKey.targetSchema &&
+              t.name === foreignKey.targetTable
+          );
+          column.foreignKey = {
+            ...foreignKey,
+            displayColumns: targetForeignTable?.displayColumns,
+          };
+        }
       }
 
       await client.end();

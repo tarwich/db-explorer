@@ -1,5 +1,6 @@
 import { TableColumn } from '@/stores/database';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { capitalCase } from 'change-case';
 
 interface TableDataViewProps {
   columns: TableColumn[];
@@ -52,7 +53,9 @@ export function TableDataView({
                     column.is_nullable === 'YES' ? ', Nullable' : ''
                   }`}
                 >
-                  <div className="truncate">{column.column_name}</div>
+                  <div className="truncate">
+                    {capitalCase(column.column_name)}
+                  </div>
                 </th>
               ))}
             </tr>

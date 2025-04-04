@@ -1,6 +1,7 @@
 import { DatabaseConnection } from '@/types/connections';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState, useEffect } from 'react';
+import { testConnection } from '@/app/actions';
 
 interface ConnectionDialogProps {
   isOpen: boolean;
@@ -133,7 +134,7 @@ export function ConnectionDialog({
     setError(null);
 
     try {
-      const result = await window.electronAPI.connections.test({
+      const result = await testConnection({
         ...formData,
         port: formData.port
           ? parseInt(formData.port, 10)

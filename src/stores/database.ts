@@ -1,10 +1,16 @@
 import { create } from 'zustand';
 import { DatabaseConnection } from '@/types/connections';
+import {
+  testConnection,
+  getTables,
+  getTableData,
+  updateRecord,
+} from '@/app/actions';
 
-export interface Table {
+interface DatabaseTable {
   id: string;
-  name: string;
   schema: string;
+  name: string;
   type: string;
   description?: string;
 }
@@ -19,57 +25,53 @@ export interface TableColumn {
   numeric_scale: number | null;
 }
 
+interface TableData {
+  columns: TableColumn[];
+  rows: Record<string, unknown>[];
+  totalRows: number;
+  currentPage: number;
+  pageSize: number;
+}
+
+interface PinnedRecord {
+  tableId: string;
+  record: Record<string, unknown>;
+}
+
 interface DatabaseStore {
-  // Connection state
+  // State
   connections: DatabaseConnection[];
   activeConnection: DatabaseConnection | null;
-
-  // Tables state
-  tables: Table[];
+  tables: DatabaseTable[];
   isLoadingTables: boolean;
-  activeTable: Table | null;
-  tableData: {
-    columns: TableColumn[];
-    rows: Record<string, unknown>[];
-    totalRows: number;
-    currentPage: number;
-    pageSize: number;
-  } | null;
+  activeTable: DatabaseTable | null;
+  tableData: TableData | null;
   isLoadingTableData: boolean;
-
-  // Sidebar state
   selectedRecord: Record<string, unknown> | null;
   isSidebarOpen: boolean;
   isSidebarPinned: boolean;
-  pinnedRecords: Array<{
-    record: Record<string, unknown>;
-    tableId: string;
-  }>;
+  pinnedRecords: PinnedRecord[];
 
-  // Connection actions
+  // Actions
   loadConnections: () => Promise<void>;
   addConnection: (
     connection: Omit<DatabaseConnection, 'id' | 'createdAt' | 'updatedAt'>
   ) => Promise<void>;
   updateConnection: (
     id: string,
-    connection: DatabaseConnection
+    connection: Partial<DatabaseConnection>
   ) => Promise<void>;
   setActiveConnection: (connection: DatabaseConnection | null) => Promise<void>;
-
-  // Table actions
   loadTables: () => Promise<void>;
   clearTables: () => void;
-  setActiveTable: (table: Table | null) => void;
+  setActiveTable: (table: DatabaseTable | null) => void;
   loadTableData: (page?: number, pageSize?: number) => Promise<void>;
-  saveRecord: (updatedRecord: Record<string, unknown>) => Promise<void>;
-
-  // Sidebar actions
+  saveRecord: (record: Record<string, unknown>) => Promise<void>;
   selectRecord: (record: Record<string, unknown> | null) => void;
   toggleSidebarPin: () => void;
-  closeSidebar: () => void;
   addPinnedRecord: (record: Record<string, unknown>, tableId: string) => void;
   removePinnedRecord: (record: Record<string, unknown>) => void;
+  closeSidebar: () => void;
 }
 
 export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
@@ -81,8 +83,6 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   activeTable: null,
   tableData: null,
   isLoadingTableData: false,
-
-  // Initial sidebar state
   selectedRecord: null,
   isSidebarOpen: false,
   isSidebarPinned: false,
@@ -90,11 +90,18 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
 
   // Connection actions
   loadConnections: async () => {
-    const connections = await window.electronAPI?.connections.getAll();
-    set({ connections: connections || [] });
+    // For now, we'll keep connections in localStorage
+    const stored = localStorage.getItem('connections');
+    set({ connections: stored ? JSON.parse(stored) : [] });
   },
 
   addConnection: async (connectionData) => {
+    // Test the connection before adding
+    const result = await testConnection(connectionData);
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to connect to database');
+    }
+
     const newConnection: DatabaseConnection = {
       ...connectionData,
       id: crypto.randomUUID(),
@@ -102,13 +109,42 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       updatedAt: new Date().toISOString(),
     };
 
-    await window.electronAPI.connections.add(newConnection);
-    await get().loadConnections();
+    const connections = [...get().connections, newConnection];
+    localStorage.setItem('connections', JSON.stringify(connections));
+    set({ connections });
   },
 
   updateConnection: async (id, connection) => {
-    await window.electronAPI.connections.update(id, connection);
-    await get().loadConnections();
+    // Test the connection before updating if connection details changed
+    const existingConnection = get().connections.find((c) => c.id === id);
+    if (
+      existingConnection &&
+      (connection.host !== existingConnection.host ||
+        connection.port !== existingConnection.port ||
+        connection.database !== existingConnection.database ||
+        connection.username !== existingConnection.username ||
+        connection.password !== existingConnection.password)
+    ) {
+      const result = await testConnection({
+        ...existingConnection,
+        ...connection,
+      });
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to connect to database');
+      }
+    }
+
+    const connections = get().connections.map((c) =>
+      c.id === id
+        ? {
+            ...c,
+            ...connection,
+            updatedAt: new Date().toISOString(),
+          }
+        : c
+    );
+    localStorage.setItem('connections', JSON.stringify(connections));
+    set({ connections });
   },
 
   setActiveConnection: async (connection) => {
@@ -131,30 +167,24 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     const { activeConnection } = get();
     if (!activeConnection) return;
 
-    if (!window.electronAPI?.tables?.getAll) {
-      console.error('Tables API not available');
-      return;
-    }
-
     set({ isLoadingTables: true });
 
     try {
-      const result = await window.electronAPI.tables.getAll(activeConnection);
+      const result = await getTables(activeConnection);
 
-      if (result?.success && Array.isArray(result.tables)) {
+      if (result.success && Array.isArray(result.tables)) {
         const tables = result.tables.map((table) => ({
           id: `${table.schema}.${table.name}`,
           name: table.name,
           schema: table.schema,
-          type:
-            table.type === 'BASE TABLE' ? 'table' : table.type.toLowerCase(),
+          type: table.type.toLowerCase(),
           description: table.description || undefined,
         }));
         set({ tables });
       } else {
         console.error(
           'Failed to load tables:',
-          result?.error || 'Unknown error'
+          result.error || 'Unknown error'
         );
         set({ tables: [] });
       }
@@ -184,7 +214,7 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     set({ isLoadingTableData: true });
 
     try {
-      const result = await window.electronAPI.tables.getData(
+      const result = await getTableData(
         activeConnection,
         activeTable.schema,
         activeTable.name,
@@ -193,7 +223,7 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       );
 
       if (
-        result?.success &&
+        result.success &&
         result.columns &&
         result.rows &&
         result.totalRows !== undefined
@@ -210,7 +240,7 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       } else {
         console.error(
           'Failed to load table data:',
-          result?.error || 'Unknown error'
+          result.error || 'Unknown error'
         );
         set({ tableData: null });
       }
@@ -227,38 +257,39 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     if (!activeConnection || !activeTable || !tableData) return;
 
     try {
-      const result = await window.electronAPI.tables.updateRecord(
+      // Call the server action to update the record
+      const result = await updateRecord(
         activeConnection,
         activeTable.schema,
         activeTable.name,
         updatedRecord
       );
 
-      if (result?.success) {
-        // Optimistically update the record in the table
-        set((state) => ({
-          tableData: state.tableData
-            ? {
-                ...state.tableData,
-                rows: state.tableData.rows.map((row) =>
-                  row === get().selectedRecord ? updatedRecord : row
-                ),
-              }
-            : null,
-        }));
-
-        // Update the selected record
-        set((state) => ({
-          selectedRecord: updatedRecord,
-          pinnedRecords: state.pinnedRecords.map((pinned) =>
-            pinned.record === get().selectedRecord
-              ? { ...pinned, record: updatedRecord }
-              : pinned
-          ),
-        }));
-      } else {
-        throw new Error(result?.error || 'Failed to update record');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update record');
       }
+
+      // Update the UI state after successful database update
+      set((state) => ({
+        tableData: state.tableData
+          ? {
+              ...state.tableData,
+              rows: state.tableData.rows.map((row) =>
+                row === get().selectedRecord ? updatedRecord : row
+              ),
+            }
+          : null,
+      }));
+
+      // Update the selected record
+      set((state) => ({
+        selectedRecord: updatedRecord,
+        pinnedRecords: state.pinnedRecords.map((pinned) =>
+          pinned.record === get().selectedRecord
+            ? { ...pinned, record: updatedRecord }
+            : pinned
+        ),
+      }));
     } catch (error) {
       console.error('Error updating record:', error);
       throw error;
@@ -286,30 +317,21 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     }
   },
 
-  closeSidebar: () => {
-    const { isSidebarPinned, selectedRecord } = get();
-    if (!isSidebarPinned) {
-      set({
-        selectedRecord: null,
-        isSidebarOpen: false,
-      });
-    } else if (selectedRecord) {
-      // If pinned, remove this record from pinned records
-      get().removePinnedRecord(selectedRecord);
-    }
-  },
-
   addPinnedRecord: (record, tableId) => {
     set((state) => ({
-      pinnedRecords: [...state.pinnedRecords, { record, tableId }],
+      pinnedRecords: [...state.pinnedRecords, { tableId, record }],
     }));
   },
 
-  removePinnedRecord: (recordToRemove) => {
+  removePinnedRecord: (record) => {
     set((state) => ({
       pinnedRecords: state.pinnedRecords.filter(
-        ({ record }) => record !== recordToRemove
+        (pinned) => pinned.record !== record
       ),
     }));
+  },
+
+  closeSidebar: () => {
+    set({ isSidebarOpen: false });
   },
 }));

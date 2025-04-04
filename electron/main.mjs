@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { connectionStorage } from './storage.mjs';
 import pg from 'pg';
+import knex from 'knex';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -166,74 +167,63 @@ async function getTableData(
 }
 
 async function updateRecord(connection, schema, table, record) {
-  const client = new pg.Client({
-    host: connection.host,
-    port: connection.port,
-    database: connection.database,
-    user: connection.username,
-    password: connection.password,
+  const knexInstance = knex({
+    client: 'pg',
+    connection: {
+      host: connection.host,
+      port: connection.port,
+      database: connection.database,
+      user: connection.username,
+      password: connection.password,
+    },
   });
 
   try {
-    await client.connect();
+    // Get primary key columns using simpler query
+    const pkResult = await knexInstance
+      .withSchema('information_schema')
+      .select('c.column_name')
+      .from('table_constraints AS t')
+      .join('key_column_usage AS c', 't.constraint_name', 'c.constraint_name')
+      .where('t.table_name', '=', table)
+      .where('t.constraint_type', '=', 'PRIMARY KEY');
 
-    // Get primary key columns
-    const pkResult = await client.query(
-      `
-      SELECT a.attname as column_name
-      FROM pg_index i
-      JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
-      WHERE i.indrelid = $1::regclass AND i.indisprimary
-    `,
-      [`${schema}.${table}`]
-    );
+    const [{ column_name: pkColumn }] = pkResult;
 
-    if (pkResult.rows.length === 0) {
+    if (!pkColumn) {
       throw new Error('Table must have a primary key to update records');
     }
 
-    const pkColumns = pkResult.rows.map((row) => row.column_name);
+    // Build where conditions from primary keys
+    const whereConditions = {};
+    whereConditions[pkColumn] = record[pkColumn];
 
-    // Build WHERE clause using primary key columns
-    const whereClause = pkColumns
-      .map((col, i) => `${client.escapeIdentifier(col)} = $${i + 1}`)
-      .join(' AND ');
-    const pkValues = pkColumns.map((col) => record[col]);
+    // Separate update data (excluding primary key columns)
+    const updateData = {};
+    Object.entries(record).forEach(([key, value]) => {
+      if (key !== pkColumn) {
+        updateData[key] = value;
+      }
+    });
 
-    // Build SET clause for non-PK columns
-    const updateColumns = Object.keys(record).filter(
-      (col) => !pkColumns.includes(col)
-    );
-    const setClause = updateColumns
-      .map(
-        (col, i) =>
-          `${client.escapeIdentifier(col)} = $${i + pkColumns.length + 1}`
-      )
-      .join(', ');
-    const updateValues = updateColumns.map((col) => record[col]);
+    // Execute update with schema qualification
+    const result = await knexInstance
+      .withSchema(schema)
+      .table(table)
+      .where(whereConditions)
+      .update(updateData)
+      .returning('*');
 
-    // Execute UPDATE query
-    const query = `
-      UPDATE ${client.escapeIdentifier(schema)}.${client.escapeIdentifier(
-      table
-    )}
-      SET ${setClause}
-      WHERE ${whereClause}
-      RETURNING *
-    `;
-
-    const result = await client.query(query, [...pkValues, ...updateValues]);
-
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       throw new Error('Record not found');
     }
 
-    await client.end();
-    return { success: true, record: result.rows[0] };
+    await knexInstance.destroy();
+    return { success: true, record: result[0] };
   } catch (error) {
     console.error('Error updating record:', error);
     try {
-      await client.end();
+      await knexInstance.destroy();
     } catch {}
     return {
       success: false,

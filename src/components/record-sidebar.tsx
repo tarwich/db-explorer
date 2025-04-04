@@ -5,6 +5,7 @@ import { TableColumn, ForeignKeyInfo } from '@/stores/database';
 import { getTableData } from '@/app/actions';
 import { useDatabaseStore } from '@/stores/database';
 import { capitalCase, noCase } from 'change-case';
+import { ForeignKeyCombobox } from './foreign-key-combobox';
 
 interface RecordSidebarProps {
   isOpen: boolean;
@@ -218,13 +219,6 @@ function RenderInput({
   value: unknown;
   onChange: (value: unknown) => void;
 }) {
-  const [foreignKeyOptions, setForeignKeyOptions] = useState<
-    Array<{
-      id: string | number;
-      label: string;
-    }>
-  >([]);
-  const { activeConnection } = useDatabaseStore();
   const inputClassName =
     'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6';
 
@@ -232,76 +226,13 @@ function RenderInput({
 
   // Update the foreign key check
   if (column.foreignKey) {
-    const [isLoading, setIsLoading] = useState(true);
-    useEffect(() => {
-      if (!activeConnection) return;
-      setIsLoading(true);
-
-      const loadForeignKeyOptions = async () => {
-        const result = await getTableData(
-          activeConnection,
-          column.foreignKey!.targetSchema,
-          column.foreignKey!.targetTable,
-          1,
-          1000
-        );
-
-        if (result.success && result.rows && result.columns) {
-          setForeignKeyOptions(
-            result.rows.map((row) => ({
-              id: String(row[column.foreignKey!.targetColumn]),
-              label: formatForeignKeyLabel(
-                row,
-                result.columns,
-                column.foreignKey
-              ),
-            }))
-          );
-        }
-        setIsLoading(false);
-      };
-
-      loadForeignKeyOptions();
-    }, [
-      activeConnection,
-      column.foreignKey.targetSchema,
-      column.foreignKey.targetTable,
-      column.foreignKey.targetColumn,
-    ]);
-
-    const currentValue = value === null ? '' : String(value);
-    const selectedOption = foreignKeyOptions.find(
-      (opt) => String(opt.id) === currentValue
-    );
-
     return (
-      <div>
-        <select
-          value={currentValue}
-          onChange={(e) =>
-            onChange(e.target.value === '' ? null : e.target.value)
-          }
-          className={`${inputClassName} ${
-            column.foreignKey.isGuessed ? 'border-orange-300' : ''
-          } ${isLoading ? 'opacity-50' : ''}`}
-          disabled={isLoading}
-        >
-          <option value="">Select...</option>
-          {foreignKeyOptions.map((option) => (
-            <option key={String(option.id)} value={String(option.id)}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        {isLoading && (
-          <div className="mt-1 text-sm text-gray-500">Loading options...</div>
-        )}
-        {!isLoading && !selectedOption && currentValue && (
-          <div className="mt-1 text-sm text-orange-500">
-            Selected value not found in options
-          </div>
-        )}
-      </div>
+      <ForeignKeyCombobox
+        column={column}
+        value={value}
+        onChange={onChange}
+        className={column.foreignKey.isGuessed ? 'border-orange-300' : ''}
+      />
     );
   }
 

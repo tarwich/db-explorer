@@ -3,6 +3,11 @@
 import { DatabaseConnection } from '@/types/connections';
 import { z } from 'zod';
 import pg from 'pg';
+import {
+  guessForeignKeys,
+  combineActualAndGuessedForeignKeys,
+} from '@/utils/foreign-key-guesser';
+import { DatabaseTable } from '@/stores/database';
 
 const connectionSchema = z.object({
   host: z.string(),
@@ -112,21 +117,80 @@ export async function getTableData(
     try {
       await client.connect();
 
-      // Get column information
+      // Get all tables first for foreign key guessing
+      const tablesResult = await client.query(`
+        SELECT
+          t.table_schema as schema,
+          t.table_name as name,
+          t.table_type as type,
+          obj_description(
+            (quote_ident(t.table_schema) || '.' || quote_ident(t.table_name))::regclass::oid,
+            'pg_class'
+          ) as description
+        FROM information_schema.tables t
+        WHERE t.table_schema NOT IN ('pg_catalog', 'information_schema')
+        ORDER BY t.table_schema, t.table_name
+      `);
+
+      const allTables: DatabaseTable[] = tablesResult.rows.map((table) => ({
+        id: `${table.schema}.${table.name}`,
+        schema: table.schema,
+        name: table.name,
+        type: table.type.toLowerCase(),
+        description: table.description || undefined,
+      }));
+
+      // Get column information with foreign key relationships
       const columnsResult = await client.query(
         `
+        WITH foreign_keys AS (
+          SELECT
+            kcu.column_name,
+            kcu.constraint_name,
+            ccu.table_schema AS foreign_table_schema,
+            ccu.table_name AS foreign_table_name,
+            ccu.column_name AS foreign_column_name
+          FROM information_schema.key_column_usage kcu
+          JOIN information_schema.constraint_column_usage ccu
+            ON kcu.constraint_name = ccu.constraint_name
+            AND kcu.constraint_schema = ccu.constraint_schema
+          WHERE kcu.table_schema = $1
+            AND kcu.table_name = $2
+            AND kcu.constraint_name IN (
+              SELECT constraint_name
+              FROM information_schema.table_constraints
+              WHERE constraint_type = 'FOREIGN KEY'
+            )
+        )
         SELECT
-          column_name,
-          data_type,
-          is_nullable,
-          character_maximum_length,
-          numeric_precision,
-          numeric_scale
-        FROM information_schema.columns
-        WHERE table_schema = $1 AND table_name = $2
-        ORDER BY ordinal_position
+          c.column_name,
+          c.data_type,
+          c.is_nullable,
+          c.column_default,
+          c.character_maximum_length,
+          c.numeric_precision,
+          c.numeric_scale,
+          fk.foreign_table_schema,
+          fk.foreign_table_name,
+          fk.foreign_column_name
+        FROM information_schema.columns c
+        LEFT JOIN foreign_keys fk ON c.column_name = fk.column_name
+        WHERE c.table_schema = $1 AND c.table_name = $2
+        ORDER BY c.ordinal_position
         `,
         [schema, table]
+      );
+
+      // Get guessed foreign keys
+      const guessedForeignKeys = guessForeignKeys(
+        columnsResult.rows,
+        allTables,
+        schema
+      );
+
+      // Combine actual and guessed foreign keys
+      const enhancedColumns = columnsResult.rows.map((column) =>
+        combineActualAndGuessedForeignKeys(column, guessedForeignKeys)
       );
 
       // Get total count
@@ -153,7 +217,7 @@ export async function getTableData(
       await client.end();
       return {
         success: true,
-        columns: columnsResult.rows,
+        columns: enhancedColumns,
         rows: dataResult.rows,
         totalRows: parseInt(countResult.rows[0].total),
       };

@@ -2,6 +2,8 @@ import { Fragment, useState, useEffect } from 'react';
 import { Transition } from '@headlessui/react';
 import { XMarkIcon, StarIcon } from '@heroicons/react/24/outline';
 import { TableColumn } from '@/stores/database';
+import { getTableData } from '@/app/actions';
+import { useDatabaseStore } from '@/stores/database';
 
 interface RecordSidebarProps {
   isOpen: boolean;
@@ -207,9 +209,119 @@ function RenderInput({
   value: unknown;
   onChange: (value: unknown) => void;
 }) {
+  const [foreignKeyOptions, setForeignKeyOptions] = useState<
+    Array<{ id: unknown; label: string }>
+  >([]);
+  const { activeConnection } = useDatabaseStore();
   const inputClassName =
     'block w-full rounded-md border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500 sm:text-sm';
   const stringValue = value === null ? '' : String(value);
+
+  console.log('Rendering input for column:', column);
+  console.log('Column foreign key info:', {
+    foreign_table_schema: column.foreign_table_schema,
+    foreign_table_name: column.foreign_table_name,
+    foreign_column_name: column.foreign_column_name,
+    is_guessed_foreign_key: column.is_guessed_foreign_key,
+    foreign_key_confidence: column.foreign_key_confidence,
+  });
+
+  useEffect(() => {
+    async function loadForeignKeyOptions() {
+      if (
+        !column.foreign_table_schema ||
+        !column.foreign_table_name ||
+        !activeConnection
+      )
+        return;
+
+      console.log('Loading foreign key options for:', {
+        schema: column.foreign_table_schema,
+        table: column.foreign_table_name,
+        column: column.foreign_column_name,
+      });
+
+      try {
+        const result = await getTableData(
+          activeConnection,
+          column.foreign_table_schema,
+          column.foreign_table_name,
+          1,
+          1000 // Limit to 1000 options
+        );
+
+        if (result.success && result.rows) {
+          const options = result.rows.map((row) => ({
+            id: row[column.foreign_column_name || 'id'],
+            // Try to find a suitable display column (name, title, etc.) or fall back to the ID
+            label:
+              row.name ||
+              row.title ||
+              row.label ||
+              row.description ||
+              String(row[column.foreign_column_name || 'id']),
+          }));
+          console.log('Loaded foreign key options:', options);
+          setForeignKeyOptions(options);
+        }
+      } catch (error) {
+        console.error('Error loading foreign key options:', error);
+      }
+    }
+
+    loadForeignKeyOptions();
+  }, [
+    column.foreign_table_schema,
+    column.foreign_table_name,
+    column.foreign_column_name,
+    activeConnection,
+  ]);
+
+  // If this is a foreign key column, render a dropdown
+  if (column.foreign_table_name) {
+    console.log(
+      'Rendering foreign key dropdown with options:',
+      foreignKeyOptions
+    );
+    return (
+      <div className="relative">
+        <select
+          value={stringValue}
+          onChange={(e) => {
+            const val = e.target.value;
+            // Convert to number if the foreign key is numeric
+            const numericTypes = [
+              'integer',
+              'bigint',
+              'smallint',
+              'numeric',
+              'decimal',
+            ];
+            const isNumeric = numericTypes.includes(
+              column.data_type.toLowerCase()
+            );
+            onChange(val === '' ? null : isNumeric ? Number(val) : val);
+          }}
+          className={`${inputClassName} ${
+            column.is_guessed_foreign_key ? 'border-orange-300' : ''
+          }`}
+        >
+          <option value="">Select...</option>
+          {foreignKeyOptions.map((option) => (
+            <option key={String(option.id)} value={String(option.id)}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        {column.is_guessed_foreign_key && (
+          <div className="absolute right-0 top-0 -mt-4 text-xs text-orange-600">
+            Guessed relation ({Math.round(column.foreign_key_confidence! * 100)}
+            % confidence)
+          </div>
+        )}
+      </div>
+    );
+  }
 
   switch (column.data_type.toLowerCase()) {
     case 'integer':

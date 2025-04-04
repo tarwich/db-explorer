@@ -24,6 +24,9 @@ interface TableDataResponse {
     character_maximum_length: number | null;
     numeric_precision: number | null;
     numeric_scale: number | null;
+    foreign_table_schema: string | null;
+    foreign_table_name: string | null;
+    foreign_column_name: string | null;
   }[];
   rows?: Record<string, unknown>[];
   totalRows?: number;

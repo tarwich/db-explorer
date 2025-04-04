@@ -184,8 +184,7 @@ export async function getTableData(
       // Get guessed foreign keys
       const guessedForeignKeys = guessForeignKeys(
         columnsResult.rows,
-        allTables,
-        schema
+        allTables
       );
 
       // Combine actual and guessed foreign keys

@@ -232,8 +232,10 @@ function RenderInput({
 
   // Update the foreign key check
   if (column.foreignKey) {
+    const [isLoading, setIsLoading] = useState(true);
     useEffect(() => {
       if (!activeConnection) return;
+      setIsLoading(true);
 
       const loadForeignKeyOptions = async () => {
         const result = await getTableData(
@@ -256,6 +258,7 @@ function RenderInput({
             }))
           );
         }
+        setIsLoading(false);
       };
 
       loadForeignKeyOptions();
@@ -266,16 +269,22 @@ function RenderInput({
       column.foreignKey.targetColumn,
     ]);
 
+    const currentValue = value === null ? '' : String(value);
+    const selectedOption = foreignKeyOptions.find(
+      (opt) => String(opt.id) === currentValue
+    );
+
     return (
       <div>
         <select
-          value={value === null ? '' : String(value)}
+          value={currentValue}
           onChange={(e) =>
             onChange(e.target.value === '' ? null : e.target.value)
           }
           className={`${inputClassName} ${
             column.foreignKey.isGuessed ? 'border-orange-300' : ''
-          }`}
+          } ${isLoading ? 'opacity-50' : ''}`}
+          disabled={isLoading}
         >
           <option value="">Select...</option>
           {foreignKeyOptions.map((option) => (
@@ -284,6 +293,14 @@ function RenderInput({
             </option>
           ))}
         </select>
+        {isLoading && (
+          <div className="mt-1 text-sm text-gray-500">Loading options...</div>
+        )}
+        {!isLoading && !selectedOption && currentValue && (
+          <div className="mt-1 text-sm text-orange-500">
+            Selected value not found in options
+          </div>
+        )}
       </div>
     );
   }

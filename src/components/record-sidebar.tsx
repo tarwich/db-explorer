@@ -4,6 +4,7 @@ import { XMarkIcon, StarIcon } from '@heroicons/react/24/outline';
 import { TableColumn } from '@/stores/database';
 import { getTableData } from '@/app/actions';
 import { useDatabaseStore } from '@/stores/database';
+import { capitalCase } from 'change-case';
 
 interface RecordSidebarProps {
   isOpen: boolean;
@@ -137,7 +138,10 @@ export function RecordSidebar({
                 <div key={column.column_name} className="relative">
                   <label className="block">
                     <span className="text-sm font-medium text-gray-900">
-                      {column.column_name}
+                      {capitalCase(column.column_name).replace(
+                        /\bid\b/gi,
+                        'ID'
+                      )}
                     </span>
                     <div className="mt-1 flex space-x-2">
                       <RenderInput
@@ -271,12 +275,6 @@ function RenderInput({
             </option>
           ))}
         </select>
-        {column.foreignKey.isGuessed && (
-          <div className="text-xs text-orange-600 mt-1">
-            Guessed relation ({Math.round(column.foreignKey.confidence! * 100)}%
-            confidence)
-          </div>
-        )}
       </div>
     );
   }

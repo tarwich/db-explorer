@@ -321,18 +321,22 @@ function RenderInput({
 
     case 'boolean':
       return (
-        <select
-          value={stringValue}
-          onChange={(e) => {
-            const val = e.target.value;
-            onChange(val === '' ? null : val === 'true');
-          }}
-          className={inputClassName}
+        <button
+          type="button"
+          onClick={() => onChange(value === null ? true : !value)}
+          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${
+            value ? 'bg-blue-600' : 'bg-gray-200'
+          }`}
+          role="switch"
+          aria-checked={value === true}
         >
-          <option value="">Select...</option>
-          <option value="true">True</option>
-          <option value="false">False</option>
-        </select>
+          <span className="sr-only">Toggle boolean value</span>
+          <span
+            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+              value ? 'translate-x-5' : 'translate-x-0'
+            }`}
+          />
+        </button>
       );
 
     case 'timestamp':

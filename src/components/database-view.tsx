@@ -1,7 +1,12 @@
 import { useDatabaseStore } from '@/stores/database';
-import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
-import { useEffect } from 'react';
+import {
+  ArrowLeftIcon,
+  ArrowPathIcon,
+  WrenchScrewdriverIcon,
+} from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
 import { TableDataView } from './table-data-view';
+import { TablePropertiesDialog } from './table-properties-dialog';
 
 export function DatabaseView() {
   const {
@@ -15,7 +20,10 @@ export function DatabaseView() {
     tableData,
     isLoadingTableData,
     loadTableData,
+    updateTable,
   } = useDatabaseStore();
+
+  const [isPropertiesDialogOpen, setIsPropertiesDialogOpen] = useState(false);
 
   useEffect(() => {
     if (activeConnection) {
@@ -133,14 +141,25 @@ export function DatabaseView() {
         {activeTable ? (
           <>
             <div className="p-6 pb-0">
-              <h2 className="text-xl font-medium text-gray-900">
-                {activeTable.schema}.{activeTable.name}
-              </h2>
-              {activeTable.description && (
-                <p className="mt-1 text-sm text-gray-600">
-                  {activeTable.description}
-                </p>
-              )}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-medium text-gray-900">
+                    {activeTable.schema}.{activeTable.name}
+                  </h2>
+                  {activeTable.description && (
+                    <p className="mt-1 text-sm text-gray-600">
+                      {activeTable.description}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setIsPropertiesDialogOpen(true)}
+                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md"
+                  title="Edit table properties"
+                >
+                  <WrenchScrewdriverIcon className="h-5 w-5" />
+                </button>
+              </div>
             </div>
             {tableData ? (
               <div className="flex-1 flex flex-col min-h-0 px-6">
@@ -162,6 +181,26 @@ export function DatabaseView() {
                   ? 'Loading table data...'
                   : 'No data available'}
               </div>
+            )}
+
+            {/* Table Properties Dialog */}
+            {activeTable && (
+              <TablePropertiesDialog
+                isOpen={isPropertiesDialogOpen}
+                onClose={() => setIsPropertiesDialogOpen(false)}
+                onSave={async (updates) => {
+                  await updateTable(activeTable.id, {
+                    ...activeTable,
+                    ...updates,
+                  });
+                  // Refresh table data to reflect changes
+                  loadTableData(
+                    tableData?.currentPage ?? 1,
+                    tableData?.pageSize ?? 50
+                  );
+                }}
+                table={activeTable}
+              />
             )}
           </>
         ) : (

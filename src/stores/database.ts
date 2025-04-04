@@ -99,6 +99,7 @@ interface DatabaseStore {
   addPinnedRecord: (record: Record<string, unknown>, tableId: string) => void;
   removePinnedRecord: (record: Record<string, unknown>) => void;
   closeSidebar: () => void;
+  updateTable: (id: string, table: Partial<DatabaseTable>) => void;
 }
 
 export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
@@ -207,6 +208,10 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
           schema: table.schema,
           type: table.type.toLowerCase(),
           description: table.description || undefined,
+          primaryKey: table.primaryKey,
+          columns: table.columns,
+          displayColumns: table.displayColumns,
+          foreignKeys: table.foreignKeys,
         }));
         set({ tables });
       } else {
@@ -256,6 +261,7 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         result.rows &&
         result.totalRows !== undefined
       ) {
+        // Update the table data
         set({
           tableData: {
             columns: result.columns,
@@ -267,6 +273,22 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
             foreignKeys: result.foreignKeys,
           },
         });
+
+        // Also update the active table with the latest properties
+        const updatedTable = {
+          ...activeTable,
+          primaryKey: result.primaryKey,
+          foreignKeys: result.foreignKeys,
+          columns: result.columns,
+        };
+
+        // Update both the active table and the tables list
+        set((state) => ({
+          activeTable: updatedTable,
+          tables: state.tables.map((t) =>
+            t.id === activeTable.id ? updatedTable : t
+          ),
+        }));
       } else {
         console.error(
           'Failed to load table data:',
@@ -363,5 +385,18 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
 
   closeSidebar: () => {
     set({ isSidebarOpen: false });
+  },
+
+  updateTable: (id: string, table: Partial<DatabaseTable>) => {
+    const tables = get().tables.map((t) =>
+      t.id === id ? { ...t, ...table } : t
+    );
+    set({ tables });
+
+    // Update activeTable if it's the one being modified
+    const activeTable = get().activeTable;
+    if (activeTable?.id === id) {
+      set({ activeTable: { ...activeTable, ...table } });
+    }
   },
 }));

@@ -1,7 +1,8 @@
-import { Dialog, Transition } from '@headlessui/react';
+import { Dialog, Transition, Listbox } from '@headlessui/react';
 import { Fragment, useState, useEffect } from 'react';
 import { DatabaseTable, TableColumn, ForeignKeyInfo } from '@/stores/database';
 import { capitalCase } from 'change-case';
+import { ChevronUpDownIcon, CheckIcon } from '@heroicons/react/24/solid';
 
 interface TablePropertiesDialogProps {
   isOpen: boolean;
@@ -117,26 +118,79 @@ export function TablePropertiesDialog({
                     <h4 className="text-sm font-medium text-gray-900 mb-2">
                       Primary Key
                     </h4>
-                    <div className="space-y-2">
-                      {table.columns?.map((column) => (
-                        <label
-                          key={column.column_name}
-                          className="flex items-center space-x-2"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={primaryKey.includes(column.column_name)}
-                            onChange={() =>
-                              handlePrimaryKeyChange(column.column_name)
-                            }
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-gray-700">
-                            {capitalCase(column.column_name)}
+                    <Listbox
+                      value={primaryKey}
+                      onChange={setPrimaryKey}
+                      multiple
+                    >
+                      <div className="relative mt-1">
+                        <Listbox.Button className="relative w-full cursor-pointer rounded-lg bg-white py-2 pl-3 pr-10 text-left border border-gray-300 text-gray-900 focus:outline-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-300">
+                          <span className="block truncate">
+                            {primaryKey.length === 0
+                              ? 'Select primary key columns...'
+                              : primaryKey
+                                  .map((col) => capitalCase(col))
+                                  .join(', ')}
                           </span>
-                        </label>
-                      ))}
-                    </div>
+                          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ChevronUpDownIcon
+                              className="h-5 w-5 text-gray-600"
+                              aria-hidden="true"
+                            />
+                          </span>
+                        </Listbox.Button>
+                        <Transition
+                          as={Fragment}
+                          leave="transition ease-in duration-100"
+                          leaveFrom="opacity-100"
+                          leaveTo="opacity-0"
+                        >
+                          <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-10">
+                            {table.columns?.map((column) => (
+                              <Listbox.Option
+                                key={column.column_name}
+                                className={({ active }) =>
+                                  `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
+                                    active
+                                      ? 'bg-blue-100 text-blue-900'
+                                      : 'text-gray-900'
+                                  }`
+                                }
+                                value={column.column_name}
+                              >
+                                {({ selected }) => (
+                                  <>
+                                    <span
+                                      className={`block truncate ${
+                                        selected ? 'font-medium' : 'font-normal'
+                                      }`}
+                                    >
+                                      {capitalCase(column.column_name)}
+                                      <span className="ml-2 text-xs text-gray-700">
+                                        ({column.data_type})
+                                        {column.foreignKey && (
+                                          <span className="text-blue-600 ml-1 font-medium">
+                                            • Foreign Key
+                                          </span>
+                                        )}
+                                      </span>
+                                    </span>
+                                    {selected ? (
+                                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-700">
+                                        <CheckIcon
+                                          className="h-5 w-5"
+                                          aria-hidden="true"
+                                        />
+                                      </span>
+                                    ) : null}
+                                  </>
+                                )}
+                              </Listbox.Option>
+                            ))}
+                          </Listbox.Options>
+                        </Transition>
+                      </div>
+                    </Listbox>
                   </div>
 
                   {/* Foreign Keys Section */}
@@ -211,43 +265,86 @@ export function TablePropertiesDialog({
                         </span>
                       )}
                     </p>
-                    <div className="space-y-2">
-                      {table.columns?.map((column) => (
-                        <label
-                          key={column.column_name}
-                          className="flex items-center space-x-2"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={displayColumns.includes(
-                              column.column_name
-                            )}
-                            onChange={() =>
-                              handleDisplayColumnChange(column.column_name)
-                            }
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-gray-700">
-                            {capitalCase(column.column_name)}
-                            <span className="ml-2 text-xs text-gray-500">
-                              ({column.data_type})
-                              {column.foreignKey && (
-                                <span className="text-blue-500 ml-1">
-                                  • Foreign Key
-                                </span>
-                              )}
-                              {table.primaryKey?.includes(
-                                column.column_name
-                              ) && (
-                                <span className="text-yellow-500 ml-1">
-                                  • Primary Key
-                                </span>
-                              )}
-                            </span>
+                    <Listbox
+                      value={displayColumns}
+                      onChange={setDisplayColumns}
+                      multiple
+                    >
+                      <div className="relative mt-1">
+                        <Listbox.Button className="relative w-full cursor-pointer rounded-lg bg-white py-2 pl-3 pr-10 text-left border border-gray-300 text-gray-900 focus:outline-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-300">
+                          <span className="block truncate">
+                            {displayColumns.length === 0
+                              ? 'Select columns...'
+                              : displayColumns
+                                  .map((col) => capitalCase(col))
+                                  .join(', ')}
                           </span>
-                        </label>
-                      ))}
-                    </div>
+                          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ChevronUpDownIcon
+                              className="h-5 w-5 text-gray-600"
+                              aria-hidden="true"
+                            />
+                          </span>
+                        </Listbox.Button>
+                        <Transition
+                          as={Fragment}
+                          leave="transition ease-in duration-100"
+                          leaveFrom="opacity-100"
+                          leaveTo="opacity-0"
+                        >
+                          <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-10">
+                            {table.columns?.map((column) => (
+                              <Listbox.Option
+                                key={column.column_name}
+                                className={({ active }) =>
+                                  `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
+                                    active
+                                      ? 'bg-blue-100 text-blue-900'
+                                      : 'text-gray-900'
+                                  }`
+                                }
+                                value={column.column_name}
+                              >
+                                {({ selected }) => (
+                                  <>
+                                    <span
+                                      className={`block truncate ${
+                                        selected ? 'font-medium' : 'font-normal'
+                                      }`}
+                                    >
+                                      {capitalCase(column.column_name)}
+                                      <span className="ml-2 text-xs text-gray-700">
+                                        ({column.data_type})
+                                        {column.foreignKey && (
+                                          <span className="text-blue-600 ml-1 font-medium">
+                                            • Foreign Key
+                                          </span>
+                                        )}
+                                        {table.primaryKey?.includes(
+                                          column.column_name
+                                        ) && (
+                                          <span className="text-yellow-600 ml-1 font-medium">
+                                            • Primary Key
+                                          </span>
+                                        )}
+                                      </span>
+                                    </span>
+                                    {selected ? (
+                                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-700">
+                                        <CheckIcon
+                                          className="h-5 w-5"
+                                          aria-hidden="true"
+                                        />
+                                      </span>
+                                    ) : null}
+                                  </>
+                                )}
+                              </Listbox.Option>
+                            ))}
+                          </Listbox.Options>
+                        </Transition>
+                      </div>
+                    </Listbox>
                   </div>
 
                   {/* Footer */}

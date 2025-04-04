@@ -6,11 +6,13 @@ import {
   getTableData,
   updateRecord,
 } from '@/app/actions';
+import { normalizeName } from '@/utils/normalize-name';
 
 export interface DatabaseTable {
   id: string;
   schema: string;
   name: string;
+  normalizedName: string;
   type: string;
   description?: string;
   primaryKey?: string[]; // Array of column names that form the primary key
@@ -31,6 +33,7 @@ export interface ForeignKeyInfo {
 
 export interface TableColumn {
   column_name: string;
+  normalizedName: string;
   data_type: string;
   is_nullable: string;
   column_default: string | null;
@@ -200,6 +203,7 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         const tables = result.tables.map((table) => ({
           id: `${table.schema}.${table.name}`,
           name: table.name,
+          normalizedName: normalizeName(table.name),
           schema: table.schema,
           type: table.type.toLowerCase(),
           description: table.description || undefined,

@@ -6,6 +6,7 @@ import pg from 'pg';
 import { guessForeignKeys } from '@/utils/foreign-key-guesser';
 import { DatabaseTable } from '@/stores/database';
 import { determineDisplayColumns } from '@/utils/display-columns';
+import { normalizeName } from '@/utils/normalize-name';
 
 const connectionSchema = z.object({
   host: z.string(),
@@ -48,6 +49,166 @@ export async function testConnection(
   }
 }
 
+async function getBasicTableInfo(client: pg.Client): Promise<DatabaseTable[]> {
+  const tablesResult = await client.query(`
+    SELECT
+      t.table_schema as schema,
+      t.table_name as name,
+      t.table_type as type,
+      obj_description(
+        (quote_ident(t.table_schema) || '.' || quote_ident(t.table_name))::regclass::oid,
+        'pg_class'
+      ) as description
+    FROM information_schema.tables t
+    WHERE t.table_schema NOT IN ('pg_catalog', 'information_schema')
+    ORDER BY t.table_schema, t.table_name
+  `);
+
+  return tablesResult.rows.map((table) => ({
+    id: `${table.schema}.${table.name}`,
+    schema: table.schema,
+    name: table.name,
+    normalizedName: normalizeName(table.name),
+    type: table.type.toLowerCase(),
+    description: table.description || undefined,
+  }));
+}
+
+async function getPrimaryKeyAndColumns(
+  client: pg.Client,
+  table: DatabaseTable
+): Promise<void> {
+  // Get primary key information
+  const primaryKeyResult = await client.query(
+    `
+    SELECT
+      kcu.column_name
+    FROM information_schema.table_constraints tc
+    JOIN information_schema.key_column_usage kcu
+      ON tc.constraint_name = kcu.constraint_name
+      AND tc.table_schema = kcu.table_schema
+      AND tc.table_name = kcu.table_name
+    WHERE tc.constraint_type = 'PRIMARY KEY'
+      AND tc.table_schema = $1
+      AND tc.table_name = $2
+    ORDER BY kcu.ordinal_position
+  `,
+    [table.schema, table.name]
+  );
+
+  if (primaryKeyResult.rows.length > 0) {
+    table.primaryKey = primaryKeyResult.rows.map((row) => row.column_name);
+  }
+
+  // Get column information
+  const columnsResult = await client.query(
+    `
+    SELECT
+      c.column_name,
+      c.data_type,
+      c.is_nullable,
+      c.column_default,
+      c.character_maximum_length,
+      c.numeric_precision,
+      c.numeric_scale
+    FROM information_schema.columns c
+    WHERE c.table_schema = $1
+      AND c.table_name = $2
+    ORDER BY c.ordinal_position
+  `,
+    [table.schema, table.name]
+  );
+
+  table.columns = columnsResult.rows.map((column) => ({
+    ...column,
+    normalizedName: normalizeName(column.column_name),
+  }));
+
+  // Determine display columns
+  if (table.columns) {
+    table.displayColumns = determineDisplayColumns(
+      table.columns,
+      table.primaryKey
+    );
+  }
+}
+
+async function processForeignKeys(
+  client: pg.Client,
+  table: DatabaseTable,
+  allTables: DatabaseTable[]
+): Promise<void> {
+  const foreignKeysResult = await client.query(
+    `
+    SELECT
+      kcu.column_name,
+      ccu.table_schema AS foreign_table_schema,
+      ccu.table_name AS foreign_table_name,
+      ccu.column_name AS foreign_column_name,
+      tc.constraint_name
+    FROM information_schema.table_constraints tc
+    JOIN information_schema.key_column_usage kcu
+      ON tc.constraint_name = kcu.constraint_name
+      AND tc.table_schema = kcu.table_schema
+    JOIN information_schema.constraint_column_usage ccu
+      ON ccu.constraint_name = tc.constraint_name
+      AND ccu.table_schema = tc.table_schema
+    WHERE tc.constraint_type = 'FOREIGN KEY'
+      AND tc.table_schema = $1
+      AND tc.table_name = $2
+  `,
+    [table.schema, table.name]
+  );
+
+  // Get actual foreign keys
+  const actualForeignKeys = foreignKeysResult.rows.map((fk) => ({
+    columnName: fk.column_name,
+    targetSchema: fk.foreign_table_schema,
+    targetTable: fk.foreign_table_name,
+    targetColumn: fk.foreign_column_name,
+    isGuessed: false,
+  }));
+
+  // Get guessed foreign keys
+  const guessedForeignKeys = guessForeignKeys(table.columns || [], allTables)
+    .filter((guess) => guess.confidence > 0)
+    .map((guess) => ({
+      columnName: guess.sourceColumn,
+      targetSchema: guess.targetSchema,
+      targetTable: guess.targetTable,
+      targetColumn: guess.targetColumn,
+      isGuessed: true,
+      confidence: guess.confidence,
+    }));
+
+  // Combine actual and guessed foreign keys, preferring actual ones
+  const existingColumns = new Set(actualForeignKeys.map((fk) => fk.columnName));
+  table.foreignKeys = [
+    ...actualForeignKeys,
+    ...guessedForeignKeys.filter((fk) => !existingColumns.has(fk.columnName)),
+  ];
+
+  // Update columns with foreign key information
+  if (table.columns) {
+    for (const column of table.columns) {
+      const foreignKey = table.foreignKeys.find(
+        (fk) => fk.columnName === column.column_name
+      );
+      if (foreignKey) {
+        const targetTable = allTables.find(
+          (t) =>
+            t.schema === foreignKey.targetSchema &&
+            t.name === foreignKey.targetTable
+        );
+        column.foreignKey = {
+          ...foreignKey,
+          displayColumns: targetTable?.displayColumns,
+        };
+      }
+    }
+  }
+}
+
 export async function getTables(connection: DatabaseConnection) {
   try {
     const validatedConnection = connectionSchema.parse(connection);
@@ -63,159 +224,16 @@ export async function getTables(connection: DatabaseConnection) {
       await client.connect();
 
       // PASS 1: Get basic table information
-      const tablesResult = await client.query(`
-        SELECT
-          t.table_schema as schema,
-          t.table_name as name,
-          t.table_type as type,
-          obj_description(
-            (quote_ident(t.table_schema) || '.' || quote_ident(t.table_name))::regclass::oid,
-            'pg_class'
-          ) as description
-        FROM information_schema.tables t
-        WHERE t.table_schema NOT IN ('pg_catalog', 'information_schema')
-        ORDER BY t.table_schema, t.table_name
-      `);
-
-      const tables: DatabaseTable[] = tablesResult.rows.map((table) => ({
-        id: `${table.schema}.${table.name}`,
-        schema: table.schema,
-        name: table.name,
-        type: table.type.toLowerCase(),
-        description: table.description || undefined,
-      }));
+      const tables = await getBasicTableInfo(client);
 
       // PASS 2: Get primary keys and columns for each table
       for (const table of tables) {
-        const primaryKeyResult = await client.query(
-          `
-          SELECT
-            kcu.column_name
-          FROM information_schema.table_constraints tc
-          JOIN information_schema.key_column_usage kcu
-            ON tc.constraint_name = kcu.constraint_name
-            AND tc.table_schema = kcu.table_schema
-            AND tc.table_name = kcu.table_name
-          WHERE tc.constraint_type = 'PRIMARY KEY'
-            AND tc.table_schema = $1
-            AND tc.table_name = $2
-          ORDER BY kcu.ordinal_position
-        `,
-          [table.schema, table.name]
-        );
-
-        if (primaryKeyResult.rows.length > 0) {
-          table.primaryKey = primaryKeyResult.rows.map(
-            (row) => row.column_name
-          );
-        }
-
-        // Get column information for the table
-        const columnsResult = await client.query(
-          `
-          SELECT
-            c.column_name,
-            c.data_type,
-            c.is_nullable,
-            c.column_default,
-            c.character_maximum_length,
-            c.numeric_precision,
-            c.numeric_scale
-          FROM information_schema.columns c
-          WHERE c.table_schema = $1
-            AND c.table_name = $2
-          ORDER BY c.ordinal_position
-        `,
-          [table.schema, table.name]
-        );
-
-        table.columns = columnsResult.rows;
-
-        // Determine display columns for the table
-        if (table.columns) {
-          table.displayColumns = determineDisplayColumns(
-            table.columns,
-            table.primaryKey
-          );
-        }
+        await getPrimaryKeyAndColumns(client, table);
       }
 
       // PASS 3: Process foreign key relationships
       for (const table of tables) {
-        const foreignKeysResult = await client.query(
-          `
-          SELECT
-            kcu.column_name,
-            ccu.table_schema AS foreign_table_schema,
-            ccu.table_name AS foreign_table_name,
-            ccu.column_name AS foreign_column_name,
-            tc.constraint_name
-          FROM information_schema.table_constraints tc
-          JOIN information_schema.key_column_usage kcu
-            ON tc.constraint_name = kcu.constraint_name
-            AND tc.table_schema = kcu.table_schema
-          JOIN information_schema.constraint_column_usage ccu
-            ON ccu.constraint_name = tc.constraint_name
-            AND ccu.table_schema = tc.table_schema
-          WHERE tc.constraint_type = 'FOREIGN KEY'
-            AND tc.table_schema = $1
-            AND tc.table_name = $2
-        `,
-          [table.schema, table.name]
-        );
-
-        // Get actual foreign keys
-        const actualForeignKeys = foreignKeysResult.rows.map((fk) => ({
-          columnName: fk.column_name,
-          targetSchema: fk.foreign_table_schema,
-          targetTable: fk.foreign_table_name,
-          targetColumn: fk.foreign_column_name,
-          isGuessed: false,
-        }));
-
-        // Get guessed foreign keys
-        const guessedForeignKeys = guessForeignKeys(table.columns || [], tables)
-          .filter((guess) => guess.confidence > 0)
-          .map((guess) => ({
-            columnName: guess.sourceColumn,
-            targetSchema: guess.targetSchema,
-            targetTable: guess.targetTable,
-            targetColumn: guess.targetColumn,
-            isGuessed: true,
-            confidence: guess.confidence,
-          }));
-
-        // Combine actual and guessed foreign keys, preferring actual ones
-        const existingColumns = new Set(
-          actualForeignKeys.map((fk) => fk.columnName)
-        );
-        table.foreignKeys = [
-          ...actualForeignKeys,
-          ...guessedForeignKeys.filter(
-            (fk) => !existingColumns.has(fk.columnName)
-          ),
-        ];
-
-        // Update the columns with their foreign key information
-        if (table.columns) {
-          for (const column of table.columns) {
-            const foreignKey = table.foreignKeys.find(
-              (fk) => fk.columnName === column.column_name
-            );
-            if (foreignKey) {
-              // Find the target table to get its display columns
-              const targetTable = tables.find(
-                (t) =>
-                  t.schema === foreignKey.targetSchema &&
-                  t.name === foreignKey.targetTable
-              );
-              column.foreignKey = {
-                ...foreignKey,
-                displayColumns: targetTable?.displayColumns,
-              };
-            }
-          }
-        }
+        await processForeignKeys(client, table, tables);
       }
 
       await client.end();

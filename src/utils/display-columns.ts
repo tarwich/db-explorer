@@ -1,5 +1,4 @@
 import { TableColumn } from '@/stores/database';
-import { noCase } from 'change-case';
 
 /**
  * Determines which columns should be used for displaying records in a table
@@ -25,7 +24,7 @@ export function determineDisplayColumns(
 
   // First, look for common meaningful column names
   for (const colName of commonDisplayColumns) {
-    const column = columns.find((c) => noCase(c.column_name) === colName);
+    const column = columns.find((c) => c.normalizedName === colName);
     if (column) {
       return [column.column_name];
     }
@@ -33,19 +32,15 @@ export function determineDisplayColumns(
 
   // Next, look for common name patterns (first name + last name)
   const firstNameColumn = columns.find(
-    (c) => noCase(c.column_name) === 'first name'
+    (c) => c.normalizedName === 'first name'
   );
-  const lastNameColumn = columns.find(
-    (c) => noCase(c.column_name) === 'last name'
-  );
+  const lastNameColumn = columns.find((c) => c.normalizedName === 'last name');
   if (firstNameColumn && lastNameColumn) {
     return [firstNameColumn.column_name, lastNameColumn.column_name];
   }
 
   // Look for email columns
-  const emailColumn = columns.find((c) =>
-    noCase(c.column_name).startsWith('email')
-  );
+  const emailColumn = columns.find((c) => c.normalizedName.startsWith('email'));
   if (emailColumn) {
     return [emailColumn.column_name];
   }
@@ -55,7 +50,7 @@ export function determineDisplayColumns(
     (col) =>
       textTypes.includes(col.data_type.toLowerCase()) &&
       !primaryKey?.includes(col.column_name) &&
-      noCase(col.column_name) !== 'id'
+      !['id', 'uuid', 'guid', 'pk'].includes(col.normalizedName)
   );
   if (textColumn) {
     return [textColumn.column_name];

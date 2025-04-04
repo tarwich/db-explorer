@@ -37,6 +37,15 @@ interface DatabaseStore {
   } | null;
   isLoadingTableData: boolean;
 
+  // Sidebar state
+  selectedRecord: Record<string, unknown> | null;
+  isSidebarOpen: boolean;
+  isSidebarPinned: boolean;
+  pinnedRecords: Array<{
+    record: Record<string, unknown>;
+    tableId: string;
+  }>;
+
   // Connection actions
   loadConnections: () => Promise<void>;
   addConnection: (
@@ -53,6 +62,13 @@ interface DatabaseStore {
   clearTables: () => void;
   setActiveTable: (table: Table | null) => void;
   loadTableData: (page?: number, pageSize?: number) => Promise<void>;
+
+  // Sidebar actions
+  selectRecord: (record: Record<string, unknown> | null) => void;
+  toggleSidebarPin: () => void;
+  closeSidebar: () => void;
+  addPinnedRecord: (record: Record<string, unknown>, tableId: string) => void;
+  removePinnedRecord: (record: Record<string, unknown>) => void;
 }
 
 export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
@@ -64,6 +80,12 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   activeTable: null,
   tableData: null,
   isLoadingTableData: false,
+
+  // Initial sidebar state
+  selectedRecord: null,
+  isSidebarOpen: false,
+  isSidebarPinned: false,
+  pinnedRecords: [],
 
   // Connection actions
   loadConnections: async () => {
@@ -197,5 +219,53 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     } finally {
       set({ isLoadingTableData: false });
     }
+  },
+
+  // Sidebar actions
+  selectRecord: (record) => {
+    const { isSidebarPinned } = get();
+    if (!isSidebarPinned) {
+      set({
+        selectedRecord: record,
+        isSidebarOpen: !!record,
+      });
+    }
+  },
+
+  toggleSidebarPin: () => {
+    const { isSidebarPinned, selectedRecord, activeTable } = get();
+    set({ isSidebarPinned: !isSidebarPinned });
+
+    // If pinning and there's a selected record, add it to pinned records
+    if (!isSidebarPinned && selectedRecord && activeTable) {
+      get().addPinnedRecord(selectedRecord, activeTable.id);
+    }
+  },
+
+  closeSidebar: () => {
+    const { isSidebarPinned, selectedRecord } = get();
+    if (!isSidebarPinned) {
+      set({
+        selectedRecord: null,
+        isSidebarOpen: false,
+      });
+    } else if (selectedRecord) {
+      // If pinned, remove this record from pinned records
+      get().removePinnedRecord(selectedRecord);
+    }
+  },
+
+  addPinnedRecord: (record, tableId) => {
+    set((state) => ({
+      pinnedRecords: [...state.pinnedRecords, { record, tableId }],
+    }));
+  },
+
+  removePinnedRecord: (recordToRemove) => {
+    set((state) => ({
+      pinnedRecords: state.pinnedRecords.filter(
+        ({ record }) => record !== recordToRemove
+      ),
+    }));
   },
 }));

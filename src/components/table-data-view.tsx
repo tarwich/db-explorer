@@ -1,6 +1,8 @@
 import { TableColumn } from '@/stores/database';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { capitalCase } from 'change-case';
+import { useDatabaseStore } from '@/stores/database';
+import { RecordSidebar } from './record-sidebar';
 
 interface TableDataViewProps {
   columns: TableColumn[];
@@ -21,6 +23,15 @@ export function TableDataView({
   isLoading,
   onPageChange,
 }: TableDataViewProps) {
+  const {
+    selectedRecord,
+    isSidebarOpen,
+    isSidebarPinned,
+    selectRecord,
+    toggleSidebarPin,
+    closeSidebar,
+  } = useDatabaseStore();
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -32,6 +43,10 @@ export function TableDataView({
   const totalPages = Math.ceil(totalRows / pageSize);
   const startRow = (currentPage - 1) * pageSize + 1;
   const endRow = Math.min(currentPage * pageSize, totalRows);
+
+  const handleRowClick = (row: Record<string, unknown>) => {
+    selectRecord(row);
+  };
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -62,7 +77,13 @@ export function TableDataView({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {rows.map((row, rowIndex) => (
-              <tr key={rowIndex}>
+              <tr
+                key={rowIndex}
+                onClick={() => handleRowClick(row)}
+                className={`hover:bg-gray-50 cursor-pointer ${
+                  row === selectedRecord ? 'bg-blue-50' : ''
+                }`}
+              >
                 {columns.map((column) => {
                   const value = formatCellValue(row[column.column_name]);
                   return (
@@ -159,6 +180,16 @@ export function TableDataView({
           </div>
         </div>
       </div>
+
+      {/* Record Sidebar */}
+      <RecordSidebar
+        isOpen={isSidebarOpen}
+        isPinned={isSidebarPinned}
+        onClose={closeSidebar}
+        onPin={toggleSidebarPin}
+        record={selectedRecord}
+        columns={columns}
+      />
     </div>
   );
 }

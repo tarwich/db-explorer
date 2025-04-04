@@ -33,57 +33,54 @@ export function TableDataView({
   const endRow = Math.min(currentPage * pageSize, totalRows);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Table Container */}
-      <div className="flex-1 min-h-0 overflow-auto border border-gray-200 rounded-md">
-        <div className="mb-4 text-sm text-gray-600 sticky top-0 bg-white py-2 px-6 border-b border-gray-200">
-          Showing rows {startRow} to {endRow} of {totalRows}
-        </div>
-        <div className="min-w-full inline-block align-middle">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50 sticky top-10">
-                <tr>
-                  {columns.map((column) => (
-                    <th
+      <div className="flex-initial text-sm text-gray-600 bg-white py-2 px-6 border-b border-gray-200">
+        Showing rows {startRow} to {endRow} of {totalRows}
+      </div>
+
+      <div className="flex-grow overflow-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50 sticky top-0">
+            <tr>
+              {columns.map((column) => (
+                <th
+                  key={column.column_name}
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap max-w-xs"
+                  title={`Type: ${column.data_type}${
+                    column.is_nullable === 'YES' ? ', Nullable' : ''
+                  }`}
+                >
+                  <div className="truncate">{column.column_name}</div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {rows.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                {columns.map((column) => {
+                  const value = formatCellValue(row[column.column_name]);
+                  return (
+                    <td
                       key={column.column_name}
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap max-w-xs"
-                      title={`Type: ${column.data_type}${
-                        column.is_nullable === 'YES' ? ', Nullable' : ''
-                      }`}
+                      className="px-6 py-4 text-sm text-gray-900 max-w-xs"
                     >
-                      <div className="truncate">{column.column_name}</div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {rows.map((row, rowIndex) => (
-                  <tr key={rowIndex}>
-                    {columns.map((column) => {
-                      const value = formatCellValue(row[column.column_name]);
-                      return (
-                        <td
-                          key={column.column_name}
-                          className="px-6 py-4 text-sm text-gray-900 max-w-xs"
-                        >
-                          <div className="truncate" title={value}>
-                            {value}
-                          </div>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                      <div className="truncate" title={value}>
+                        {value}
+                      </div>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination Controls - Fixed at bottom */}
-      <div className="py-4 border-t border-gray-200 bg-white">
+      <div className="flex-initial py-4 border-t border-gray-200 bg-white">
         <div className="flex flex-1 justify-between sm:hidden">
           <button
             onClick={() => onPageChange(currentPage - 1)}

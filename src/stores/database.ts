@@ -13,6 +13,16 @@ export interface DatabaseTable {
   name: string;
   type: string;
   description?: string;
+  primaryKey?: string[]; // Array of column names that form the primary key
+  columns?: TableColumn[]; // Store column information directly with the table
+  foreignKeys?: {
+    columnName: string;
+    targetSchema: string;
+    targetTable: string;
+    targetColumn: string;
+    isGuessed?: boolean;
+    confidence?: number;
+  }[];
 }
 
 export interface TableColumn {
@@ -36,6 +46,15 @@ interface TableData {
   totalRows: number;
   currentPage: number;
   pageSize: number;
+  primaryKey?: string[];
+  foreignKeys?: {
+    columnName: string;
+    targetSchema: string;
+    targetTable: string;
+    targetColumn: string;
+    isGuessed?: boolean;
+    confidence?: number;
+  }[];
 }
 
 interface PinnedRecord {
@@ -240,6 +259,8 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
             totalRows: result.totalRows,
             currentPage: page,
             pageSize: pageSize,
+            primaryKey: result.primaryKey,
+            foreignKeys: result.foreignKeys,
           },
         });
       } else {

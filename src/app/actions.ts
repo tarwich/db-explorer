@@ -3,10 +3,7 @@
 import { DatabaseConnection } from '@/types/connections';
 import { z } from 'zod';
 import pg from 'pg';
-import {
-  guessForeignKeys,
-  combineActualAndGuessedForeignKeys,
-} from '@/utils/foreign-key-guesser';
+import { guessForeignKeys } from '@/utils/foreign-key-guesser';
 import { DatabaseTable } from '@/stores/database';
 
 const connectionSchema = z.object({
@@ -63,7 +60,9 @@ export async function getTables(connection: DatabaseConnection) {
 
     try {
       await client.connect();
-      const result = await client.query(`
+
+      // PASS 1: Get basic table information
+      const tablesResult = await client.query(`
         SELECT
           t.table_schema as schema,
           t.table_name as name,
@@ -77,10 +76,122 @@ export async function getTables(connection: DatabaseConnection) {
         ORDER BY t.table_schema, t.table_name
       `);
 
+      const tables: DatabaseTable[] = tablesResult.rows.map((table) => ({
+        id: `${table.schema}.${table.name}`,
+        schema: table.schema,
+        name: table.name,
+        type: table.type.toLowerCase(),
+        description: table.description || undefined,
+      }));
+
+      // PASS 2: Get primary keys for each table
+      for (const table of tables) {
+        const primaryKeyResult = await client.query(
+          `
+          SELECT
+            kcu.column_name
+          FROM information_schema.table_constraints tc
+          JOIN information_schema.key_column_usage kcu
+            ON tc.constraint_name = kcu.constraint_name
+            AND tc.table_schema = kcu.table_schema
+            AND tc.table_name = kcu.table_name
+          WHERE tc.constraint_type = 'PRIMARY KEY'
+            AND tc.table_schema = $1
+            AND tc.table_name = $2
+          ORDER BY kcu.ordinal_position
+        `,
+          [table.schema, table.name]
+        );
+
+        if (primaryKeyResult.rows.length > 0) {
+          table.primaryKey = primaryKeyResult.rows.map(
+            (row) => row.column_name
+          );
+        }
+
+        // Get column information for the table
+        const columnsResult = await client.query(
+          `
+          SELECT
+            c.column_name,
+            c.data_type,
+            c.is_nullable,
+            c.column_default,
+            c.character_maximum_length,
+            c.numeric_precision,
+            c.numeric_scale
+          FROM information_schema.columns c
+          WHERE c.table_schema = $1
+            AND c.table_name = $2
+          ORDER BY c.ordinal_position
+        `,
+          [table.schema, table.name]
+        );
+
+        table.columns = columnsResult.rows;
+      }
+
+      // PASS 3: Process foreign key relationships
+      for (const table of tables) {
+        const foreignKeysResult = await client.query(
+          `
+          SELECT
+            kcu.column_name,
+            ccu.table_schema AS foreign_table_schema,
+            ccu.table_name AS foreign_table_name,
+            ccu.column_name AS foreign_column_name,
+            tc.constraint_name
+          FROM information_schema.table_constraints tc
+          JOIN information_schema.key_column_usage kcu
+            ON tc.constraint_name = kcu.constraint_name
+            AND tc.table_schema = kcu.table_schema
+          JOIN information_schema.constraint_column_usage ccu
+            ON ccu.constraint_name = tc.constraint_name
+            AND ccu.table_schema = tc.table_schema
+          WHERE tc.constraint_type = 'FOREIGN KEY'
+            AND tc.table_schema = $1
+            AND tc.table_name = $2
+        `,
+          [table.schema, table.name]
+        );
+
+        // Get actual foreign keys
+        const actualForeignKeys = foreignKeysResult.rows.map((fk) => ({
+          columnName: fk.column_name,
+          targetSchema: fk.foreign_table_schema,
+          targetTable: fk.foreign_table_name,
+          targetColumn: fk.foreign_column_name,
+          isGuessed: false,
+        }));
+
+        // Get guessed foreign keys
+        const guessedForeignKeys = guessForeignKeys(table.columns || [], tables)
+          .filter((guess) => guess.confidence > 0)
+          .map((guess) => ({
+            columnName: guess.sourceColumn,
+            targetSchema: guess.targetSchema,
+            targetTable: guess.targetTable,
+            targetColumn: guess.targetColumn,
+            isGuessed: true,
+            confidence: guess.confidence,
+          }));
+
+        // Combine actual and guessed foreign keys, preferring actual ones
+        const existingColumns = new Set(
+          actualForeignKeys.map((fk) => fk.columnName)
+        );
+        table.foreignKeys = [
+          ...actualForeignKeys,
+          ...guessedForeignKeys.filter(
+            (fk) => !existingColumns.has(fk.columnName)
+          ),
+        ];
+      }
+
       await client.end();
       return {
         success: true,
-        tables: result.rows,
+        tables,
       };
     } catch (error) {
       await client.end().catch(() => {});
@@ -117,80 +228,19 @@ export async function getTableData(
     try {
       await client.connect();
 
-      // Get all tables first for foreign key guessing
-      const tablesResult = await client.query(`
-        SELECT
-          t.table_schema as schema,
-          t.table_name as name,
-          t.table_type as type,
-          obj_description(
-            (quote_ident(t.table_schema) || '.' || quote_ident(t.table_name))::regclass::oid,
-            'pg_class'
-          ) as description
-        FROM information_schema.tables t
-        WHERE t.table_schema NOT IN ('pg_catalog', 'information_schema')
-        ORDER BY t.table_schema, t.table_name
-      `);
+      // Get table metadata first
+      const tableMetadata = await getTables(connection);
+      if (!tableMetadata.success || !tableMetadata.tables) {
+        throw new Error(tableMetadata.error || 'Failed to get table metadata');
+      }
 
-      const allTables: DatabaseTable[] = tablesResult.rows.map((table) => ({
-        id: `${table.schema}.${table.name}`,
-        schema: table.schema,
-        name: table.name,
-        type: table.type.toLowerCase(),
-        description: table.description || undefined,
-      }));
-
-      // Get column information with foreign key relationships
-      const columnsResult = await client.query(
-        `
-        WITH foreign_keys AS (
-          SELECT
-            kcu.column_name,
-            kcu.constraint_name,
-            ccu.table_schema AS foreign_table_schema,
-            ccu.table_name AS foreign_table_name,
-            ccu.column_name AS foreign_column_name
-          FROM information_schema.key_column_usage kcu
-          JOIN information_schema.constraint_column_usage ccu
-            ON kcu.constraint_name = ccu.constraint_name
-            AND kcu.constraint_schema = ccu.constraint_schema
-          WHERE kcu.table_schema = $1
-            AND kcu.table_name = $2
-            AND kcu.constraint_name IN (
-              SELECT constraint_name
-              FROM information_schema.table_constraints
-              WHERE constraint_type = 'FOREIGN KEY'
-            )
-        )
-        SELECT
-          c.column_name,
-          c.data_type,
-          c.is_nullable,
-          c.column_default,
-          c.character_maximum_length,
-          c.numeric_precision,
-          c.numeric_scale,
-          fk.foreign_table_schema,
-          fk.foreign_table_name,
-          fk.foreign_column_name
-        FROM information_schema.columns c
-        LEFT JOIN foreign_keys fk ON c.column_name = fk.column_name
-        WHERE c.table_schema = $1 AND c.table_name = $2
-        ORDER BY c.ordinal_position
-        `,
-        [schema, table]
+      const targetTable = tableMetadata.tables.find(
+        (t) => t.schema === schema && t.name === table
       );
 
-      // Get guessed foreign keys
-      const guessedForeignKeys = guessForeignKeys(
-        columnsResult.rows,
-        allTables
-      );
-
-      // Combine actual and guessed foreign keys
-      const enhancedColumns = columnsResult.rows.map((column) =>
-        combineActualAndGuessedForeignKeys(column, guessedForeignKeys)
-      );
+      if (!targetTable) {
+        throw new Error('Table not found');
+      }
 
       // Get total count
       const countResult = await client.query(
@@ -216,7 +266,9 @@ export async function getTableData(
       await client.end();
       return {
         success: true,
-        columns: enhancedColumns,
+        columns: targetTable.columns || [],
+        primaryKey: targetTable.primaryKey,
+        foreignKeys: targetTable.foreignKeys,
         rows: dataResult.rows,
         totalRows: parseInt(countResult.rows[0].total),
       };

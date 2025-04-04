@@ -28,6 +28,15 @@ interface TableDataResponse {
     foreign_table_name: string | null;
     foreign_column_name: string | null;
   }[];
+  primaryKey?: string[];
+  foreignKeys?: {
+    columnName: string;
+    targetSchema: string;
+    targetTable: string;
+    targetColumn: string;
+    isGuessed?: boolean;
+    confidence?: number;
+  }[];
   rows?: Record<string, unknown>[];
   totalRows?: number;
 }

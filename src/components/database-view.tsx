@@ -152,6 +152,8 @@ export function DatabaseView() {
                   pageSize={tableData.pageSize}
                   isLoading={isLoadingTableData}
                   onPageChange={handlePageChange}
+                  primaryKey={tableData.primaryKey}
+                  foreignKeys={tableData.foreignKeys}
                 />
               </div>
             ) : (

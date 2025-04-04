@@ -12,6 +12,15 @@ interface TableDataViewProps {
   pageSize: number;
   isLoading: boolean;
   onPageChange: (page: number) => void;
+  primaryKey?: string[];
+  foreignKeys?: {
+    columnName: string;
+    targetSchema: string;
+    targetTable: string;
+    targetColumn: string;
+    isGuessed?: boolean;
+    confidence?: number;
+  }[];
 }
 
 export function TableDataView({
@@ -22,6 +31,8 @@ export function TableDataView({
   pageSize,
   isLoading,
   onPageChange,
+  primaryKey,
+  foreignKeys,
 }: TableDataViewProps) {
   const {
     selectedRecord,
@@ -60,20 +71,58 @@ export function TableDataView({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50 sticky top-0">
             <tr>
-              {columns.map((column) => (
-                <th
-                  key={column.column_name}
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap max-w-xs"
-                  title={`Type: ${column.data_type}${
-                    column.is_nullable === 'YES' ? ', Nullable' : ''
-                  }`}
-                >
-                  <div className="truncate">
-                    {capitalCase(column.column_name)}
-                  </div>
-                </th>
-              ))}
+              {columns.map((column) => {
+                const isPrimaryKey = primaryKey?.includes(column.column_name);
+                const foreignKey = foreignKeys?.find(
+                  (fk) => fk.columnName === column.column_name
+                );
+
+                return (
+                  <th
+                    key={column.column_name}
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap max-w-xs"
+                    title={`Type: ${column.data_type}${
+                      column.is_nullable === 'YES' ? ', Nullable' : ''
+                    }${isPrimaryKey ? ', Primary Key' : ''}${
+                      foreignKey
+                        ? `, Foreign Key -> ${foreignKey.targetSchema}.${
+                            foreignKey.targetTable
+                          }.${foreignKey.targetColumn}${
+                            foreignKey.isGuessed
+                              ? ` (Guessed: ${Math.round(
+                                  foreignKey.confidence! * 100
+                                )}% confidence)`
+                              : ''
+                          }`
+                        : ''
+                    }`}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span className="truncate">
+                        {capitalCase(column.column_name)}
+                      </span>
+                      {isPrimaryKey && (
+                        <span className="text-yellow-500" title="Primary Key">
+                          🔑
+                        </span>
+                      )}
+                      {foreignKey && (
+                        <span
+                          className={
+                            foreignKey.isGuessed
+                              ? 'text-orange-500'
+                              : 'text-blue-500'
+                          }
+                          title="Foreign Key"
+                        >
+                          🔗
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">

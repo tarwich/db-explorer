@@ -75,8 +75,8 @@ export function guessForeignKeys(
       return NO_MATCH;
     }
 
-    const matches = normalizedTableNames.filter((table) =>
-      table.normalized.includes(normalized)
+    const matches = normalizedTableNames.filter(
+      (table) => table.normalized === normalized
     );
 
     if (matches.length > 0) {

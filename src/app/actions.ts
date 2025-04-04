@@ -5,6 +5,7 @@ import { z } from 'zod';
 import pg from 'pg';
 import { guessForeignKeys } from '@/utils/foreign-key-guesser';
 import { DatabaseTable } from '@/stores/database';
+import { determineDisplayColumns } from '@/utils/display-columns';
 
 const connectionSchema = z.object({
   host: z.string(),
@@ -84,7 +85,7 @@ export async function getTables(connection: DatabaseConnection) {
         description: table.description || undefined,
       }));
 
-      // PASS 2: Get primary keys for each table
+      // PASS 2: Get primary keys and columns for each table
       for (const table of tables) {
         const primaryKeyResult = await client.query(
           `
@@ -129,6 +130,14 @@ export async function getTables(connection: DatabaseConnection) {
         );
 
         table.columns = columnsResult.rows;
+
+        // Determine display columns for the table
+        if (table.columns) {
+          table.displayColumns = determineDisplayColumns(
+            table.columns,
+            table.primaryKey
+          );
+        }
       }
 
       // PASS 3: Process foreign key relationships
@@ -194,7 +203,16 @@ export async function getTables(connection: DatabaseConnection) {
               (fk) => fk.columnName === column.column_name
             );
             if (foreignKey) {
-              column.foreignKey = foreignKey;
+              // Find the target table to get its display columns
+              const targetTable = tables.find(
+                (t) =>
+                  t.schema === foreignKey.targetSchema &&
+                  t.name === foreignKey.targetTable
+              );
+              column.foreignKey = {
+                ...foreignKey,
+                displayColumns: targetTable?.displayColumns,
+              };
             }
           }
         }

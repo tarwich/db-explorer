@@ -1,7 +1,7 @@
 import { Fragment, useState, useEffect } from 'react';
 import { Transition } from '@headlessui/react';
 import { XMarkIcon, StarIcon } from '@heroicons/react/24/outline';
-import { TableColumn } from '@/stores/database';
+import { TableColumn, ForeignKeyInfo } from '@/stores/database';
 import { getTableData } from '@/app/actions';
 import { useDatabaseStore } from '@/stores/database';
 import { capitalCase, noCase } from 'change-case';
@@ -248,7 +248,11 @@ function RenderInput({
           setForeignKeyOptions(
             result.rows.map((row) => ({
               id: String(row[column.foreignKey!.targetColumn]),
-              label: formatForeignKeyLabel(row, result.columns),
+              label: formatForeignKeyLabel(
+                row,
+                result.columns,
+                column.foreignKey
+              ),
             }))
           );
         }
@@ -404,53 +408,17 @@ function formatDateForInput(dateStr: string): string {
 
 function formatForeignKeyLabel(
   row: Record<string, unknown>,
-  columns?: TableColumn[]
+  columns?: TableColumn[],
+  foreignKey?: ForeignKeyInfo
 ): string {
-  // Try common meaningful column names first
-  const commonColumns = ['name', 'title', 'label', 'description'];
-
-  for (const colName of commonColumns) {
-    if (row[colName] != null) return String(row[colName]);
-  }
-
-  const firstNameColumn = columns?.find(
-    (c) => noCase(c.column_name) === 'first name'
-  );
-  const lastNameColumn = columns?.find(
-    (c) => noCase(c.column_name) === 'last name'
-  );
-  const emailColumn = columns?.find((c) =>
-    noCase(c.column_name).startsWith('email')
-  );
-
-  if (firstNameColumn && lastNameColumn) {
-    return `${String(row[firstNameColumn.column_name])} ${String(
-      row[lastNameColumn.column_name]
-    )}`;
-  }
-
-  if (emailColumn) {
-    return String(row[emailColumn.column_name]);
-  }
-
-  // If we have columns info, look for the first text-type column that has a value
-  if (columns) {
-    const textTypes = [
-      'character varying',
-      'varchar',
-      'text',
-      'char',
-      'character',
-    ];
-    const textColumn = columns.find(
-      (col) =>
-        textTypes.includes(col.data_type.toLowerCase()) &&
-        col.column_name !== 'id'
-    );
-
-    if (textColumn) {
-      return String(row[textColumn.column_name]);
+  // If we have display columns in the foreign key, use them
+  if (foreignKey?.displayColumns?.length) {
+    if (foreignKey.displayColumns.length === 1) {
+      return String(row[foreignKey.displayColumns[0]]);
     }
+    return foreignKey.displayColumns
+      .map((col: string) => String(row[col]))
+      .join(' ');
   }
 
   // Fallback to ID if nothing else works

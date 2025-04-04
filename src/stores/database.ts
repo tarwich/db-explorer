@@ -15,14 +15,18 @@ export interface DatabaseTable {
   description?: string;
   primaryKey?: string[]; // Array of column names that form the primary key
   columns?: TableColumn[]; // Store column information directly with the table
-  foreignKeys?: {
-    columnName: string;
-    targetSchema: string;
-    targetTable: string;
-    targetColumn: string;
-    isGuessed?: boolean;
-    confidence?: number;
-  }[];
+  displayColumns?: string[]; // Array of column names to use for displaying records
+  foreignKeys?: ForeignKeyInfo[];
+}
+
+export interface ForeignKeyInfo {
+  columnName: string;
+  targetSchema: string;
+  targetTable: string;
+  targetColumn: string;
+  displayColumns?: string[];
+  isGuessed?: boolean;
+  confidence?: number;
 }
 
 export interface TableColumn {
@@ -33,14 +37,7 @@ export interface TableColumn {
   character_maximum_length: number | null;
   numeric_precision: number | null;
   numeric_scale: number | null;
-  foreignKey?: {
-    columnName: string;
-    targetSchema: string;
-    targetTable: string;
-    targetColumn: string;
-    isGuessed?: boolean;
-    confidence?: number;
-  };
+  foreignKey?: ForeignKeyInfo;
 }
 
 interface TableData {

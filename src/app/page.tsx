@@ -7,59 +7,64 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 import { useDatabaseStore } from '@/stores/database';
 import { DatabaseView } from '@/components/database-view';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  getConnections,
+  saveConnection,
+  selectConnection,
+  getSelectedConnection,
+} from './actions/connections';
+import { useDisclosure } from '@reactuses/core';
+import { boot } from './actions/boot';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedConnection, setSelectedConnection] =
-    useState<DatabaseConnection | null>(null);
+  const createConnectionDisclosure = useDisclosure();
+  const [editConnectionId, setEditConnectionId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  const {
-    connections,
-    activeConnection,
-    loadConnections,
-    addConnection,
-    updateConnection,
-    setActiveConnection,
-  } = useDatabaseStore();
+  useQuery({
+    queryKey: ['boot'],
+    queryFn: () => boot(),
+    staleTime: Infinity,
+  });
 
-  useEffect(() => {
-    loadConnections();
-  }, [loadConnections]);
+  const connectionsQuery = useQuery({
+    queryKey: ['connections'],
+    queryFn: () => getConnections(),
+  });
 
-  const handleSaveConnection = async (
-    connection: Omit<DatabaseConnection, 'id' | 'createdAt' | 'updatedAt'>
-  ) => {
-    if (selectedConnection) {
-      // Edit existing connection
-      const updatedConnection = {
-        ...selectedConnection,
-        ...connection,
-        updatedAt: new Date().toISOString(),
-      };
-      await updateConnection(selectedConnection.id, updatedConnection);
-    } else {
-      // Add new connection
-      await addConnection(connection);
-    }
-  };
+  const saveConnectionMutation = useMutation({
+    mutationFn: (
+      connection: Omit<DatabaseConnection, 'id' | 'createdAt' | 'updatedAt'>
+    ) => saveConnection(connection),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      createConnectionDisclosure.onClose();
+      toast({
+        title: 'Success',
+        description: 'Connection saved successfully',
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to save connection',
+      });
+    },
+  });
 
-  const handleSelectConnection = async (connection: DatabaseConnection) => {
-    await setActiveConnection(connection);
-  };
-
-  const handleEditConnection = (connection: DatabaseConnection) => {
-    setSelectedConnection(connection);
-    setIsDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    setSelectedConnection(null);
-  };
+  const selectedConnectionQuery = useQuery({
+    queryKey: ['selectedConnection'],
+    queryFn: () => getSelectedConnection(),
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {activeConnection ? (
+      {selectedConnectionQuery.data ? (
         <DatabaseView />
       ) : (
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -77,7 +82,7 @@ export default function Home() {
               <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
                 <button
                   type="button"
-                  onClick={() => setIsDialogOpen(true)}
+                  onClick={createConnectionDisclosure.onOpen}
                   className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto"
                 >
                   <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
@@ -87,15 +92,15 @@ export default function Home() {
             </div>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {connections.map((connection) => (
+              {connectionsQuery.data?.map((connection) => (
                 <ConnectionCard
                   key={connection.id}
                   connection={connection}
-                  onEdit={handleEditConnection}
-                  onSelect={handleSelectConnection}
+                  onEdit={() => setEditConnectionId(connection.id)}
+                  onSelect={() => selectConnection(connection.id)}
                 />
               ))}
-              {connections.length === 0 && (
+              {connectionsQuery.data?.length === 0 && (
                 <div className="col-span-full text-center py-12">
                   <p className="text-sm text-gray-500">
                     No connections yet. Add one to get started.
@@ -108,10 +113,10 @@ export default function Home() {
       )}
 
       <ConnectionDialog
-        isOpen={isDialogOpen}
-        onClose={handleCloseDialog}
-        onSave={handleSaveConnection}
-        initialData={selectedConnection ?? undefined}
+        isOpen={createConnectionDisclosure.isOpen}
+        onClose={createConnectionDisclosure.onClose}
+        onSave={saveConnectionMutation.mutate}
+        initialData={selectedConnectionQuery.data ?? undefined}
       />
     </div>
   );

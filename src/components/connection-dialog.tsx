@@ -2,6 +2,8 @@ import { DatabaseConnection } from '@/types/connections';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState, useEffect } from 'react';
 import { testConnection } from '@/app/actions';
+import { saveConnection } from '@/app/actions/connections';
+import { useMutation } from '@tanstack/react-query';
 
 interface ConnectionDialogProps {
   isOpen: boolean;
@@ -89,6 +91,16 @@ export function ConnectionDialog({
     message?: string;
   } | null>(null);
 
+  const saveConnectionMutation = useMutation({
+    mutationFn: saveConnection,
+    onSuccess: () => {
+      onClose();
+    },
+    onError: (error) => {
+      console.error('Failed to save connection:', error);
+    },
+  });
+
   const handleConnectionStringChange = (value: string) => {
     setConnectionString(value);
     if (!value) return;
@@ -166,24 +178,10 @@ export function ConnectionDialog({
     e.preventDefault();
     if (!validateForm()) return;
 
-    onSave({
+    saveConnectionMutation.mutate({
       ...formData,
       port: formData.port ? parseInt(formData.port, 10) : DEFAULT_POSTGRES_PORT,
     });
-    onClose();
-    // Reset form
-    setFormData({
-      name: '',
-      type: 'postgres',
-      host: 'localhost',
-      port: DEFAULT_POSTGRES_PORT.toString(),
-      database: '',
-      username: '',
-      password: '',
-    });
-    setConnectionString('');
-    setError(null);
-    setTestResult(null);
   };
 
   return (

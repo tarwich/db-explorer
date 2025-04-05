@@ -1,9 +1,22 @@
 import { DatabaseConnection } from '@/types/connections';
-import { Dialog, Transition } from '@headlessui/react';
-import { Fragment, useState, useEffect } from 'react';
+import { Fragment, useState, useEffect, ChangeEvent } from 'react';
 import { testConnection } from '@/app/actions';
 import { saveConnection } from '@/app/actions/connections';
 import { useMutation } from '@tanstack/react-query';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 interface ConnectionDialogProps {
   isOpen: boolean;
@@ -11,6 +24,7 @@ interface ConnectionDialogProps {
   onSave: (
     connection: Omit<DatabaseConnection, 'id' | 'createdAt' | 'updatedAt'>
   ) => void;
+  onDelete?: (connection: DatabaseConnection) => void;
   initialData?: DatabaseConnection;
 }
 
@@ -46,6 +60,7 @@ export function ConnectionDialog({
   isOpen,
   onClose,
   onSave,
+  onDelete,
   initialData,
 }: ConnectionDialogProps) {
   const [formData, setFormData] = useState({
@@ -57,6 +72,7 @@ export function ConnectionDialog({
     username: '',
     password: '',
   });
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -185,253 +201,243 @@ export function ConnectionDialog({
   };
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={onClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black bg-opacity-25" />
-        </Transition.Child>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>
+            {initialData ? 'Edit Connection' : 'Add New Connection'}
+          </DialogTitle>
+        </DialogHeader>
 
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
+        <div className="mt-4 flex space-x-4">
+          <Button
+            variant={isManualMode ? 'secondary' : 'ghost'}
+            className="flex-1"
+            onClick={() => setIsManualMode(true)}
+          >
+            Manual Input
+          </Button>
+          <Button
+            variant={!isManualMode ? 'secondary' : 'ghost'}
+            className="flex-1"
+            onClick={() => setIsManualMode(false)}
+          >
+            Connection String
+          </Button>
+        </div>
+
+        {error && (
+          <div className="mt-2 rounded-md bg-red-50 p-3">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
+        {testResult && (
+          <div
+            className={`mt-2 rounded-md p-3 ${
+              testResult.success ? 'bg-green-50' : 'bg-red-50'
+            }`}
+          >
+            <p
+              className={`text-sm ${
+                testResult.success ? 'text-green-600' : 'text-red-600'
+              }`}
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 align-middle shadow-xl transition-all">
-                <Dialog.Title
-                  as="h3"
-                  className="text-lg font-medium leading-6 text-gray-900"
-                >
-                  {initialData ? 'Edit Connection' : 'Add New Connection'}
-                </Dialog.Title>
+              {testResult.message}
+            </p>
+          </div>
+        )}
 
-                <div className="mt-4 flex space-x-4">
-                  <button
-                    type="button"
-                    className={`flex-1 rounded-md px-3 py-2 text-sm font-medium ${
-                      isManualMode
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                    onClick={() => setIsManualMode(true)}
-                  >
-                    Manual Input
-                  </button>
-                  <button
-                    type="button"
-                    className={`flex-1 rounded-md px-3 py-2 text-sm font-medium ${
-                      !isManualMode
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                    onClick={() => setIsManualMode(false)}
-                  >
-                    Connection String
-                  </button>
-                </div>
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              type="text"
+              required
+              placeholder="My PostgreSQL Database"
+              value={formData.name}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+            />
+          </div>
 
-                {error && (
-                  <div className="mt-2 rounded-md bg-red-50 p-3">
-                    <p className="text-sm text-red-600">{error}</p>
-                  </div>
-                )}
+          {!isManualMode && (
+            <div className="space-y-2">
+              <Label htmlFor="connectionString">Connection String</Label>
+              <Input
+                id="connectionString"
+                type="text"
+                placeholder="postgresql://user:password@localhost:5432/database"
+                className="font-mono text-sm"
+                value={connectionString}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  handleConnectionStringChange(e.target.value)
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Format: postgresql://[user[:password]@][host][:port]/[database]
+              </p>
+            </div>
+          )}
 
-                {testResult && (
-                  <div
-                    className={`mt-2 rounded-md p-3 ${
-                      testResult.success ? 'bg-green-50' : 'bg-red-50'
-                    }`}
-                  >
-                    <p
-                      className={`text-sm ${
-                        testResult.success ? 'text-green-600' : 'text-red-600'
-                      }`}
-                    >
-                      {testResult.message}
-                    </p>
-                  </div>
-                )}
+          <div className={!isManualMode ? 'opacity-50' : ''}>
+            <div className="space-y-2">
+              <Label htmlFor="type">Type</Label>
+              <Input
+                id="type"
+                type="text"
+                readOnly
+                className="bg-muted"
+                value="PostgreSQL"
+              />
+            </div>
 
-                <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Name
-                      <input
-                        type="text"
-                        required
-                        placeholder="My PostgreSQL Database"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
-                      />
-                    </label>
-                  </div>
+            <div className="mt-4 space-y-2">
+              <Label htmlFor="host">Host</Label>
+              <Input
+                id="host"
+                type="text"
+                required
+                placeholder="localhost"
+                value={formData.host}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, host: e.target.value })
+                }
+                readOnly={!isManualMode}
+              />
+            </div>
 
-                  {!isManualMode && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Connection String
-                        <input
-                          type="text"
-                          placeholder="postgresql://user:password@localhost:5432/database"
-                          className="mt-1 block w-full rounded-md border-gray-300 font-mono text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                          value={connectionString}
-                          onChange={(e) =>
-                            handleConnectionStringChange(e.target.value)
-                          }
-                        />
-                      </label>
-                      <p className="mt-1 text-xs text-gray-500">
-                        Format:
-                        postgresql://[user[:password]@][host][:port]/[database]
+            <div className="mt-4 space-y-2">
+              <Label htmlFor="port">Port</Label>
+              <Input
+                id="port"
+                type="number"
+                required
+                placeholder={DEFAULT_POSTGRES_PORT.toString()}
+                value={formData.port}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, port: e.target.value })
+                }
+                readOnly={!isManualMode}
+              />
+            </div>
+
+            <div className="mt-4 space-y-2">
+              <Label htmlFor="database">Database</Label>
+              <Input
+                id="database"
+                type="text"
+                required
+                placeholder="postgres"
+                value={formData.database}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setFormData({
+                    ...formData,
+                    database: e.target.value,
+                  })
+                }
+                readOnly={!isManualMode}
+              />
+            </div>
+
+            <div className="mt-4 space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                required
+                placeholder="postgres"
+                value={formData.username}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setFormData({
+                    ...formData,
+                    username: e.target.value,
+                  })
+                }
+                readOnly={!isManualMode}
+              />
+            </div>
+
+            <div className="mt-4 space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setFormData({
+                    ...formData,
+                    password: e.target.value,
+                  })
+                }
+                readOnly={!isManualMode}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-between space-x-3">
+            {initialData && onDelete && (
+              <Popover open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="destructive">
+                    Delete Connection
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <h4 className="font-medium leading-none">
+                        Delete Connection
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        Are you sure you want to delete this connection? This
+                        action cannot be undone.
                       </p>
                     </div>
-                  )}
-
-                  <div className={!isManualMode ? 'opacity-50' : ''}>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Type
-                        <input
-                          type="text"
-                          readOnly
-                          className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm"
-                          value="PostgreSQL"
-                        />
-                      </label>
-                    </div>
-
-                    <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Host
-                        <input
-                          type="text"
-                          required
-                          placeholder="localhost"
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                          value={formData.host}
-                          onChange={(e) =>
-                            setFormData({ ...formData, host: e.target.value })
-                          }
-                          readOnly={!isManualMode}
-                        />
-                      </label>
-                    </div>
-
-                    <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Port
-                        <input
-                          type="number"
-                          required
-                          placeholder={DEFAULT_POSTGRES_PORT.toString()}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                          value={formData.port}
-                          onChange={(e) =>
-                            setFormData({ ...formData, port: e.target.value })
-                          }
-                          readOnly={!isManualMode}
-                        />
-                      </label>
-                    </div>
-
-                    <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Database
-                        <input
-                          type="text"
-                          required
-                          placeholder="postgres"
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                          value={formData.database}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              database: e.target.value,
-                            })
-                          }
-                          readOnly={!isManualMode}
-                        />
-                      </label>
-                    </div>
-
-                    <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Username
-                        <input
-                          type="text"
-                          required
-                          placeholder="postgres"
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                          value={formData.username}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              username: e.target.value,
-                            })
-                          }
-                          readOnly={!isManualMode}
-                        />
-                      </label>
-                    </div>
-
-                    <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Password
-                        <input
-                          type="password"
-                          required
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                          value={formData.password}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              password: e.target.value,
-                            })
-                          }
-                          readOnly={!isManualMode}
-                        />
-                      </label>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="px-3"
+                        onClick={() => setIsDeleteOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          onDelete(initialData);
+                          setIsDeleteOpen(false);
+                        }}
+                      >
+                        Delete
+                      </Button>
                     </div>
                   </div>
-
-                  <div className="mt-6 flex justify-end space-x-3">
-                    <button
-                      type="button"
-                      onClick={handleTestConnection}
-                      disabled={isTesting}
-                      className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    >
-                      {isTesting ? 'Testing...' : 'Test Connection'}
-                    </button>
-                    <button
-                      type="submit"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    >
-                      {initialData ? 'Save Changes' : 'Add Connection'}
-                    </button>
-                  </div>
-                </form>
-              </Dialog.Panel>
-            </Transition.Child>
+                </PopoverContent>
+              </Popover>
+            )}
+            <div className="flex space-x-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleTestConnection}
+                disabled={isTesting}
+              >
+                {isTesting ? 'Testing...' : 'Test Connection'}
+              </Button>
+              <Button type="submit">
+                {initialData ? 'Save Changes' : 'Add Connection'}
+              </Button>
+            </div>
           </div>
-        </div>
-      </Dialog>
-    </Transition>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

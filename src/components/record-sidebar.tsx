@@ -1,11 +1,17 @@
 import { Fragment, useState, useEffect } from 'react';
-import { Transition } from '@headlessui/react';
 import { XMarkIcon, StarIcon } from '@heroicons/react/24/outline';
 import { TableColumn, ForeignKeyInfo } from '@/stores/database';
 import { getTableData } from '@/app/actions';
 import { useDatabaseStore } from '@/stores/database';
 import { capitalCase, noCase } from 'change-case';
 import { ForeignKeyCombobox } from './foreign-key-combobox';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
 
 interface RecordSidebarProps {
   isOpen: boolean;
@@ -92,121 +98,109 @@ export function RecordSidebar({
   };
 
   return (
-    <Transition
-      show={isOpen}
-      as={Fragment}
-      enter="transform transition ease-in-out duration-300"
-      enterFrom="translate-x-full"
-      enterTo="translate-x-0"
-      leave="transform transition ease-in-out duration-300"
-      leaveFrom="translate-x-0"
-      leaveTo="translate-x-full"
-    >
-      <div className="fixed inset-y-0 right-0 w-96 bg-white shadow-xl flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Edit Record</h2>
-          <div className="flex items-center space-x-2">
-            <button
-              type="button"
-              onClick={onPin}
-              className={`p-2 rounded-md hover:bg-gray-100 ${
-                isPinned ? 'text-blue-700' : 'text-gray-500'
-              }`}
-              title={isPinned ? 'Unpin sidebar' : 'Pin sidebar'}
-            >
-              <StarIcon className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={handleClose}
-              className="p-2 rounded-md hover:bg-gray-100 text-gray-500"
-              title="Close sidebar"
-            >
-              <XMarkIcon className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col flex-1 overflow-hidden"
-        >
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="space-y-4">
-              {columns.map((column) => (
-                <div key={column.column_name} className="relative">
-                  <label className="block">
-                    <span className="text-sm font-medium text-gray-900">
-                      {capitalCase(column.column_name).replace(
-                        /\bid\b/gi,
-                        'ID'
-                      )}
-                      {column.foreignKey && (
-                        <span className="ml-1 text-xs text-gray-600">
-                          ({column.foreignKey.targetTable})
-                        </span>
-                      )}
-                    </span>
-                    <div className="mt-1 flex space-x-2">
-                      <RenderInput
-                        column={column}
-                        value={formState.values[column.column_name]}
-                        onChange={(value) =>
-                          handleInputChange(column.column_name, value)
-                        }
-                      />
-                      {column.is_nullable === 'YES' && (
-                        <button
-                          type="button"
-                          onClick={() => handleSetNull(column.column_name)}
-                          className={`px-2 py-1 text-xs rounded ${
-                            formState.values[column.column_name] === null
-                              ? 'bg-gray-200 text-gray-900'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          NULL
-                        </button>
-                      )}
-                    </div>
-                  </label>
-                  <p className="mt-1 text-xs text-gray-600">
-                    {column.data_type}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="flex-none border-t border-gray-200 px-4 py-3 bg-gray-50">
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-700">
-                {formState.isDirty ? 'Unsaved changes' : 'No changes'}
-              </div>
-              <div className="flex space-x-3">
-                <button
-                  type="button"
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <SheetContent className="w-96 p-0">
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <SheetHeader className="px-4 py-3 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <SheetTitle>Edit Record</SheetTitle>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onPin}
+                  className={isPinned ? 'text-blue-700' : 'text-gray-500'}
+                  title={isPinned ? 'Unpin sidebar' : 'Pin sidebar'}
+                >
+                  <StarIcon className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={handleClose}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="text-gray-500"
+                  title="Close sidebar"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!formState.isDirty}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-700 border border-transparent rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Save Changes
-                </button>
+                  <XMarkIcon className="h-5 w-5" />
+                </Button>
               </div>
             </div>
-          </div>
-        </form>
-      </div>
-    </Transition>
+          </SheetHeader>
+
+          {/* Form */}
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col flex-1 overflow-hidden"
+          >
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="space-y-4">
+                {columns.map((column) => (
+                  <div key={column.column_name} className="relative">
+                    <label className="block">
+                      <span className="text-sm font-medium text-gray-900">
+                        {capitalCase(column.column_name).replace(
+                          /\bid\b/gi,
+                          'ID'
+                        )}
+                        {column.foreignKey && (
+                          <span className="ml-1 text-xs text-gray-600">
+                            ({column.foreignKey.targetTable})
+                          </span>
+                        )}
+                      </span>
+                      <div className="mt-1 flex space-x-2">
+                        <RenderInput
+                          column={column}
+                          value={formState.values[column.column_name]}
+                          onChange={(value) =>
+                            handleInputChange(column.column_name, value)
+                          }
+                        />
+                        {column.is_nullable === 'YES' && (
+                          <Button
+                            type="button"
+                            variant={
+                              formState.values[column.column_name] === null
+                                ? 'secondary'
+                                : 'outline'
+                            }
+                            size="sm"
+                            onClick={() => handleSetNull(column.column_name)}
+                          >
+                            NULL
+                          </Button>
+                        )}
+                      </div>
+                    </label>
+                    <p className="mt-1 text-xs text-gray-600">
+                      {column.data_type}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex-none border-t border-gray-200 px-4 py-3 bg-gray-50">
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-gray-700">
+                  {formState.isDirty ? 'Unsaved changes' : 'No changes'}
+                </div>
+                <div className="flex space-x-3">
+                  <Button type="button" variant="outline" onClick={handleClose}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={!formState.isDirty}>
+                    Save Changes
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 

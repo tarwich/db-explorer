@@ -1,17 +1,24 @@
 import { Fragment, useEffect, useState, useRef } from 'react';
-import {
-  Combobox,
-  ComboboxButton,
-  ComboboxInput,
-  Transition,
-  ComboboxOptions,
-  ComboboxOption,
-} from '@headlessui/react';
 import { ChevronUpDownIcon } from '@heroicons/react/24/outline';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { TableColumn, ForeignKeyInfo } from '@/stores/database';
 import { getTableData } from '@/app/actions';
 import { useDatabaseStore } from '@/stores/database';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface Option {
   id: string | number;
@@ -31,6 +38,7 @@ export function ForeignKeyCombobox({
   onChange,
   className = '',
 }: ForeignKeyComboboxProps) {
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<Option[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -163,84 +171,86 @@ export function ForeignKeyCombobox({
     },
   });
 
-  // Handle direct input value changes
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value;
-    setInputValue(newValue);
-    setQuery(newValue);
-
-    if (newValue === '') {
-      onChange(null);
-      return;
-    }
-
-    const matchingOption = options.find((opt) => String(opt.id) === newValue);
-    if (matchingOption) {
-      onChange(matchingOption.id);
-    } else {
-      onChange(newValue);
-    }
-  };
-
   return (
-    <Combobox
-      value={value === null ? '' : String(value)}
-      onChange={(newValue) => {
-        onChange(newValue === '' ? null : newValue);
-        setInputValue(String(newValue || ''));
-      }}
-    >
-      <div className="relative">
-        <div className={`relative w-full ${className}`}>
-          <ComboboxInput
-            className="w-full rounded-md border-0 bg-white py-1.5 pl-3 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-            onChange={handleInputChange}
-            value={inputValue}
-            placeholder="Search or enter value..."
-            displayValue={(val: string) => {
-              const option = options.find((opt) => String(opt.id) === val);
-              return option ? option.label : val;
-            }}
-          />
-          <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
-            <ChevronUpDownIcon
-              className="h-5 w-5 text-gray-400"
-              aria-hidden="true"
-            />
-          </ComboboxButton>
-        </div>
-
-        <Transition
-          as={Fragment}
-          leave="transition ease-in duration-100"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-          afterLeave={() => setQuery('')}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn(
+            'w-full justify-between font-normal',
+            !value && 'text-muted-foreground',
+            className
+          )}
         >
-          <ComboboxOptions
-            ref={parentRef}
-            className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
-          >
-            {filteredOptions.length === 0 ? (
-              <div className="relative cursor-default select-none px-4 py-2 text-gray-700">
-                {query === '' ? 'No options available.' : 'No matches found.'}
-              </div>
-            ) : (
-              <div
-                style={{
-                  height: `${rowVirtualizer.getTotalSize()}px`,
-                  width: '100%',
-                  position: 'relative',
-                }}
-              >
-                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                  const option = filteredOptions[virtualRow.index];
+          {value
+            ? options.find((option) => String(option.id) === String(value))
+                ?.label || String(value)
+            : 'Select value...'}
+          <ChevronUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-[--radix-popover-trigger-width] p-0"
+        align="start"
+      >
+        <div ref={parentRef} className="max-h-[200px] overflow-y-auto">
+          <Command shouldFilter={false}>
+            <CommandInput
+              placeholder="Search or enter value..."
+              value={query}
+              onValueChange={(search) => {
+                setQuery(search);
+                if (search === '') {
+                  onChange(null);
+                }
+              }}
+            />
+            <CommandList>
+              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandGroup>
+                <div
+                  style={{
+                    height: `${rowVirtualizer.getTotalSize()}px`,
+                    width: '100%',
+                    position: 'relative',
+                  }}
+                >
+                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const option = filteredOptions[virtualRow.index];
 
-                  // Show loading placeholder for items not yet loaded
-                  if (!option && !query) {
+                    if (!option && !query) {
+                      return (
+                        <div
+                          key={virtualRow.key}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: `${virtualRow.size}px`,
+                            transform: `translateY(${virtualRow.start}px)`,
+                          }}
+                          className="px-2 py-1.5 text-sm text-gray-500"
+                        >
+                          Loading...
+                        </div>
+                      );
+                    }
+
+                    if (!option) return null;
+
                     return (
-                      <div
+                      <CommandItem
                         key={virtualRow.key}
+                        value={String(option.id)}
+                        onSelect={(currentValue) => {
+                          onChange(
+                            currentValue === value ? null : currentValue
+                          );
+                          setOpen(false);
+                        }}
                         style={{
                           position: 'absolute',
                           top: 0,
@@ -249,61 +259,18 @@ export function ForeignKeyCombobox({
                           height: `${virtualRow.size}px`,
                           transform: `translateY(${virtualRow.start}px)`,
                         }}
-                        className="flex items-center py-2 pl-3 pr-9 text-gray-400"
                       >
-                        Loading...
-                      </div>
+                        {option.label}
+                      </CommandItem>
                     );
-                  }
-
-                  if (!option) return null;
-
-                  return (
-                    <ComboboxOption
-                      key={virtualRow.key}
-                      value={String(option.id)}
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: `${virtualRow.size}px`,
-                        transform: `translateY(${virtualRow.start}px)`,
-                      }}
-                    >
-                      {({ selected, active }) => (
-                        <div
-                          className={`h-full flex items-center py-2 pl-3 pr-9 cursor-default select-none ${
-                            active ? 'bg-blue-600 text-white' : 'text-gray-900'
-                          }`}
-                        >
-                          <span
-                            className={`block truncate ${
-                              selected ? 'font-medium' : 'font-normal'
-                            }`}
-                          >
-                            {option.label}
-                          </span>
-                          {selected && (
-                            <span
-                              className={`absolute inset-y-0 right-0 flex items-center pr-3 ${
-                                active ? 'text-white' : 'text-blue-600'
-                              }`}
-                            >
-                              ✓
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </ComboboxOption>
-                  );
-                })}
-              </div>
-            )}
-          </ComboboxOptions>
-        </Transition>
-      </div>
-    </Combobox>
+                  })}
+                </div>
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 

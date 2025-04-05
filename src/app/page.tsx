@@ -13,6 +13,7 @@ import {
   saveConnection,
   selectConnection,
   getSelectedConnection,
+  deleteConnection,
 } from './actions/connections';
 import { useDisclosure } from '@reactuses/core';
 import { boot } from './actions/boot';
@@ -57,10 +58,47 @@ export default function Home() {
     },
   });
 
+  const deleteConnectionMutation = useMutation({
+    mutationFn: (connection: DatabaseConnection) =>
+      deleteConnection(connection.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      handleDialogClose();
+      toast({
+        title: 'Success',
+        description: 'Connection deleted successfully',
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to delete connection',
+      });
+    },
+  });
+
   const selectedConnectionQuery = useQuery({
     queryKey: ['selectedConnection'],
     queryFn: () => getSelectedConnection(),
   });
+
+  // Find the connection being edited
+  const editConnection = connectionsQuery.data?.find(
+    (conn) => conn.id === editConnectionId
+  );
+
+  // Handle dialog close
+  const handleDialogClose = () => {
+    if (editConnectionId) {
+      setEditConnectionId(null);
+    } else {
+      createConnectionDisclosure.onClose();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -113,10 +151,11 @@ export default function Home() {
       )}
 
       <ConnectionDialog
-        isOpen={createConnectionDisclosure.isOpen}
-        onClose={createConnectionDisclosure.onClose}
+        isOpen={createConnectionDisclosure.isOpen || editConnectionId !== null}
+        onClose={handleDialogClose}
         onSave={saveConnectionMutation.mutate}
-        initialData={selectedConnectionQuery.data ?? undefined}
+        onDelete={deleteConnectionMutation.mutate}
+        initialData={editConnection ?? undefined}
       />
     </div>
   );

@@ -179,7 +179,7 @@ export function TableDataView({
         >
           <table className="min-w-full divide-y divide-gray-200 relative">
             {table.getHeaderGroups().map((headerGroup) => (
-              <thead className="bg-gray-50 sticky top-0">
+              <thead className="bg-gray-50 sticky top-0" key={headerGroup.id}>
                 <tr>
                   {headerGroup.headers.map((header) => (
                     <th

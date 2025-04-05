@@ -8,13 +8,10 @@ export async function getConnections() {
   return state.connections || [];
 }
 
-export async function saveConnection(
-  connection:
-    | DatabaseConnection
-    | Omit<DatabaseConnection, 'id' | 'createdAt' | 'updatedAt'>
-) {
+export async function saveConnection(connection: Partial<DatabaseConnection>) {
+  console.log(connection);
   const sanitized = ((
-    connection: Partial<DatabaseConnection>
+    input: Partial<DatabaseConnection>
   ): DatabaseConnection => {
     return {
       name: '',
@@ -23,16 +20,18 @@ export async function saveConnection(
       port: 5432,
       database: '',
       username: '',
-      ...connection,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
+      ...input,
       updatedAt: new Date().toISOString(),
     };
   })(connection);
 
   const state = await getServerState();
-  const id = 'id' in connection ? connection.id : crypto.randomUUID();
-  const index = state.connections.findIndex((c) => c.id === id);
+  console.log(state.connections);
+  console.log(sanitized.id);
+  const index = state.connections.findIndex((c) => c.id === sanitized.id);
+  console.log(index);
 
   if (index === -1) {
     state.connections.push(sanitized);

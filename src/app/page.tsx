@@ -36,28 +36,6 @@ export default function Home() {
     queryFn: () => getConnections(),
   });
 
-  const saveConnectionMutation = useMutation({
-    mutationFn: (
-      connection: Omit<DatabaseConnection, 'id' | 'createdAt' | 'updatedAt'>
-    ) => saveConnection(connection),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['connections'] });
-      createConnectionDisclosure.onClose();
-      toast({
-        title: 'Success',
-        description: 'Connection saved successfully',
-      });
-    },
-    onError: (error) => {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description:
-          error instanceof Error ? error.message : 'Failed to save connection',
-      });
-    },
-  });
-
   const deleteConnectionMutation = useMutation({
     mutationFn: (connection: DatabaseConnection) =>
       deleteConnection(connection.id),
@@ -86,18 +64,14 @@ export default function Home() {
     queryFn: () => getSelectedConnection(),
   });
 
-  // Find the connection being edited
-  const editConnection = connectionsQuery.data?.find(
-    (conn) => conn.id === editConnectionId
-  );
+  const editConnection = (connection: DatabaseConnection) => {
+    setEditConnectionId(connection.id);
+    createConnectionDisclosure.onOpen();
+  };
 
-  // Handle dialog close
   const handleDialogClose = () => {
-    if (editConnectionId) {
-      setEditConnectionId(null);
-    } else {
-      createConnectionDisclosure.onClose();
-    }
+    setEditConnectionId(null);
+    createConnectionDisclosure.onClose();
   };
 
   return (
@@ -134,7 +108,7 @@ export default function Home() {
                 <ConnectionCard
                   key={connection.id}
                   connection={connection}
-                  onEdit={() => setEditConnectionId(connection.id)}
+                  onEdit={() => editConnection(connection)}
                   onSelect={() => selectConnection(connection.id)}
                 />
               ))}
@@ -151,11 +125,15 @@ export default function Home() {
       )}
 
       <ConnectionDialog
-        isOpen={createConnectionDisclosure.isOpen || editConnectionId !== null}
+        isOpen={createConnectionDisclosure.isOpen}
         onClose={handleDialogClose}
-        onSave={saveConnectionMutation.mutate}
-        onDelete={deleteConnectionMutation.mutate}
-        initialData={editConnection ?? undefined}
+        initialData={
+          editConnectionId
+            ? connectionsQuery.data?.find(
+                (conn) => conn.id === editConnectionId
+              )
+            : undefined
+        }
       />
     </div>
   );

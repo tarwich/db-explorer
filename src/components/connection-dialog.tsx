@@ -1,8 +1,8 @@
 import { DatabaseConnection } from '@/types/connections';
-import { Fragment, useState, useEffect, ChangeEvent } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import { testConnection } from '@/app/actions';
-import { saveConnection } from '@/app/actions/connections';
-import { useMutation } from '@tanstack/react-query';
+import { deleteConnection, saveConnection } from '@/app/actions/connections';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
@@ -17,14 +17,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useToast } from '@/hooks/use-toast';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { cn } from '@/lib/utils';
 
 interface ConnectionDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (
-    connection: Omit<DatabaseConnection, 'id' | 'createdAt' | 'updatedAt'>
-  ) => void;
-  onDelete?: (connection: DatabaseConnection) => void;
   initialData?: DatabaseConnection;
 }
 
@@ -46,7 +47,7 @@ function parseConnectionString(connectionString: string) {
 
     return {
       host: url.hostname || 'localhost',
-      port: port.toString(),
+      port: port,
       database,
       username,
       password,
@@ -56,49 +57,25 @@ function parseConnectionString(connectionString: string) {
   }
 }
 
+const formSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, 'Connection name is required'),
+  type: z.literal('postgres'),
+  host: z.string().min(1, 'Host is required'),
+  port: z.number().min(1, 'Port is required'),
+  database: z.string().min(1, 'Database name is required'),
+  username: z.string().min(1, 'Username is required'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
 export function ConnectionDialog({
   isOpen,
   onClose,
-  onSave,
-  onDelete,
   initialData,
 }: ConnectionDialogProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    type: 'postgres' as DatabaseConnection['type'],
-    host: 'localhost',
-    port: DEFAULT_POSTGRES_PORT.toString(),
-    database: '',
-    username: '',
-    password: '',
-  });
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData({
-        name: initialData.name,
-        type: initialData.type,
-        host: initialData.host ?? 'localhost',
-        port: (initialData.port ?? DEFAULT_POSTGRES_PORT).toString(),
-        database: initialData.database ?? '',
-        username: initialData.username ?? '',
-        password: initialData.password ?? '',
-      });
-    } else {
-      setFormData({
-        name: '',
-        type: 'postgres',
-        host: 'localhost',
-        port: DEFAULT_POSTGRES_PORT.toString(),
-        database: '',
-        username: '',
-        password: '',
-      });
-    }
-  }, [initialData]);
-
-  const [error, setError] = useState<string | null>(null);
   const [connectionString, setConnectionString] = useState('');
   const [isManualMode, setIsManualMode] = useState(true);
   const [isTesting, setIsTesting] = useState(false);
@@ -106,14 +83,72 @@ export function ConnectionDialog({
     success?: boolean;
     message?: string;
   } | null>(null);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      id: initialData?.id ?? '',
+      name: '',
+      type: 'postgres',
+      host: 'localhost',
+      port: DEFAULT_POSTGRES_PORT,
+      database: '',
+      username: '',
+      password: '',
+    },
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        id: initialData.id,
+        name: initialData.name,
+        type: initialData.type,
+        host: initialData.host ?? 'localhost',
+        port: initialData.port ?? DEFAULT_POSTGRES_PORT,
+        database: initialData.database ?? '',
+        username: initialData.username ?? '',
+        password: initialData.password ?? '',
+      });
+    }
+  }, [initialData, form]);
 
   const saveConnectionMutation = useMutation({
-    mutationFn: saveConnection,
+    mutationFn: (connection: FormValues) => saveConnection(connection),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['connections'] });
       onClose();
+      toast({
+        title: initialData ? 'Connection Updated' : 'Connection Added',
+        description: initialData
+          ? 'Your connection has been updated successfully.'
+          : 'Your new connection has been added successfully.',
+      });
     },
     onError: (error) => {
       console.error('Failed to save connection:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save connection. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const deleteConnectionMutation = useMutation({
+    mutationFn: (connectionId: string) => deleteConnection(connectionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      onClose();
+    },
+    onError: (error) => {
+      toast({
+        title: 'Failed to delete connection',
+        description: error.message,
+        variant: 'destructive',
+      });
     },
   });
 
@@ -123,50 +158,29 @@ export function ConnectionDialog({
 
     try {
       const parsed = parseConnectionString(value);
-      setFormData((prev) => ({
-        ...prev,
-        ...parsed,
-      }));
-      setError(null);
+      form.reset(parsed);
+      setTestResult(null);
     } catch (err) {
-      setError((err as Error).message);
+      toast({
+        title: 'Invalid Connection String',
+        description: (err as Error).message,
+        variant: 'destructive',
+      });
     }
-  };
-
-  const validateForm = () => {
-    if (!formData.name.trim()) {
-      setError('Connection name is required');
-      return false;
-    }
-    if (!formData.host.trim()) {
-      setError('Host is required');
-      return false;
-    }
-    if (!formData.database.trim()) {
-      setError('Database name is required');
-      return false;
-    }
-    if (!formData.username.trim()) {
-      setError('Username is required');
-      return false;
-    }
-    setError(null);
-    return true;
   };
 
   const handleTestConnection = async () => {
-    if (!validateForm()) return;
+    const isValid = await form.trigger();
+    if (!isValid) return;
 
     setIsTesting(true);
     setTestResult(null);
-    setError(null);
 
     try {
+      const values = form.getValues();
       const result = await testConnection({
-        ...formData,
-        port: formData.port
-          ? parseInt(formData.port, 10)
-          : DEFAULT_POSTGRES_PORT,
+        ...values,
+        port: values.port,
       });
 
       if (result.success) {
@@ -174,10 +188,19 @@ export function ConnectionDialog({
           success: true,
           message: 'Connection successful!',
         });
+        toast({
+          title: 'Success',
+          description: 'Connection test was successful!',
+        });
       } else {
         setTestResult({
           success: false,
           message: `Connection failed: ${result.error}`,
+        });
+        toast({
+          title: 'Connection Failed',
+          description: result.error,
+          variant: 'destructive',
         });
       }
     } catch (err) {
@@ -185,20 +208,19 @@ export function ConnectionDialog({
         success: false,
         message: `Connection failed: ${(err as Error).message}`,
       });
+      toast({
+        title: 'Error',
+        description: (err as Error).message,
+        variant: 'destructive',
+      });
     } finally {
       setIsTesting(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    saveConnectionMutation.mutate({
-      ...formData,
-      port: formData.port ? parseInt(formData.port, 10) : DEFAULT_POSTGRES_PORT,
-    });
-  };
+  const handleSubmit = form.handleSubmit((data) => {
+    saveConnectionMutation.mutate(data);
+  });
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -226,22 +248,18 @@ export function ConnectionDialog({
           </Button>
         </div>
 
-        {error && (
-          <div className="mt-2 rounded-md bg-red-50 p-3">
-            <p className="text-sm text-red-600">{error}</p>
-          </div>
-        )}
-
         {testResult && (
           <div
-            className={`mt-2 rounded-md p-3 ${
-              testResult.success ? 'bg-green-50' : 'bg-red-50'
-            }`}
+            className={cn('mt-2 rounded-md p-3', {
+              'bg-green-50': testResult.success,
+              'bg-red-50': !testResult.success,
+            })}
           >
             <p
-              className={`text-sm ${
-                testResult.success ? 'text-green-600' : 'text-red-600'
-              }`}
+              className={cn('text-sm', {
+                'text-green-600': testResult.success,
+                'text-red-600': !testResult.success,
+              })}
             >
               {testResult.message}
             </p>
@@ -249,20 +267,6 @@ export function ConnectionDialog({
         )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              type="text"
-              required
-              placeholder="My PostgreSQL Database"
-              value={formData.name}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-            />
-          </div>
-
           {!isManualMode && (
             <div className="space-y-2">
               <Label htmlFor="connectionString">Connection String</Label>
@@ -272,9 +276,7 @@ export function ConnectionDialog({
                 placeholder="postgresql://user:password@localhost:5432/database"
                 className="font-mono text-sm"
                 value={connectionString}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleConnectionStringChange(e.target.value)
-                }
+                onChange={(e) => handleConnectionStringChange(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
                 Format: postgresql://[user[:password]@][host][:port]/[database]
@@ -282,7 +284,22 @@ export function ConnectionDialog({
             </div>
           )}
 
-          <div className={!isManualMode ? 'opacity-50' : ''}>
+          <div className={cn(!isManualMode && 'opacity-50')}>
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                type="text"
+                {...form.register('name')}
+                className={cn(form.formState.errors.name && 'border-red-500')}
+              />
+              {form.formState.errors.name && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.name.message}
+                </p>
+              )}
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="type">Type</Label>
               <Input
@@ -299,14 +316,15 @@ export function ConnectionDialog({
               <Input
                 id="host"
                 type="text"
-                required
-                placeholder="localhost"
-                value={formData.host}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setFormData({ ...formData, host: e.target.value })
-                }
+                {...form.register('host')}
+                className={cn(form.formState.errors.host && 'border-red-500')}
                 readOnly={!isManualMode}
               />
+              {form.formState.errors.host && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.host.message}
+                </p>
+              )}
             </div>
 
             <div className="mt-4 space-y-2">
@@ -314,14 +332,15 @@ export function ConnectionDialog({
               <Input
                 id="port"
                 type="number"
-                required
-                placeholder={DEFAULT_POSTGRES_PORT.toString()}
-                value={formData.port}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setFormData({ ...formData, port: e.target.value })
-                }
+                {...form.register('port')}
+                className={cn(form.formState.errors.port && 'border-red-500')}
                 readOnly={!isManualMode}
               />
+              {form.formState.errors.port && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.port.message}
+                </p>
+              )}
             </div>
 
             <div className="mt-4 space-y-2">
@@ -329,17 +348,17 @@ export function ConnectionDialog({
               <Input
                 id="database"
                 type="text"
-                required
-                placeholder="postgres"
-                value={formData.database}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setFormData({
-                    ...formData,
-                    database: e.target.value,
-                  })
-                }
+                {...form.register('database')}
+                className={cn(
+                  form.formState.errors.database && 'border-red-500'
+                )}
                 readOnly={!isManualMode}
               />
+              {form.formState.errors.database && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.database.message}
+                </p>
+              )}
             </div>
 
             <div className="mt-4 space-y-2">
@@ -347,17 +366,17 @@ export function ConnectionDialog({
               <Input
                 id="username"
                 type="text"
-                required
-                placeholder="postgres"
-                value={formData.username}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setFormData({
-                    ...formData,
-                    username: e.target.value,
-                  })
-                }
+                {...form.register('username')}
+                className={cn(
+                  form.formState.errors.username && 'border-red-500'
+                )}
                 readOnly={!isManualMode}
               />
+              {form.formState.errors.username && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.username.message}
+                </p>
+              )}
             </div>
 
             <div className="mt-4 space-y-2">
@@ -365,21 +384,22 @@ export function ConnectionDialog({
               <Input
                 id="password"
                 type="password"
-                required
-                value={formData.password}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setFormData({
-                    ...formData,
-                    password: e.target.value,
-                  })
-                }
+                {...form.register('password')}
+                className={cn(
+                  form.formState.errors.password && 'border-red-500'
+                )}
                 readOnly={!isManualMode}
               />
+              {form.formState.errors.password && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.password.message}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="mt-6 flex justify-between space-x-3">
-            {initialData && onDelete && (
+            {initialData && (
               <Popover open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
                 <PopoverTrigger asChild>
                   <Button type="button" variant="destructive">
@@ -411,8 +431,7 @@ export function ConnectionDialog({
                         variant="destructive"
                         size="sm"
                         onClick={() => {
-                          onDelete(initialData);
-                          setIsDeleteOpen(false);
+                          deleteConnectionMutation.mutate(initialData.id);
                         }}
                       >
                         Delete
@@ -431,8 +450,12 @@ export function ConnectionDialog({
               >
                 {isTesting ? 'Testing...' : 'Test Connection'}
               </Button>
-              <Button type="submit">
-                {initialData ? 'Save Changes' : 'Add Connection'}
+              <Button type="submit" disabled={saveConnectionMutation.isPending}>
+                {saveConnectionMutation.isPending
+                  ? 'Saving...'
+                  : initialData
+                  ? 'Save Changes'
+                  : 'Add Connection'}
               </Button>
             </div>
           </div>

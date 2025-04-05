@@ -3,19 +3,18 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: theme('colors.white');
+  --foreground: theme('colors.gray.900');
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  @apply bg-white text-gray-900;
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Base text color resets for better Tailwind compatibility */
+@layer base {
+  html {
+    @apply text-gray-900;
+  }
 }

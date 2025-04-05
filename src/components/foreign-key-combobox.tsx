@@ -55,13 +55,13 @@ export function ForeignKeyCombobox({
 
     const loadInitialPage = async () => {
       try {
-        const result = await getTableData(
-          activeConnection,
-          column.foreignKey!.targetSchema,
-          column.foreignKey!.targetTable,
-          1,
-          PAGE_SIZE
-        );
+        const result = await getTableData({
+          connection: activeConnection,
+          schema: column.foreignKey!.targetSchema,
+          table: column.foreignKey!.targetTable,
+          page: 1,
+          pageSize: PAGE_SIZE,
+        });
 
         if (result.success && result.rows && result.columns) {
           const initialOptions = result.rows.map((row) => ({
@@ -108,13 +108,13 @@ export function ForeignKeyCombobox({
     setCurrentPage(nextPage);
 
     try {
-      const result = await getTableData(
-        activeConnection!,
-        column.foreignKey!.targetSchema,
-        column.foreignKey!.targetTable,
-        nextPage,
-        PAGE_SIZE
-      );
+      const result = await getTableData({
+        connection: activeConnection!,
+        schema: column.foreignKey!.targetSchema,
+        table: column.foreignKey!.targetTable,
+        page: nextPage,
+        pageSize: PAGE_SIZE,
+      });
 
       if (result.success && result.rows && result.columns) {
         const newOptions = result.rows.map((row) => ({

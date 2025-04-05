@@ -1,7 +1,7 @@
 'use server';
 
 import { DatabaseConnection } from '@/types/connections';
-import { z } from 'zod';
+import { record, z } from 'zod';
 import pg from 'pg';
 import { guessForeignKeys } from '@/utils/foreign-key-guesser';
 import { DatabaseTable } from '@/stores/database';
@@ -256,13 +256,21 @@ export async function getTables(connection: DatabaseConnection) {
   }
 }
 
-export async function getTableData(
-  connection: DatabaseConnection,
-  schema: string,
-  table: string,
-  page: number = 1,
-  pageSize: number = 50
-) {
+export async function getTableData({
+  connection,
+  schema,
+  table,
+  page = 1,
+  pageSize = 50,
+  filter = '',
+}: {
+  connection: DatabaseConnection;
+  schema: string;
+  table: string;
+  page: number;
+  pageSize: number;
+  filter?: string;
+}) {
   try {
     const validatedConnection = connectionSchema.parse(connection);
     const client = new pg.Client({
@@ -349,6 +357,70 @@ export async function getTableData(
   } catch (error) {
     return {
       success: false,
+      error: error instanceof Error ? error.message : 'Invalid request',
+    };
+  }
+}
+
+export async function getPage({
+  connection,
+  schema,
+  table,
+  page = 1,
+  pageSize = 50,
+  filter = '',
+}: {
+  connection: DatabaseConnection;
+  schema: string;
+  table: string;
+  page: number;
+  pageSize: number;
+  filter?: string;
+}) {
+  try {
+    const validatedConnection = connectionSchema.parse(connection);
+    const client = new pg.Client({
+      host: validatedConnection.host,
+      port: validatedConnection.port,
+      database: validatedConnection.database,
+      user: validatedConnection.username,
+      password: validatedConnection.password,
+    });
+
+    try {
+      await client.connect();
+
+      const query = `
+        SELECT *
+        FROM ${client.escapeIdentifier(schema)}.${client.escapeIdentifier(
+        table
+      )}
+        LIMIT $1
+        OFFSET $2
+      `;
+
+      const result = await client.query(query, [
+        pageSize,
+        (page - 1) * pageSize,
+      ]);
+
+      await client.end();
+      return {
+        success: true as const,
+        rows: result.rows,
+      };
+    } catch (error) {
+      await client.end();
+      return {
+        success: false as const,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    } finally {
+      await client.end();
+    }
+  } catch (error) {
+    return {
+      success: false as const,
       error: error instanceof Error ? error.message : 'Invalid request',
     };
   }

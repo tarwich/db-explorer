@@ -247,13 +247,13 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     set({ isLoadingTableData: true });
 
     try {
-      const result = await getTableData(
-        activeConnection,
-        activeTable.schema,
-        activeTable.name,
+      const result = await getTableData({
+        connection: activeConnection,
+        schema: activeTable.schema,
+        table: activeTable.name,
         page,
-        pageSize
-      );
+        pageSize,
+      });
 
       if (
         result.success &&

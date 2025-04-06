@@ -11,6 +11,16 @@ export interface DatabaseConnection {
   options?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
+  tables: DatabaseTable[];
+  getTables(): Promise<DatabaseTable[]>;
 }
 
 export type ConnectionsList = DatabaseConnection[];
+
+export interface DatabaseTable {
+  id: string;
+  schema: string;
+  name: string;
+  type: string;
+  description: string | null;
+}

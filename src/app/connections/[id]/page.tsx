@@ -1,20 +1,27 @@
+'use client';
+
+import { getConnection } from '@/app/actions/connections';
+import { analyzeTables, getTables } from '@/app/actions/tables';
+import { TableDataView } from '@/components/table-data-view';
+import { TablePropertiesDialog } from '@/components/table-properties-dialog';
 import { useDatabaseStore } from '@/stores/database';
 import {
   ArrowLeftIcon,
   ArrowPathIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
-import { useEffect, useState } from 'react';
-import { TableDataView } from './table-data-view';
-import { TablePropertiesDialog } from './table-properties-dialog';
+import { useDisclosure } from '@reactuses/core';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export function DatabaseView() {
+  const { id } = useParams();
+  const router = useRouter();
   const {
-    activeConnection,
     tables,
     isLoadingTables,
     loadTables,
-    setActiveConnection,
     activeTable,
     setActiveTable,
     tableData,
@@ -23,13 +30,31 @@ export function DatabaseView() {
     updateTable,
   } = useDatabaseStore();
 
-  const [isPropertiesDialogOpen, setIsPropertiesDialogOpen] = useState(false);
+  const connectionQuery = useQuery({
+    queryKey: ['connection', id],
+    queryFn: () => getConnection(id as string),
+  });
+
+  const tablesQuery = useQuery({
+    queryKey: ['connection', id, 'tables'],
+    queryFn: () => getTables(),
+  });
+
+  const analyzeTablesMutation = useMutation({
+    mutationFn: () => analyzeTables(connectionQuery.data!),
+  });
+
+  const {
+    isOpen: isPropertiesDialogOpen,
+    onOpen: openPropertiesDialog,
+    onClose: closePropertiesDialog,
+  } = useDisclosure();
 
   useEffect(() => {
-    if (activeConnection) {
+    if (connectionQuery.data) {
       loadTables();
     }
-  }, [activeConnection, loadTables]);
+  }, [connectionQuery.data, loadTables]);
 
   // Group tables by schema
   const tablesBySchema = tables.reduce((acc, table) => {
@@ -44,17 +69,23 @@ export function DatabaseView() {
     loadTableData(page, tableData?.pageSize ?? 50);
   };
 
-  if (!activeConnection) return null;
+  if (connectionQuery.isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (connectionQuery.isError || !connectionQuery.data) {
+    return <div>Error loading connection</div>;
+  }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex flex-col h-screen">
       {/* Sidebar */}
-      <div className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
+      <div className="h-full w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => setActiveConnection(null)}
+              onClick={() => router.push('/')}
               className="p-1 hover:bg-gray-200 rounded-md"
               title="Back to connections"
             >
@@ -62,13 +93,13 @@ export function DatabaseView() {
             </button>
             <h2
               className="text-lg font-medium truncate text-gray-900"
-              title={activeConnection.name}
+              title={connectionQuery.data.name}
             >
-              {activeConnection.name}
+              {connectionQuery.data.name}
             </h2>
           </div>
           <p className="mt-1 text-sm text-gray-600 truncate">
-            {activeConnection.database}@{activeConnection.host}
+            {connectionQuery.data.database}@{connectionQuery.data.host}
           </p>
         </div>
 
@@ -153,7 +184,7 @@ export function DatabaseView() {
                   )}
                 </div>
                 <button
-                  onClick={() => setIsPropertiesDialogOpen(true)}
+                  onClick={() => openPropertiesDialog()}
                   className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md"
                   title="Edit table properties"
                 >
@@ -187,7 +218,7 @@ export function DatabaseView() {
             {activeTable && (
               <TablePropertiesDialog
                 isOpen={isPropertiesDialogOpen}
-                onClose={() => setIsPropertiesDialogOpen(false)}
+                onClose={closePropertiesDialog}
                 onSave={async (updates) => {
                   await updateTable(activeTable.id, {
                     ...activeTable,

@@ -68,7 +68,6 @@ interface PinnedRecord {
 interface DatabaseStore {
   // State
   connections: DatabaseConnection[];
-  activeConnection: DatabaseConnection | null;
   tables: DatabaseTable[];
   isLoadingTables: boolean;
   activeTable: DatabaseTable | null;
@@ -88,7 +87,6 @@ interface DatabaseStore {
     id: string,
     connection: Partial<DatabaseConnection>
   ) => Promise<void>;
-  setActiveConnection: (connection: DatabaseConnection | null) => Promise<void>;
   loadTables: () => Promise<void>;
   clearTables: () => void;
   setActiveTable: (table: DatabaseTable | null) => void;
@@ -105,7 +103,6 @@ interface DatabaseStore {
 export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   // Initial state
   connections: [],
-  activeConnection: null,
   tables: [],
   isLoadingTables: false,
   activeTable: null,
@@ -175,30 +172,12 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     set({ connections });
   },
 
-  setActiveConnection: async (connection) => {
-    // Clear existing table data when changing connections
-    set({
-      tables: [],
-      activeConnection: connection,
-      activeTable: null,
-      tableData: null,
-    });
-
-    // Load tables for the new connection if one is selected
-    if (connection) {
-      await get().loadTables();
-    }
-  },
-
   // Table actions
   loadTables: async () => {
-    const { activeConnection } = get();
-    if (!activeConnection) return;
-
     set({ isLoadingTables: true });
 
     try {
-      const result = await getTables(activeConnection);
+      const result = await getTables();
 
       if (result.success && Array.isArray(result.tables)) {
         const tables = result.tables.map((table) => ({
@@ -241,14 +220,13 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   },
 
   loadTableData: async (page = 1, pageSize = 50) => {
-    const { activeConnection, activeTable } = get();
-    if (!activeConnection || !activeTable) return;
+    const { activeTable } = get();
+    if (!activeTable) return;
 
     set({ isLoadingTableData: true });
 
     try {
       const result = await getTableData({
-        connection: activeConnection,
         schema: activeTable.schema,
         table: activeTable.name,
         page,
@@ -305,13 +283,12 @@ export const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   },
 
   saveRecord: async (updatedRecord: Record<string, unknown>) => {
-    const { activeConnection, activeTable, tableData } = get();
-    if (!activeConnection || !activeTable || !tableData) return;
+    const { activeTable, tableData } = get();
+    if (!activeTable || !tableData) return;
 
     try {
       // Call the server action to update the record
       const result = await updateRecord(
-        activeConnection,
         activeTable.schema,
         activeTable.name,
         updatedRecord

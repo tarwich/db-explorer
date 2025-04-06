@@ -9,7 +9,6 @@ export async function getConnections() {
 }
 
 export async function saveConnection(connection: Partial<DatabaseConnection>) {
-  console.log(connection);
   const sanitized = ((
     input: Partial<DatabaseConnection>
   ): DatabaseConnection => {
@@ -28,10 +27,7 @@ export async function saveConnection(connection: Partial<DatabaseConnection>) {
   })(connection);
 
   const state = await getServerState();
-  console.log(state.connections);
-  console.log(sanitized.id);
   const index = state.connections.findIndex((c) => c.id === sanitized.id);
-  console.log(index);
 
   if (index === -1) {
     state.connections.push(sanitized);
@@ -61,4 +57,15 @@ export async function getSelectedConnection() {
   return (
     state.connections.find((c) => c.id === state.selectedConnectionId) || null
   );
+}
+
+export async function getConnection(id: string): Promise<DatabaseConnection> {
+  const connections = await getConnections();
+  const connection = connections.find((conn) => conn.id === id);
+
+  if (!connection) {
+    throw new Error(`Connection with ID ${id} not found`);
+  }
+
+  return connection;
 }

@@ -1,5 +1,13 @@
 'use client';
 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { FetchNextPageOptions } from '@tanstack/react-query';
 import {
   ColumnDef,
@@ -81,21 +89,20 @@ export function InfiniteTable<TData>({
           height: `${virtualizer.getTotalSize()}px`,
         }}
       >
-        <table className="w-full">
-          <thead
-            className="sticky top-0 bg-gray-200 z-10"
+        <Table>
+          <TableHeader
+            className="sticky top-0 bg-gray-100 z-10"
             style={{
               height: ROW_HEIGHT,
             }}
           >
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="">
+              <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th
+                  <TableHead
                     key={header.id}
-                    className="whitespace-nowrap overflow-hidden text-ellipsis font-medium text-sm px-4 py-2"
+                    className="font-semibold text-gray-600"
                     style={{
-                      height: ROW_HEIGHT,
                       width: header.getSize(),
                     }}
                   >
@@ -105,25 +112,26 @@ export function InfiniteTable<TData>({
                           header.column.columnDef.header,
                           header.getContext()
                         )}
-                  </th>
+                  </TableHead>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </thead>
-          <tbody>
+          </TableHeader>
+          <TableBody>
             {virtualizer.getVirtualItems().map((virtualRow, index) => {
               const row = table.getRowModel().rows[virtualRow.index];
               if (!row) {
                 return hasNextPage ? (
-                  <tr
+                  // Loading...
+                  <TableRow
                     key="loader"
                     style={{
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
                   >
-                    <td
+                    <TableCell
+                      className="text-center p-2"
                       colSpan={columns.length}
-                      className="text-center p-2 border-b border-gray-200"
                     >
                       {isFetchingNextPage ? (
                         <div className="flex justify-center">
@@ -132,15 +140,16 @@ export function InfiniteTable<TData>({
                       ) : (
                         'Loading more...'
                       )}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : null;
               }
 
               return (
-                <tr
+                <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
+                  className="whitespace-nowrap"
                   style={{
                     transform: `translateY(${
                       virtualRow.start - index * ROW_HEIGHT
@@ -148,24 +157,21 @@ export function InfiniteTable<TData>({
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td
+                    <TableCell
                       key={cell.id}
-                      className="whitespace-nowrap overflow-hidden text-ellipsis px-4 py-2"
-                      style={{
-                        borderBottom: '1px solid #e2e8f0',
-                      }}
+                      className="max-w-xs text-ellipsis overflow-hidden"
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
                       )}
-                    </td>
+                    </TableCell>
                   ))}
-                </tr>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

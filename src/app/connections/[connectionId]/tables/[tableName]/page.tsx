@@ -2,25 +2,17 @@
 
 import { InfiniteTable } from '@/components/infinite-table';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import {
-  ColumnDef,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { ColumnDef } from '@tanstack/react-table';
 import { title } from 'radash';
-import { useEffect, useRef } from 'react';
 import { getRows, getTableInfo } from './actions';
 
-const PAGE_SIZE = 25;
-const ROW_HEIGHT = 40;
+const PAGE_SIZE = 100;
 
 export default function TablePage({
   params: { connectionId, tableName },
 }: {
   params: { connectionId: string; tableName: string };
 }) {
-  const parentRef = useRef<HTMLDivElement>(null);
   // Fetch table info
   const tableInfoQuery = useQuery({
     queryKey: ['tableInfo', connectionId, tableName],
@@ -54,40 +46,6 @@ export default function TablePage({
       header: (header) => <div className="text-left">{title(column.name)}</div>,
       accessorKey: column.name,
     })) || [];
-
-  const table = useReactTable({
-    data: allRows,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
-  const virtualizer = useVirtualizer({
-    count: table.getRowCount(),
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => ROW_HEIGHT,
-  });
-
-  useEffect(() => {
-    const lastItem = virtualizer.getVirtualItems().at(-1);
-
-    if (!lastItem) {
-      return;
-    }
-
-    if (
-      lastItem.index >= allRows.length - 1 &&
-      rowsQuery.hasNextPage &&
-      !rowsQuery.isFetchingNextPage
-    ) {
-      rowsQuery.fetchNextPage();
-    }
-  }, [
-    rowsQuery.hasNextPage,
-    rowsQuery.isFetchingNextPage,
-    allRows.length,
-    rowsQuery.fetchNextPage,
-    virtualizer.getVirtualItems(),
-  ]);
 
   return (
     <div className="flex flex-col h-full">

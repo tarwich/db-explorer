@@ -1,5 +1,6 @@
 'use server';
 
+import { getStateDb } from '@/db/sqlite';
 import { DatabaseTable } from '@/stores/database';
 import { DatabaseConnection } from '@/types/connections';
 import { RecordEditor } from '@/types/record-editor';
@@ -65,6 +66,11 @@ export async function getServerState(): Promise<ServerState> {
 
     await loadState();
   }
+
+  const connections = await (await getStateDb())
+    .selectFrom('connections')
+    .selectAll()
+    .execute();
 
   return globalThis.state!;
 }

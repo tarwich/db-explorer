@@ -1,5 +1,10 @@
+export type StateDatabase = {
+  connections: DatabaseConnection;
+  tables: SerializedDatabaseTable;
+};
+
 export interface DatabaseConnection {
-  id: string;
+  id?: string;
   name: string;
   type: 'postgres';
   host?: string;
@@ -7,20 +12,44 @@ export interface DatabaseConnection {
   database?: string;
   username?: string;
   password?: string;
-  connectionString?: string;
-  options?: Record<string, unknown>;
-  createdAt: string;
-  updatedAt: string;
-  tables: DatabaseTable[];
-  getTables(): Promise<DatabaseTable[]>;
 }
 
-export type ConnectionsList = DatabaseConnection[];
-
-export interface DatabaseTable {
-  id: string;
-  schema: string;
+export interface SerializedDatabaseTable {
   name: string;
-  type: string;
-  description: string | null;
+  schema: string;
+  connectionId: string;
+  details: string;
 }
+
+export interface DeserializedTable {
+  name: string;
+  schema: string;
+  connectionId: string;
+  details: {
+    normalizedName: string;
+    displayColumns: string[];
+    pk: string[];
+    columns: {
+      name: string;
+      normalizedName: string;
+      type: string;
+      nullable: boolean;
+    }[];
+  };
+}
+
+export const serializeDatabaseTable = (table: DeserializedTable) => {
+  return {
+    ...table,
+    details: JSON.stringify(table.details),
+  };
+};
+
+export const deserializeDatabaseTable = (
+  table: SerializedDatabaseTable
+): DeserializedTable => {
+  return {
+    ...table,
+    details: JSON.parse(table.details as any),
+  };
+};

@@ -1,24 +1,21 @@
-import { create } from 'zustand';
-import { DatabaseConnection } from '@/types/connections';
 import {
-  testConnection,
-  getTables,
   getTableData,
+  getTables,
+  testConnection,
   updateRecord,
 } from '@/app/actions';
+import { DatabaseConnection } from '@/types/connections';
 import { normalizeName } from '@/utils/normalize-name';
+import { create } from 'zustand';
 
 export interface DatabaseTable {
   id: string;
-  schema: string;
   name: string;
-  normalizedName: string;
   type: string;
-  description?: string;
-  primaryKey?: string[]; // Array of column names that form the primary key
-  columns?: TableColumn[]; // Store column information directly with the table
-  displayColumns?: string[]; // Array of column names to use for displaying records
-  foreignKeys?: ForeignKeyInfo[];
+  host: string;
+  port: number;
+  database: string;
+  username: string;
 }
 
 export interface ForeignKeyInfo {

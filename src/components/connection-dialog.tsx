@@ -1,15 +1,14 @@
-import { DatabaseConnection } from '@/types/connections';
-import { Fragment, useState, useEffect } from 'react';
+'use client';
+
 import { testConnection } from '@/app/actions';
 import { deleteConnection, saveConnection } from '@/app/actions/connections';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -18,10 +17,12 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { useForm, SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { cn } from '@/lib/utils';
+import { DatabaseConnection } from '@/types/connections';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 
 interface ConnectionDialogProps {
   isOpen: boolean;
@@ -87,7 +88,7 @@ export function ConnectionDialog({
   const { toast } = useToast();
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    // resolver: zodResolver(formSchema),
     defaultValues: {
       id: initialData?.id ?? '',
       name: '',
@@ -116,7 +117,9 @@ export function ConnectionDialog({
   }, [initialData, form]);
 
   const saveConnectionMutation = useMutation({
-    mutationFn: (connection: FormValues) => saveConnection(connection),
+    mutationFn: (connection: FormValues) => {
+      return saveConnection(connection);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['connections'] });
       onClose();
@@ -152,6 +155,23 @@ export function ConnectionDialog({
     },
   });
 
+  const testConnectionMutation = useMutation({
+    mutationFn: (connection: FormValues) => testConnection(connection),
+    onSuccess: (data) => {
+      toast({
+        title: 'Connection Tested',
+        description: 'Connection test was successful!',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Connection Test Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   const handleConnectionStringChange = (value: string) => {
     setConnectionString(value);
     if (!value) return;
@@ -166,55 +186,6 @@ export function ConnectionDialog({
         description: (err as Error).message,
         variant: 'destructive',
       });
-    }
-  };
-
-  const handleTestConnection = async () => {
-    const isValid = await form.trigger();
-    if (!isValid) return;
-
-    setIsTesting(true);
-    setTestResult(null);
-
-    try {
-      const values = form.getValues();
-      const result = await testConnection({
-        ...values,
-        port: values.port,
-      });
-
-      if (result.success) {
-        setTestResult({
-          success: true,
-          message: 'Connection successful!',
-        });
-        toast({
-          title: 'Success',
-          description: 'Connection test was successful!',
-        });
-      } else {
-        setTestResult({
-          success: false,
-          message: `Connection failed: ${result.error}`,
-        });
-        toast({
-          title: 'Connection Failed',
-          description: result.error,
-          variant: 'destructive',
-        });
-      }
-    } catch (err) {
-      setTestResult({
-        success: false,
-        message: `Connection failed: ${(err as Error).message}`,
-      });
-      toast({
-        title: 'Error',
-        description: (err as Error).message,
-        variant: 'destructive',
-      });
-    } finally {
-      setIsTesting(false);
     }
   };
 
@@ -431,7 +402,9 @@ export function ConnectionDialog({
                         variant="destructive"
                         size="sm"
                         onClick={() => {
-                          deleteConnectionMutation.mutate(initialData.id);
+                          if (initialData?.id) {
+                            deleteConnectionMutation.mutate(initialData.id);
+                          }
                         }}
                       >
                         Delete
@@ -445,10 +418,12 @@ export function ConnectionDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={handleTestConnection}
-                disabled={isTesting}
+                disabled={testConnectionMutation.isPending}
+                onClick={() => testConnectionMutation.mutate(form.getValues())}
               >
-                {isTesting ? 'Testing...' : 'Test Connection'}
+                {testConnectionMutation.isPending
+                  ? 'Testing...'
+                  : 'Test Connection'}
               </Button>
               <Button type="submit" disabled={saveConnectionMutation.isPending}>
                 {saveConnectionMutation.isPending

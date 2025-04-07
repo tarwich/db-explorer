@@ -2,17 +2,25 @@
 
 import { InfiniteTable } from '@/components/infinite-table';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { type ColumnDef } from '@tanstack/react-table';
-import { capitalCase } from 'change-case';
+import {
+  ColumnDef,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { title } from 'radash';
+import { useEffect, useRef } from 'react';
 import { getRows, getTableInfo } from './actions';
 
 const PAGE_SIZE = 25;
+const ROW_HEIGHT = 40;
 
 export default function TablePage({
   params: { connectionId, tableName },
 }: {
   params: { connectionId: string; tableName: string };
 }) {
+  const parentRef = useRef<HTMLDivElement>(null);
   // Fetch table info
   const tableInfoQuery = useQuery({
     queryKey: ['tableInfo', connectionId, tableName],
@@ -40,45 +48,46 @@ export default function TablePage({
   const allRows = rowsQuery.data?.pages.flat() || [];
 
   // Define columns based on the first row
-  const columns: ColumnDef<any>[] = Object.keys(allRows[0] || {}).map(
-    (key) => ({
-      accessorKey: key,
-      header: () => {
-        const isPrimaryKey = tableInfoQuery.data?.details?.pk?.includes(key);
-        return (
-          <div
-            className="flex items-center gap-1 text-left font-medium truncate"
-            title={capitalCase(key)}
-          >
-            <span>{capitalCase(key)}</span>
-            {isPrimaryKey && (
-              <span title="Primary Key" className="text-yellow-500">
-                🔑
-              </span>
-            )}
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        const value = row.getValue(key)?.toString() || 'null';
-        return (
-          <div className="text-left truncate max-w-[200px]" title={value}>
-            {value}
-          </div>
-        );
-      },
-      size: Math.min(
-        Math.max(
-          key.length * 8, // Base width on column name
-          Math.min(
-            (allRows[0]?.[key]?.toString() || '').length * 8, // Sample first row content
-            200 // Max width
-          )
-        ),
-        200 // Enforce max width
-      ),
-    })
-  );
+  const columns: ColumnDef<(typeof allRows)[number]>[] =
+    tableInfoQuery.data?.details.columns.map((column) => ({
+      id: column.name,
+      header: (header) => <div className="text-left">{title(column.name)}</div>,
+      accessorKey: column.name,
+    })) || [];
+
+  const table = useReactTable({
+    data: allRows,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  const virtualizer = useVirtualizer({
+    count: table.getRowCount(),
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ROW_HEIGHT,
+  });
+
+  useEffect(() => {
+    const lastItem = virtualizer.getVirtualItems().at(-1);
+
+    if (!lastItem) {
+      return;
+    }
+
+    if (
+      lastItem.index >= allRows.length - 1 &&
+      rowsQuery.hasNextPage &&
+      !rowsQuery.isFetchingNextPage
+    ) {
+      rowsQuery.fetchNextPage();
+    }
+  }, [
+    rowsQuery.hasNextPage,
+    rowsQuery.isFetchingNextPage,
+    allRows.length,
+    rowsQuery.fetchNextPage,
+    virtualizer.getVirtualItems(),
+  ]);
 
   return (
     <div className="flex flex-col h-full">
@@ -99,8 +108,8 @@ export default function TablePage({
           data={allRows}
           fetchNextPage={rowsQuery.fetchNextPage}
           hasNextPage={rowsQuery.hasNextPage}
-          isLoading={rowsQuery.isLoading}
           isFetchingNextPage={rowsQuery.isFetchingNextPage}
+          isLoading={rowsQuery.isLoading}
         />
       </div>
     </div>

@@ -132,6 +132,7 @@ export async function openConnection(
         password: connection.password,
       }),
     }),
+    // log: ['query'],
   });
 
   connectionCache.set(connectionId, db);

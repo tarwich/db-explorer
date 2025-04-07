@@ -1,5 +1,7 @@
-import { DatabaseTable, TableColumn } from '@/stores/database';
-import { noCase } from 'change-case';
+import { TableColumn } from '@/stores/database';
+import { DeserializedTable } from '@/types/connections';
+
+type DeserializedTableColumn = DeserializedTable['details']['columns'][number];
 
 interface ForeignKeyGuess {
   sourceColumn: string;
@@ -30,27 +32,13 @@ const singularize = (name: string): string => {
   );
 };
 
-/**
- * Normalize any name by changing it to singular and making it lowercase space
- * separated
- *
- * @example
- * normalize('users') -> 'user'
- * normalize('user') -> 'user'
- * normalize('user_id') -> 'user id'
- * normalize('user_ids') -> 'user id'
- */
-function normalize(name: string): string {
-  return singularize(noCase(name));
-}
-
-function isIdColumn(column: TableColumn): boolean {
+function isIdColumn(column: DeserializedTableColumn): boolean {
   // Only allow id, uuid, or guid columns to be guessed as foreign keys
-  if (column.data_type !== 'integer' && column.data_type !== 'uuid') {
+  if (column.type !== 'integer' && column.type !== 'uuid') {
     return false;
   }
 
-  if (ID_REGEX.test(column.column_name)) {
+  if (ID_REGEX.test(column.normalizedName)) {
     return true;
   }
 
@@ -58,42 +46,33 @@ function isIdColumn(column: TableColumn): boolean {
 }
 
 export function guessForeignKeys(
-  sourceColumns: TableColumn[],
-  allTables: DatabaseTable[]
+  sourceColumns: DeserializedTable['details']['columns'],
+  allTables: DeserializedTable[]
 ): ForeignKeyGuess[] {
-  const normalizedTableNames = allTables.map((table) => ({
-    normalized: normalize(table.name),
-    original: table.name,
-  }));
-
   return sourceColumns.map((column) => {
-    const normalized = normalize(column.column_name)
-      .replace(ID_REGEX, '')
-      .trim();
+    const normalized = column.normalizedName.replace(ID_REGEX, '').trim();
 
     if (!normalized) {
       return NO_MATCH;
     }
 
-    const matches = normalizedTableNames.filter(
-      (table) => table.normalized === normalized
+    const matches = allTables.filter(
+      (table) => table.details.normalizedName === normalized
     );
 
     if (matches.length > 0) {
-      const originalTable = allTables.find(
-        (table) => table.name === matches[0].original
-      )!;
+      const originalTable = matches[0];
 
       const idColumn =
-        originalTable.columns?.find(isIdColumn)?.column_name ||
-        originalTable.primaryKey?.[0];
+        originalTable.details.columns?.find(isIdColumn)?.name ||
+        originalTable.details.pk[0];
 
       if (!idColumn) {
         return NO_MATCH;
       }
 
       return {
-        sourceColumn: column.column_name,
+        sourceColumn: column.name,
         targetSchema: originalTable.schema,
         targetTable: originalTable.name,
         targetColumn: idColumn,

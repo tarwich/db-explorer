@@ -34,6 +34,11 @@ export interface DeserializedTable {
       normalizedName: string;
       type: string;
       nullable: boolean;
+      foreignKey?: {
+        targetTable: string;
+        targetColumn: string;
+        isGuessed: boolean;
+      };
     }[];
   };
 }

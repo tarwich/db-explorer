@@ -1,6 +1,7 @@
 'use client';
 
 import { InfiniteTable } from '@/components/infinite-table';
+import { KeyIcon, LinkIcon } from '@heroicons/react/24/outline';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { title } from 'radash';
@@ -43,7 +44,17 @@ export default function TablePage({
   const columns: ColumnDef<(typeof allRows)[number]>[] =
     tableInfoQuery.data?.details.columns.map((column) => ({
       id: column.name,
-      header: (header) => <div className="text-left">{title(column.name)}</div>,
+      header: () => (
+        <div className="text-left">
+          {tableInfoQuery.data?.details.pk.includes(column.name) && (
+            <KeyIcon className="icon-pk w-4 h-4 inline-block mr-2" />
+          )}
+          {title(column.name)}
+          {column.foreignKey && (
+            <LinkIcon className="icon-fk w-4 h-4 inline-block ml-2" />
+          )}
+        </div>
+      ),
       accessorKey: column.name,
     })) || [];
 

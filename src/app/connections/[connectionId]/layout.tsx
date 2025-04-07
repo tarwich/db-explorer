@@ -8,7 +8,7 @@ import { useDisclosure } from '@reactuses/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 export default function DatabaseView({
   children,
@@ -63,6 +63,23 @@ export default function DatabaseView({
       }, {} as Record<string, typeof tablesQuery.data>) ?? {}
     );
   }, [tablesQuery.data]);
+
+  // Add a state for the filter input
+  const [filter, setFilter] = useState('');
+
+  // Filter tables by name based on the filter input
+  const filteredTablesBySchema = useMemo(() => {
+    if (!filter) return tablesBySchema;
+    return Object.entries(tablesBySchema).reduce((acc, [schema, tables]) => {
+      const filteredTables = tables.filter((table) =>
+        table.name.toLowerCase().includes(filter.toLowerCase())
+      );
+      if (filteredTables.length > 0) {
+        acc[schema] = filteredTables;
+      }
+      return acc;
+    }, {} as Record<string, typeof tablesQuery.data>);
+  }, [filter, tablesBySchema]);
 
   if (connectionQuery.isLoading) {
     return <div>Loading...</div>;
@@ -122,30 +139,60 @@ export default function DatabaseView({
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
             </div>
           ) : (
+            // Add a filter input above the tables list
+            <div className="px-3 py-2">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  placeholder="Filter tables..."
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+                {filter && (
+                  <button
+                    onClick={() => setFilter('')}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    aria-label="Clear filter"
+                  >
+                    ✖
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+          {analyzeTablesMutation.isPending ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
+            </div>
+          ) : (
             // Tables list
             <div className="flex flex-col gap-2">
-              {Object.entries(tablesBySchema).map(([schema, tables]) => (
-                <div key={schema}>
-                  <h4 className="text-sm font-medium text-gray-700 bg-gray-100 p-2">
-                    {schema}
-                  </h4>
-                  <div className="flex flex-col gap-2">
-                    {tables.map((table) => (
-                      <Link
-                        key={table.name}
-                        href={`/connections/${connectionId}/tables/${table.name}`}
-                        className={cn(
-                          'text-sm text-gray-700 p-2 hover:bg-gray-100 rounded-md cursor-pointer',
-                          tableName === table.name &&
-                            'bg-blue-100 hover:bg-blue-200'
-                        )}
-                      >
-                        {table.name}
-                      </Link>
-                    ))}
+              {Object.entries(filteredTablesBySchema).map(
+                ([schema, tables]) => (
+                  <div key={schema}>
+                    <h4 className="text-sm font-medium text-gray-700 bg-gray-100 p-2">
+                      {schema}
+                    </h4>
+                    <div className="flex flex-col gap-2">
+                      {tables &&
+                        tables.map((table) => (
+                          <Link
+                            key={table.name}
+                            href={`/connections/${connectionId}/tables/${table.name}`}
+                            className={cn(
+                              'text-sm text-gray-700 p-2 hover:bg-gray-100 rounded-md cursor-pointer',
+                              tableName === table.name &&
+                                'bg-blue-100 hover:bg-blue-200'
+                            )}
+                          >
+                            {table.name}
+                          </Link>
+                        ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
           )}
         </div>

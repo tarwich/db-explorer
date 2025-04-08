@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DB Explorer
 
-## Getting Started
+A modern, user-friendly application for exploring and traversing unknown databases. Built with Next.js and Electron.
 
-First, run the development server:
+![PostgreSQL Support](https://img.shields.io/badge/PostgreSQL-✓-success)
+![More Databases Coming](https://img.shields.io/badge/More%20Databases-Coming%20Soon-blue)
 
+## Features
+
+- 🔍 Intuitive database navigation
+- 📊 Visual representation of database schema
+- 🐘 PostgreSQL support (with more databases coming soon)
+- ⚡ Built on Electron for cross-platform compatibility
+- 🚀 Modern UI powered by Next.js
+
+## Prerequisites
+
+- Node.js (v18 or higher recommended)
+- npm
+- PostgreSQL database (for testing/development)
+
+## Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/db-explorer.git
+cd db-explorer
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Development
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+To run the application in development mode:
 
-## Learn More
+```bash
+npm run electron-dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+This will start both the Next.js development server and the Electron application.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contributing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Contributions are welcome! Here are some ways you can contribute:
 
-## Deploy on Vercel
+- 🐛 Report bugs
+- 💡 Suggest new features
+- 🔧 Submit pull requests
+- 📝 Improve documentation
+- 🗃️ Add support for additional databases
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Roadmap
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [ ] Refactor interface to make navigation easier
+- [ ] Add support for MySQL
+- [ ] Add support for SQLite
+
+## License
+
+[MIT](LICENSE)

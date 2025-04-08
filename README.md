@@ -32,6 +32,17 @@ cd db-explorer
 npm install
 ```
 
+## Development
+
+To run the application in development mode:
+
+```bash
+npm run electron-dev
+```
+
+This will start both the Next.js development server and the Electron application.
+
+
 ## Run a test database
 
 Start a postgres container:
@@ -43,7 +54,7 @@ docker compose up -d postgres
 Run the seed script to populate the database with data:
 
 ```bash
-npm run seed
+node scripts/seed.ts
 ```
 
 Get the port of the postgres container:
@@ -62,16 +73,6 @@ Connection string: (replace `54590` with your local postgres port)
 ```bash
 postgres://postgres:postgres@localhost:54590/postgres
 ```
-
-## Development
-
-To run the application in development mode:
-
-```bash
-npm run electron-dev
-```
-
-This will start both the Next.js development server and the Electron application.
 
 ## Contributing
 

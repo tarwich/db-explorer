@@ -38,7 +38,7 @@ async function main() {
       if (!project || !employee) {
         return null;
       }
-      return createTask(db, project.id, employee.id);
+      return createTask(db, project.id);
     })
   );
   for (const employee of employees) {
@@ -100,7 +100,6 @@ async function createSchema(db: Kysely<any>) {
     .addColumn('name', 'varchar(255)', (col) => col.notNull())
     .addColumn('due_date', 'date', (col) => col.notNull())
     .addColumn('project_id', 'uuid', (col) => col.notNull())
-    .addColumn('employee_id', 'uuid', (col) => col.notNull())
     .addColumn('status', sql`task_status`, (col) => col.notNull())
     .execute();
 
@@ -165,11 +164,7 @@ async function createEmployee(db: Kysely<any>) {
   return employee;
 }
 
-async function createTask(
-  db: Kysely<any>,
-  projectId: string,
-  employeeId: string
-) {
+async function createTask(db: Kysely<any>, projectId: string) {
   const task = await db
     .insertInto('tasks')
     .values({
@@ -179,7 +174,6 @@ async function createTask(
       ),
       due_date: addDays(new Date(), random(1, 30)),
       project_id: projectId,
-      employee_id: employeeId,
       status: draw(['pending', 'in_progress', 'completed']),
     })
     .returningAll()
@@ -235,7 +229,6 @@ type SampleDatabase = {
     name: string;
     due_date: Date;
     project_id: string;
-    employee_id: string;
     status: 'pending' | 'in_progress' | 'completed';
   };
   assignments: {

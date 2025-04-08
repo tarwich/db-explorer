@@ -1,11 +1,14 @@
 'use client';
 
 import { InfiniteTable } from '@/components/infinite-table';
+import { Input } from '@/components/ui/input';
 import { useRecordEditorSidebar } from '@/context/editor-sidebar-context';
 import { KeyIcon, LinkIcon } from '@heroicons/react/24/outline';
+import { useDebounce } from '@reactuses/core';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { title } from 'radash';
+import { useState } from 'react';
 import { getRows, getTableInfo } from './actions';
 
 const PAGE_SIZE = 100;
@@ -16,6 +19,8 @@ export default function TablePage({
   params: { connectionId: string; tableName: string };
 }) {
   const sidebar = useRecordEditorSidebar();
+  const [filterInput, setFilterInput] = useState('');
+  const debouncedFilter = useDebounce(filterInput, 300);
 
   // Fetch table info
   const tableInfoQuery = useQuery({
@@ -25,11 +30,19 @@ export default function TablePage({
 
   // Fetch rows with infinite scrolling
   const rowsQuery = useInfiniteQuery({
-    queryKey: ['connection', connectionId, 'table', tableName, 'rows'],
+    queryKey: [
+      'connection',
+      connectionId,
+      'table',
+      tableName,
+      'rows',
+      { filter: debouncedFilter },
+    ],
     queryFn: ({ pageParam = 1 }) =>
       getRows({
         connectionId,
         tableName,
+        filter: debouncedFilter,
         page: pageParam,
         pageSize: PAGE_SIZE,
       }),
@@ -71,6 +84,15 @@ export default function TablePage({
         <p className="mt-2 text-sm text-gray-600">
           Showing {allRows.length} records from the table
         </p>
+        <div className="mt-4">
+          <Input
+            type="text"
+            placeholder="Filter records..."
+            value={filterInput}
+            onChange={(e) => setFilterInput(e.target.value)}
+            className="max-w-md"
+          />
+        </div>
       </div>
 
       {/* Table Container */}

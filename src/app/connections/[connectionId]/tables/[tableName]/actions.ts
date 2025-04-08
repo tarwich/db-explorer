@@ -39,16 +39,34 @@ export async function getRows({
   pageSize: number;
 }) {
   const db = await openConnection(connectionId);
+  const tableInfo = await getTableInfo({ connectionId, tableName });
 
-  const query = db
+  let query = db
     .selectFrom(tableName)
     .selectAll()
     .limit(pageSize)
     .offset((page - 1) * pageSize);
 
   if (filter) {
-    throw new Error('Filter not implemented');
+    const searchColumn = tableInfo?.details.columns.find(
+      (column) =>
+        (column.type.includes('text') || column.type.includes('json')) &&
+        column.normalizedName.includes('search')
+    );
+    if (searchColumn) {
+      query = query.where(searchColumn.name, 'ilike', `%${filter}%`);
+    } else if (tableInfo?.details.displayColumns?.length) {
+      query = query.where((builder) =>
+        builder.or(
+          tableInfo.details.displayColumns.map((column) =>
+            builder(column, 'ilike', `%${filter}%`)
+          )
+        )
+      );
+    }
   }
+
+  console.log(query.compile());
 
   const rows = await query.execute();
 

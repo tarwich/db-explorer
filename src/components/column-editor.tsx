@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { KeyIcon, LinkIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { title } from 'radash';
 import { Fragment, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Input } from './ui/input';
@@ -98,7 +99,7 @@ export function ColumnEditor({
           >
             {column.enumOptions.map((value: string) => (
               <option key={value} value={value}>
-                {value}
+                {title(value)}
               </option>
             ))}
           </select>

@@ -4,7 +4,7 @@ import { exec } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { parseArgs } from 'node:util';
 import pg from 'pg';
-import { capitalize, draw, random, range, title } from 'radash';
+import { capitalize, draw, random, range, title, trim } from 'radash';
 
 const { Pool } = pg;
 
@@ -145,14 +145,18 @@ async function createProject(db: Kysely<any>) {
 }
 
 async function createEmployee(db: Kysely<any>) {
+  const firstName = draw(FIRST_NAMES);
+  const lastName = draw(LAST_NAMES);
+
   const employee = await db
     .insertInto('employees')
     .values({
       id: randomUUID(),
-      name: title(`${draw(FIRST_NAMES)} ${draw(LAST_NAMES)}`),
-      email: `${draw(FIRST_NAMES)?.[0] || ''}.${draw(
-        LAST_NAMES
-      )}@example.com`.toLowerCase(),
+      name: title(`${firstName} ${lastName}`),
+      email: trim(
+        `${firstName?.[0] || ''}.${lastName}@example.com`.toLowerCase(),
+        '.'
+      ),
       phone: `(${random(100, 999)}) ${random(100, 999)}-${random(1000, 9999)}`,
       address: `${random(1, 100)} ${draw(STREETS)}, ${draw(CITIES)} ${draw(
         STATES

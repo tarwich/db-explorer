@@ -1,19 +1,16 @@
-import { cn } from '@/lib/utils';
-import { KeyIcon, LinkIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { title } from 'radash';
-import { Fragment, useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useMemo } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
 import { useRecordEditorSidebar } from '../context/editor-sidebar-context';
+import { ColumnEditor } from './column-editor';
 import {
   getRecord,
   getTableInfo,
   updateRecord,
 } from './recored-editor-sidebar.actions';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from './ui/sheet';
 
 export default function RecordEditorSidebar({
@@ -86,75 +83,54 @@ export default function RecordEditorSidebar({
       <SheetTitle className="hidden">{tableName} Editor</SheetTitle>
       <SheetDescription className="hidden">{description}</SheetDescription>
       <SheetContent>
-        <form onSubmit={onSubmit} className="flex flex-col gap-4 h-full">
-          <h1 className="text-xl font-bold flex flex-col gap-2">
-            {tableName}
-            <small className="text-sm text-muted-foreground text-ellipsis overflow-hidden whitespace-nowrap">
-              {description}
-            </small>
-          </h1>
-          <div
-            className="flex flex-col gap-2 h-full overflow-y-auto"
-            style={{
-              gridTemplateColumns: `auto 1fr`,
-            }}
-          >
-            {tableInfoQuery.data?.details.columns.map((c) => {
-              const isPrimaryKey = !!tableInfo?.details.pk.includes(c.name);
-              const isForeignKey = !!c.foreignKey;
-              const isNullable = !!c.nullable;
-
-              return (
-                <Fragment key={c.name}>
-                  <label
-                    htmlFor={c.name}
-                    className={cn(
-                      'text-sm text-muted-foreground flex flex-row gap-2 items-center',
-                      isPrimaryKey && 'text-red-500',
-                      isForeignKey && 'text-blue-500',
-                      isNullable && 'text-gray-500'
-                    )}
-                  >
-                    {title(c.name)}
-                    {isPrimaryKey && <KeyIcon className="w-4 h-4" />}
-                    {isForeignKey && <LinkIcon className="w-4 h-4" />}
-                  </label>
-                  <div className="flex flex-row gap-2 items-center h-auto max-h-full">
-                    <Input
-                      id={c.name}
-                      {...form.register(c.name)}
-                      className="flex-grow"
-                    />
-                    {isNullable && (
-                      <XCircleIcon
-                        className="w-4 h-4"
-                        onClick={() => {
-                          form.setValue(c.name, null);
-                        }}
-                      />
-                    )}
-                  </div>
-                </Fragment>
-              );
-            })}
-          </div>
-          <div className="flex flex-row gap-2">
-            <Button
-              variant="default"
-              type="submit"
-              disabled={saveRecordMutation.isPending}
+        <FormProvider {...form}>
+          <form onSubmit={onSubmit} className="flex flex-col gap-4 h-full">
+            <h1 className="text-xl font-bold flex flex-col gap-2">
+              {tableName}
+              <small className="text-sm text-muted-foreground text-ellipsis overflow-hidden whitespace-nowrap">
+                {description}
+              </small>
+            </h1>
+            <div
+              className="flex flex-col gap-2 h-full overflow-y-auto"
+              style={{
+                gridTemplateColumns: `auto 1fr`,
+              }}
             >
-              {saveRecordMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                'Save'
-              )}
-            </Button>
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-          </div>
-        </form>
+              {tableInfoQuery.data?.details.columns.map((c) => {
+                const isPrimaryKey = !!tableInfo?.details.pk.includes(c.name);
+                const isForeignKey = !!c.foreignKey;
+                const isNullable = !!c.nullable;
+
+                return (
+                  <ColumnEditor
+                    key={c.name}
+                    column={c}
+                    isPrimaryKey={isPrimaryKey}
+                    isForeignKey={isForeignKey}
+                    isNullable={isNullable}
+                  />
+                );
+              })}
+            </div>
+            <div className="flex flex-row gap-2">
+              <Button
+                variant="default"
+                type="submit"
+                disabled={saveRecordMutation.isPending}
+              >
+                {saveRecordMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  'Save'
+                )}
+              </Button>
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </FormProvider>
       </SheetContent>
     </Sheet>
   );

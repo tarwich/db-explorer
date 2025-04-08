@@ -70,6 +70,7 @@ export async function analyzeTables(connectionId: string) {
               db,
               column.type
             );
+            columnPayload.type = 'enum';
             columnPayload.enumOptions = enumOptions;
           }
 

@@ -74,3 +74,19 @@ export async function updateRecord({
 
   return updatedRecord;
 }
+
+export async function deleteRecord({
+  connectionId,
+  tableName,
+  pk,
+}: {
+  connectionId: string;
+  tableName: string;
+  pk: any;
+}) {
+  const db = await openConnection(connectionId);
+  const tableInfo = await getTableInfo({ connectionId, tableName });
+  const pkField = tableInfo.details.pk[0];
+
+  await db.deleteFrom(tableInfo.name).where(pkField, '=', pk).execute();
+}

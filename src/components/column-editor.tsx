@@ -43,13 +43,13 @@ export function ColumnEditor({
       <label
         htmlFor={column.name}
         className={cn(
-          'text-sm text-muted-foreground flex flex-row gap-2 items-center',
+          'text-sm text-muted-foreground flex flex-row gap-2 items-center capitalize',
           isPrimaryKey && 'text-red-500',
           isForeignKey && 'text-blue-500',
           isNullable && 'text-gray-500'
         )}
       >
-        {column.name}
+        {column.normalizedName}
         {isPrimaryKey && <KeyIcon className="w-4 h-4" />}
         {isForeignKey && <LinkIcon className="w-4 h-4" />}
       </label>

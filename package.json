@@ -35,6 +35,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "electron-squirrel-startup": "^1.0.0",
+    "immer": "^10.1.1",
     "knex": "^3.1.0",
     "kysely": "^0.27.6",
     "lucide-react": "^0.487.0",

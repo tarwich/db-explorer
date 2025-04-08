@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import { FetchNextPageOptions } from '@tanstack/react-query';
 import {
   ColumnDef,
@@ -25,6 +26,8 @@ interface InfiniteTableProps<TData> {
   hasNextPage: boolean;
   isLoading: boolean;
   isFetchingNextPage: boolean;
+  onRowClick?: (row: TData) => void;
+  className?: string;
 }
 
 const ROW_HEIGHT = 40;
@@ -36,6 +39,8 @@ export function InfiniteTable<TData>({
   hasNextPage,
   isLoading,
   isFetchingNextPage,
+  onRowClick,
+  className,
 }: InfiniteTableProps<TData>) {
   const parentRef = useRef<HTMLDivElement>(null);
   const count = data.length;
@@ -80,7 +85,10 @@ export function InfiniteTable<TData>({
 
   return (
     <div
-      className="rounded-md border max-h-full flex flex-col overflow-auto"
+      className={cn(
+        'rounded-md border max-h-full flex flex-col overflow-auto',
+        className
+      )}
       ref={parentRef}
     >
       <div
@@ -155,6 +163,7 @@ export function InfiniteTable<TData>({
                       virtualRow.start - index * ROW_HEIGHT
                     }px)`,
                   }}
+                  onClick={() => onRowClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

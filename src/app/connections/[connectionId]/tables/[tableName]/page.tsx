@@ -1,6 +1,7 @@
 'use client';
 
 import { InfiniteTable } from '@/components/infinite-table';
+import { useRecordEditorSidebar } from '@/context/editor-sidebar-context';
 import { KeyIcon, LinkIcon } from '@heroicons/react/24/outline';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
@@ -14,15 +15,17 @@ export default function TablePage({
 }: {
   params: { connectionId: string; tableName: string };
 }) {
+  const sidebar = useRecordEditorSidebar();
+
   // Fetch table info
   const tableInfoQuery = useQuery({
-    queryKey: ['tableInfo', connectionId, tableName],
+    queryKey: ['connection', connectionId, 'table', tableName],
     queryFn: () => getTableInfo({ connectionId, tableName }),
   });
 
   // Fetch rows with infinite scrolling
   const rowsQuery = useInfiniteQuery({
-    queryKey: ['tableRows', connectionId, tableName],
+    queryKey: ['connection', connectionId, 'table', tableName, 'rows'],
     queryFn: ({ pageParam = 1 }) =>
       getRows({
         connectionId,
@@ -45,7 +48,7 @@ export default function TablePage({
     tableInfoQuery.data?.details.columns.map((column) => ({
       id: column.name,
       header: () => (
-        <div className="text-left">
+        <div className="text-left uppercase text-xs">
           {tableInfoQuery.data?.details.pk.includes(column.name) && (
             <KeyIcon className="icon-pk w-4 h-4 inline-block mr-2" />
           )}
@@ -73,12 +76,14 @@ export default function TablePage({
       {/* Table Container */}
       <div className="flex-1 px-8 pb-8 min-h-0">
         <InfiniteTable
+          className="h-full"
           columns={columns}
           data={allRows}
           fetchNextPage={rowsQuery.fetchNextPage}
           hasNextPage={rowsQuery.hasNextPage}
           isFetchingNextPage={rowsQuery.isFetchingNextPage}
           isLoading={rowsQuery.isLoading}
+          onRowClick={(row) => sidebar.openEditor(tableName, row.id)}
         />
       </div>
     </div>

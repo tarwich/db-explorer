@@ -1,6 +1,7 @@
 'use server';
 
 import { openConnection } from '@/app/actions/connections';
+import { PostgresPlugin } from '@/db/plugins';
 import { getStateDb } from '@/db/sqlite';
 import {
   deserializeDatabaseTable,
@@ -29,7 +30,9 @@ export async function analyzeTables(connectionId: string) {
     try {
       const stateDb = await getStateDb();
       const db = await openConnection(connectionId);
-      const introspection = await db.introspection.getTables();
+      const dbTables = await PostgresPlugin.listTables(db, {
+        schema: 'public',
+      });
 
       const tables = await stateDb
         .selectFrom('tables')
@@ -38,8 +41,8 @@ export async function analyzeTables(connectionId: string) {
         .execute()
         .then((tables) => tables.map(deserializeDatabaseTable));
 
-      for (const table of introspection) {
-        const columns = table.columns;
+      for (const table of dbTables) {
+        const columns = await PostgresPlugin.describeTable(db, table.name);
 
         const payload = {
           connectionId,
@@ -52,20 +55,29 @@ export async function analyzeTables(connectionId: string) {
             columns: [],
           },
         } satisfies DeserializedTable as DeserializedTable;
-        const primaryKey = await findPrimaryKey(db, table, columns);
-        payload.details = Object.assign(payload.details, {
-          pk: primaryKey,
-          displayColumns: [],
-          normalizedName: normalizeName(table.name),
-          columns: columns.map((c) => ({
-            name: c.name,
-            type: c.dataType,
-            nullable: c.isNullable,
-            normalizedName: normalizeName(c.name),
-          })),
-        } as typeof payload.details);
-        const displayColumns = determineDisplayColumns(payload);
-        payload.details.displayColumns = displayColumns;
+
+        for (const column of columns) {
+          const columnPayload: DeserializedTable['details']['columns'][number] =
+            {
+              name: column.name,
+              type: column.type,
+              nullable: column.isNullable,
+              normalizedName: normalizeName(column.name),
+            };
+
+          if (column.userDefined && table.name === 'AccountTrainingHistory') {
+            const enumOptions = await PostgresPlugin.describeEnum(
+              db,
+              column.type
+            );
+            columnPayload.enumOptions = enumOptions;
+          }
+
+          payload.details.columns.push(columnPayload);
+        }
+
+        payload.details.pk = await findPrimaryKey(db, table, columns);
+        payload.details.displayColumns = determineDisplayColumns(payload);
 
         const tableIndex = tables.findIndex(
           (t) => t.schema === table.schema && t.name === table.name

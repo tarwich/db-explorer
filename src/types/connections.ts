@@ -34,6 +34,7 @@ export interface DeserializedTable {
       normalizedName: string;
       type: string;
       nullable: boolean;
+      enumOptions?: string[];
       foreignKey?: {
         targetTable: string;
         targetColumn: string;

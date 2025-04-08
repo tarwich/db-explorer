@@ -1,7 +1,9 @@
 import { cn } from '@/lib/utils';
 import { KeyIcon, LinkIcon, XCircleIcon } from '@heroicons/react/24/outline';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
+import ReactJson from 'react-json-view';
+import { Dialog, DialogClose, DialogContent, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
 
 interface ColumnEditorProps {
@@ -18,10 +20,20 @@ export function ColumnEditor({
   isNullable,
 }: ColumnEditorProps) {
   const { register, setValue, getValues } = useFormContext();
+  const [isJsonModalOpen, setJsonModalOpen] = useState(false);
 
   const type =
     TYPE_MAP[column.type] || (column.enumOptions?.length ? 'enum' : 'text');
   const value = getValues(column.name);
+
+  const handleJsonChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    try {
+      const jsonValue = JSON.parse(event.target.value);
+      setValue(column.name, jsonValue);
+    } catch (error) {
+      // Handle JSON parse error
+    }
+  };
 
   return (
     <Fragment>
@@ -88,6 +100,43 @@ export function ColumnEditor({
             ))}
           </select>
         )}
+        {type === 'json' && (
+          <div className="flex flex-col gap-2">
+            <textarea
+              id={column.name}
+              value={JSON.stringify(value, null, 2)}
+              onChange={handleJsonChange}
+              className="flex-grow"
+              rows={5}
+            />
+            <Dialog>
+              <DialogTrigger asChild>
+                <button type="button" className="btn btn-primary">
+                  Edit JSON
+                </button>
+              </DialogTrigger>
+              <DialogContent style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+                <ReactJson
+                  src={value || {}}
+                  onEdit={(edit: { updated_src: any }) =>
+                    setValue(column.name, edit.updated_src)
+                  }
+                  onAdd={(add: { updated_src: any }) =>
+                    setValue(column.name, add.updated_src)
+                  }
+                  onDelete={(del: { updated_src: any }) =>
+                    setValue(column.name, del.updated_src)
+                  }
+                  theme="monokai"
+                  style={{ width: '100%' }}
+                />
+                <DialogClose asChild>
+                  <button className="btn btn-secondary">Close</button>
+                </DialogClose>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
         {isNullable && (
           <XCircleIcon
             className="w-4 h-4"
@@ -103,11 +152,13 @@ export function ColumnEditor({
 
 const TYPE_MAP: Record<
   string,
-  'datetime' | 'number' | 'boolean' | 'text' | 'enum'
+  'datetime' | 'number' | 'boolean' | 'text' | 'enum' | 'json'
 > = {
   timestamptz: 'datetime',
   timestamp: 'datetime',
   bool: 'boolean',
   integer: 'number',
   text: 'text',
+  json: 'json',
+  jsonb: 'json',
 };

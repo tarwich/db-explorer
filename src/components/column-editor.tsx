@@ -106,7 +106,7 @@ export function ColumnEditor({
         {type === 'json' && (
           <textarea
             id={column.name}
-            value={jsonValue}
+            value={jsonValue ?? ''}
             onChange={(e) => setJsonValue(e.target.value)}
             className="text-xs font-mono w-full"
             rows={5}

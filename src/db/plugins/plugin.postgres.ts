@@ -10,12 +10,12 @@ export const PostgresPlugin: IDatabasePlugin = {
 
 export async function listTables(
   db: Kysely<any>,
-  { schema }: { schema?: string } = {}
+  { schema = 'public' }: { schema?: string } = {}
 ) {
   return db
     .selectFrom('information_schema.tables')
     .select(['table_name', 'table_schema'])
-    .where('table_schema', '=', schema || 'public')
+    .where('table_schema', '=', schema)
     .execute()
     .then((rows) =>
       rows.map((row) => ({

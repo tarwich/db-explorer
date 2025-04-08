@@ -66,8 +66,6 @@ export async function getRows({
     }
   }
 
-  console.log(query.compile());
-
   const rows = await query.execute();
 
   return rows;

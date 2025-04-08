@@ -30,9 +30,7 @@ export async function analyzeTables(connectionId: string) {
     try {
       const stateDb = await getStateDb();
       const db = await openConnection(connectionId);
-      const dbTables = await PostgresPlugin.listTables(db, {
-        schema: 'public',
-      });
+      const dbTables = await PostgresPlugin.listTables(db);
 
       const tables = await stateDb
         .selectFrom('tables')
@@ -65,7 +63,7 @@ export async function analyzeTables(connectionId: string) {
               normalizedName: normalizeName(column.name),
             };
 
-          if (column.userDefined && table.name === 'AccountTrainingHistory') {
+          if (column.userDefined) {
             const enumOptions = await PostgresPlugin.describeEnum(
               db,
               column.type

@@ -157,7 +157,10 @@ export function InfiniteTable<TData>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="whitespace-nowrap"
+                  className={cn(
+                    'whitespace-nowrap',
+                    onRowClick && 'cursor-pointer'
+                  )}
                   style={{
                     transform: `translateY(${
                       virtualRow.start - index * ROW_HEIGHT

@@ -63,7 +63,7 @@ const formSchema = z.object({
   name: z.string().min(1, 'Connection name is required'),
   type: z.literal('postgres'),
   host: z.string().min(1, 'Host is required'),
-  port: z.number().min(1, 'Port is required'),
+  port: z.number({ coerce: true }).min(1, 'Port is required'),
   database: z.string().min(1, 'Database name is required'),
   username: z.string().min(1, 'Username is required'),
   password: z.string().min(1, 'Password is required'),
@@ -156,7 +156,11 @@ export function ConnectionDialog({
   });
 
   const testConnectionMutation = useMutation({
-    mutationFn: (connection: FormValues) => testConnection(connection),
+    mutationFn: (connection: FormValues) =>
+      testConnection(connection).then((data) => {
+        if (!data.success) throw new Error(JSON.stringify(data.error));
+        return data;
+      }),
     onSuccess: (data) => {
       toast({
         title: 'Connection Tested',

@@ -109,7 +109,7 @@ export default function DatabaseView({
                 <ArrowLeftIcon className="h-5 w-5 text-gray-700" />
               </button>
               <h2
-                className="text-lg font-medium truncate text-gray-900"
+                className="text-lg font-medium truncate text-gray-900 capitalize"
                 title={connectionQuery.data.name}
               >
                 {connectionQuery.data.name}

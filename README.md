@@ -15,7 +15,7 @@ A modern, user-friendly application for exploring and traversing unknown databas
 
 ## Prerequisites
 
-- Node.js (v18 or higher recommended)
+- Node.js (v23 or higher recommended)
 - npm
 - PostgreSQL database (for testing/development)
 
@@ -23,13 +23,44 @@ A modern, user-friendly application for exploring and traversing unknown databas
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/db-explorer.git
+git clone https://github.com/tarwich/db-explorer.git
 cd db-explorer
 ```
 
 2. Install dependencies:
 ```bash
 npm install
+```
+
+## Run a test database
+
+Start a postgres container:
+
+```bash
+docker compose up -d postgres
+```
+
+Run the seed script to populate the database with data:
+
+```bash
+npm run seed
+```
+
+Get the port of the postgres container:
+
+Run the following command and look for something like this
+`0.0.0.0:54590->5432`. Whatever points to 5432 is your local postgres port. If
+you see that, then `54590` is the local port, which you'll need in the
+connection string below.
+
+```bash
+docker compose ps
+```
+
+Connection string: (replace `54590` with your local postgres port)
+
+```bash
+postgres://postgres:postgres@localhost:54590/postgres
 ```
 
 ## Development

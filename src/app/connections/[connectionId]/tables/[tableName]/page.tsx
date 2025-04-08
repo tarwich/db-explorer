@@ -78,7 +78,7 @@ export default function TablePage({
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex-none p-8 pb-4">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900 capitalize">
           {tableInfoQuery.data?.name}
         </h1>
         <p className="mt-2 text-sm text-gray-600">

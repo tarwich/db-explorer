@@ -11,7 +11,8 @@
     "lint": "next lint",
     "electron-dev": "NODE_ENV=development concurrently \"npm run dev\" \"wait-on http://localhost:3005 && electron .\"",
     "electron-build": "next build && electron-builder",
-    "electron-start": "electron ."
+    "electron-start": "electron .",
+    "seed": "node scripts/seed.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
@@ -34,6 +35,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "date-fns": "^4.1.0",
     "electron-squirrel-startup": "^1.0.0",
     "immer": "^10.1.1",
     "knex": "^3.1.0",
@@ -46,7 +48,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.55.0",
-    "react-json-view": "^1.21.3",
     "tailwind-merge": "^3.1.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
@@ -69,6 +70,7 @@
     "eslint": "^8.56.0",
     "eslint-config-next": "14.1.0",
     "tailwindcss": "^3.3.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5",
     "wait-on": "^8.0.3"
   }

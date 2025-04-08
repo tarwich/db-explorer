@@ -32,12 +32,8 @@ export async function analyzeTables(connectionId: string) {
       const db = await openConnection(connectionId);
       const dbTables = await PostgresPlugin.listTables(db);
 
-      const tables = await stateDb
-        .selectFrom('tables')
-        .where('connectionId', '=', connectionId)
-        .selectAll()
-        .execute()
-        .then((tables) => tables.map(deserializeDatabaseTable));
+      const existingTables = await getTables(connectionId);
+      const discoveredTables: DeserializedTable[] = [];
 
       for (const table of dbTables) {
         const columns = await PostgresPlugin.describeTable(db, table.name);
@@ -78,23 +74,15 @@ export async function analyzeTables(connectionId: string) {
         payload.details.pk = await findPrimaryKey(db, table, columns);
         payload.details.displayColumns = determineDisplayColumns(payload);
 
-        const tableIndex = tables.findIndex(
-          (t) => t.schema === table.schema && t.name === table.name
-        );
-
-        if (tableIndex === -1) {
-          tables.push(payload);
-        } else {
-          tables[tableIndex] = payload;
-        }
+        discoveredTables.push(payload);
       }
 
-      for (const table of tables) {
-        await processForeignKeys(db, table, tables);
+      for (const table of discoveredTables) {
+        await processForeignKeys(db, table, discoveredTables);
       }
 
-      for (const table of tables) {
-        const tableExists = tables.some(
+      for (const table of discoveredTables) {
+        const tableExists = existingTables.some(
           (t) => t.schema === table.schema && t.name === table.name
         );
 
@@ -114,9 +102,11 @@ export async function analyzeTables(connectionId: string) {
         }
       }
 
+      const result = await getTables(connectionId);
+
       return {
         success: true,
-        tables: await getTables(connectionId),
+        tables: result,
       };
     } catch (error) {
       console.error(error);

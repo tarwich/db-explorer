@@ -105,7 +105,7 @@ export default function RecordEditorSidebar({
       <SheetContent>
         <FormProvider {...form}>
           <form onSubmit={onSubmit} className="flex flex-col gap-4 h-full">
-            <h1 className="text-xl font-bold flex flex-col gap-2">
+            <h1 className="text-xl font-bold flex flex-col gap-2 capitalize">
               {tableName}
               <small className="text-sm text-muted-foreground text-ellipsis overflow-hidden whitespace-nowrap">
                 {description}

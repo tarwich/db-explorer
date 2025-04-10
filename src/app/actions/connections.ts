@@ -120,7 +120,7 @@ export async function openConnection(
 
   console.log(
     'Opening new connection',
-    `${connection.host}:${connection.port}/${connection.database}`
+    `${connection.username}@${connection.host}:${connection.port}/${connection.database}`
   );
   const db = new Kysely({
     dialect: new PostgresDialect({
@@ -130,6 +130,9 @@ export async function openConnection(
         database: connection.database,
         user: connection.username,
         password: connection.password,
+        ssl: {
+          rejectUnauthorized: false,
+        },
       }),
     }),
     // log: ['query'],

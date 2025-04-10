@@ -1,12 +1,12 @@
 'use server';
 
-import { DatabaseConnection } from '@/types/connections';
-import { record, z } from 'zod';
-import pg from 'pg';
-import { guessForeignKeys } from '@/utils/foreign-key-guesser';
 import { DatabaseTable } from '@/stores/database';
+import { DatabaseConnection } from '@/types/connections';
 import { determineDisplayColumns } from '@/utils/display-columns';
+import { guessForeignKeys } from '@/utils/foreign-key-guesser';
 import { normalizeName } from '@/utils/normalize-name';
+import pg from 'pg';
+import { z } from 'zod';
 
 const connectionSchema = z.object({
   host: z.string(),

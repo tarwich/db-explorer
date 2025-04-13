@@ -1,17 +1,46 @@
+import { JSONColumnType } from 'kysely';
+
 export type StateDatabase = {
   connections: DatabaseConnection;
   tables: SerializedDatabaseTable;
 };
 
+export interface IPostgresConnectionDetails {
+  host: string;
+  port: number;
+  database: string;
+  username: string;
+  password: string;
+}
+
+export const isPostgresConnection = (
+  connection: DatabaseConnection
+): connection is DatabaseConnection & {
+  details: IPostgresConnectionDetails;
+} => {
+  return connection.type === 'postgres';
+};
+
+export interface ISqliteConnectionDetails {
+  path: string;
+}
+
+export const isSqliteConnection = (
+  connection: DatabaseConnection
+): connection is DatabaseConnection & {
+  details: ISqliteConnectionDetails;
+} => {
+  return connection.type === 'sqlite';
+};
+
 export interface DatabaseConnection {
   id?: string;
   name: string;
-  type: 'postgres';
-  host?: string;
-  port?: number;
-  database?: string;
-  username?: string;
-  password?: string;
+  type: 'postgres' | 'sqlite';
+  details: Omit<
+    JSONColumnType<IPostgresConnectionDetails | ISqliteConnectionDetails>,
+    '__insert__' | '__update__' | '__select__'
+  >;
 }
 
 export interface SerializedDatabaseTable {

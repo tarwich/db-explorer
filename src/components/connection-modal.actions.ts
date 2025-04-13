@@ -1,0 +1,44 @@
+'use server';
+
+import { getStateDb } from '@/db/state-db';
+import { StateDatabase } from '@/types/connections';
+import { randomUUID } from 'node:crypto';
+
+export async function loadConnection(connectionId: string) {
+  const stateDb = await getStateDb();
+  const connection = await stateDb
+    .selectFrom('connections')
+    .where('id', '=', connectionId)
+    .selectAll()
+    .executeTakeFirst();
+  return connection;
+}
+
+export async function saveConnection(
+  connectionId: string,
+  connection: StateDatabase['connections']
+) {
+  const stateDb = await getStateDb();
+
+  if (!connectionId || connectionId === 'new') {
+    await stateDb
+      .insertInto('connections')
+      .values({
+        id: randomUUID(),
+        name: connection.name,
+        type: connection.type,
+        details: JSON.stringify(connection.details),
+      })
+      .execute();
+  } else {
+    await stateDb
+      .updateTable('connections')
+      .set({
+        name: connection.name,
+        type: connection.type,
+        details: JSON.stringify(connection.details),
+      })
+      .where('id', '=', connectionId)
+      .execute();
+  }
+}

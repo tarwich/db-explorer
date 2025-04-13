@@ -8,7 +8,7 @@ import { useDisclosure } from '@reactuses/core';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Ellipsis } from 'lucide-react';
 import Link from 'next/link';
-import { getConnection, getTables } from './tables/actions';
+import { getConnection, getTables } from './actions';
 
 export default function Page({
   params: { connectionId },

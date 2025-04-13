@@ -1,7 +1,6 @@
 'use server';
 
-import { getStateDb } from '@/db/sqlite';
-import { getServerState } from '../state';
+import { getStateDb } from '@/db/state-db';
 
 export async function boot() {
   const db = await getStateDb();
@@ -17,11 +16,7 @@ export async function boot() {
       .addColumn('id', 'uuid', (column) => column.primaryKey())
       .addColumn('name', 'text', (column) => column.notNull())
       .addColumn('type', 'text', (column) => column.notNull())
-      .addColumn('host', 'text', (column) => column.notNull())
-      .addColumn('port', 'integer', (column) => column.notNull())
-      .addColumn('database', 'text', (column) => column.notNull())
-      .addColumn('username', 'text', (column) => column.notNull())
-      .addColumn('password', 'text', (column) => column.notNull())
+      .addColumn('details', 'json', (column) => column.notNull())
       .execute();
   }
 
@@ -37,7 +32,5 @@ export async function boot() {
       .execute();
   }
 
-  const state = await getServerState();
-
-  return state;
+  return true;
 }

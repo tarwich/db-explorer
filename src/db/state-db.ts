@@ -2,7 +2,7 @@
 
 import { StateDatabase } from '@/types/connections';
 import SQLite from 'better-sqlite3';
-import { Kysely, SqliteDialect } from 'kysely';
+import { Kysely, ParseJSONResultsPlugin, SqliteDialect } from 'kysely';
 import * as path from 'path';
 
 const DB_FILE = path.join(process.cwd(), 'state.local.sqlite3');
@@ -17,6 +17,7 @@ const dialect = new SqliteDialect({
 // to communicate with your database.
 const sqliteDb = new Kysely<StateDatabase>({
   dialect,
+  plugins: [new ParseJSONResultsPlugin()],
 });
 
 export async function getStateDb() {

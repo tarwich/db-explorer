@@ -1,4 +1,3 @@
-import { TableColumn } from '@/stores/database';
 import { DeserializedTable } from '@/types/connections';
 
 type DeserializedTableColumn = DeserializedTable['details']['columns'][number];
@@ -82,35 +81,4 @@ export function guessForeignKeys(
 
     return NO_MATCH;
   });
-}
-
-export function combineActualAndGuessedForeignKeys(
-  column: TableColumn,
-  guessedForeignKeys: ForeignKeyGuess[]
-): TableColumn {
-  // If it's already a foreign key, return as is
-  if (column.foreignKey) {
-    return column;
-  }
-
-  // Find the highest confidence guess for this column
-  const guess = guessedForeignKeys.find(
-    (g) => g.sourceColumn === column.column_name
-  );
-
-  if (!guess) {
-    return column;
-  }
-
-  return {
-    ...column,
-    foreignKey: {
-      columnName: guess.sourceColumn,
-      targetSchema: guess.targetSchema,
-      targetTable: guess.targetTable,
-      targetColumn: guess.targetColumn,
-      isGuessed: true,
-      confidence: guess.confidence,
-    },
-  };
 }

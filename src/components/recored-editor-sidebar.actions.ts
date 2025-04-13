@@ -1,7 +1,7 @@
 'use server';
 
 import { openConnection } from '@/app/actions/connections';
-import { getStateDb } from '@/db/sqlite';
+import { getStateDb } from '@/db/state-db';
 import { deserializeDatabaseTable } from '@/types/connections';
 
 export async function getTableInfo({

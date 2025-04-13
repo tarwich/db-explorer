@@ -2,7 +2,7 @@
 
 import { openConnection } from '@/app/actions/connections';
 import { PostgresPlugin } from '@/db/plugins';
-import { getStateDb } from '@/db/sqlite';
+import { getStateDb } from '@/db/state-db';
 import {
   deserializeDatabaseTable,
   DeserializedTable,

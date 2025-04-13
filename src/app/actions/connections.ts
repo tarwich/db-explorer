@@ -1,9 +1,14 @@
 'use server';
 
-import { getStateDb } from '@/db/sqlite';
-import { DatabaseConnection } from '@/types/connections';
+import { getStateDb } from '@/db/state-db';
+import {
+  DatabaseConnection,
+  isPostgresConnection,
+  isSqliteConnection,
+} from '@/types/connections';
+import SqliteDatabase from 'better-sqlite3';
 import { randomUUID } from 'crypto';
-import { Kysely, PostgresDialect, sql } from 'kysely';
+import { Kysely, PostgresDialect, sql, SqliteDialect } from 'kysely';
 import { Pool } from 'pg';
 
 export async function getConnections() {
@@ -32,11 +37,7 @@ export async function saveConnection(connection: Partial<DatabaseConnection>) {
         .set({
           name: connection.name,
           type: connection.type,
-          host: connection.host,
-          port: connection.port,
-          database: connection.database,
-          username: connection.username,
-          password: connection.password,
+          details: connection.details,
         })
         .where('id', '=', String(connection.id))
         .returningAll()
@@ -48,11 +49,7 @@ export async function saveConnection(connection: Partial<DatabaseConnection>) {
           id: randomUUID(),
           name: connection.name || '',
           type: connection.type || 'postgres',
-          host: connection.host || '',
-          port: connection.port || 0,
-          database: connection.database || '',
-          username: connection.username || '',
-          password: connection.password || '',
+          details: connection.details as any,
         })
         .returningAll()
         .execute();
@@ -80,19 +77,31 @@ export async function getConnection(id: string) {
 }
 
 export async function testConnection(connection: DatabaseConnection) {
-  const db = new Kysely({
-    dialect: new PostgresDialect({
-      pool: new Pool({
-        host: connection.host,
-        port: connection.port,
-        database: connection.database,
-        user: connection.username,
-        password: connection.password,
-      }),
-    }),
-  });
-
   try {
+    const db = isPostgresConnection(connection)
+      ? new Kysely({
+          dialect: new PostgresDialect({
+            pool: new Pool({
+              host: connection.details.host,
+              port: connection.details.port,
+              database: connection.details.database,
+              user: connection.details.username,
+              password: connection.details.password,
+            }),
+          }),
+        })
+      : isSqliteConnection(connection)
+      ? new Kysely({
+          dialect: new SqliteDialect({
+            database: async () => new SqliteDatabase(connection.details.path),
+          }),
+        })
+      : null;
+
+    if (!db) {
+      throw new Error('Invalid connection type');
+    }
+
     await sql`SELECT 1`.execute(db);
     return true;
   } catch (error) {
@@ -118,25 +127,38 @@ export async function openConnection(
     throw new Error('Connection not found');
   }
 
-  console.log(
-    'Opening new connection',
-    `${connection.username}@${connection.host}:${connection.port}/${connection.database}`
-  );
-  const db = new Kysely({
-    dialect: new PostgresDialect({
-      pool: new Pool({
-        host: connection.host,
-        port: connection.port,
-        database: connection.database,
-        user: connection.username,
-        password: connection.password,
-        ssl: {
-          rejectUnauthorized: false,
-        },
-      }),
-    }),
-    // log: ['query'],
-  });
+  const db = (() => {
+    if (isPostgresConnection(connection)) {
+      console.log(
+        'Opening new connection',
+        `${connection.details.username}@${connection.details.host}:${connection.details.port}/${connection.details.database}`
+      );
+      return new Kysely({
+        dialect: new PostgresDialect({
+          pool: new Pool({
+            host: connection.details.host,
+            port: connection.details.port,
+            database: connection.details.database,
+            user: connection.details.username,
+            password: connection.details.password,
+            ssl: {
+              rejectUnauthorized: false,
+            },
+          }),
+        }),
+        // log: ['query'],
+      });
+    } else if (isSqliteConnection(connection)) {
+      console.log('Opening new connection', connection.details.path);
+      return new Kysely({
+        dialect: new SqliteDialect({
+          database: async () => new SqliteDatabase(connection.details.path),
+        }),
+      });
+    }
+
+    throw new Error('Invalid connection type');
+  })();
 
   connectionCache.set(connectionId, db);
 

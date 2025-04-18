@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron';
+import electronSquirrelStartup from 'electron-squirrel-startup';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import electronSquirrelStartup from 'electron-squirrel-startup';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,9 +38,7 @@ if (electronSquirrelStartup) {
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  app.quit();
 });
 
 app.on('activate', () => {

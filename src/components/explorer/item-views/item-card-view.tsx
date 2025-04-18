@@ -1,14 +1,18 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Ellipsis } from 'lucide-react';
-import { IExplorerItem } from '../types';
-import { ItemIcon } from './item-icon';
+import { ItemIcon, TIconName } from './item-icon';
 
 export function ItemCardView({
   item,
   onMenuClick,
 }: {
-  item: IExplorerItem;
+  item: {
+    id: string;
+    name: string;
+    subName: string;
+    icon: TIconName;
+  };
   onMenuClick?: () => void;
 }) {
   const handleMenuClick = onMenuClick

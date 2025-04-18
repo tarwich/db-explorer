@@ -5,22 +5,27 @@ import { StateDatabase } from '@/types/connections';
 import { randomUUID } from 'node:crypto';
 
 export async function loadConnection(connectionId: string) {
+  if (!connectionId) {
+    return null;
+  }
+
   const stateDb = await getStateDb();
   const connection = await stateDb
     .selectFrom('connections')
     .where('id', '=', connectionId)
     .selectAll()
     .executeTakeFirst();
+
   return connection;
 }
 
 export async function saveConnection(
-  connectionId: string,
+  connectionId: string | undefined,
   connection: StateDatabase['connections']
 ) {
   const stateDb = await getStateDb();
 
-  if (!connectionId || connectionId === 'new') {
+  if (!connectionId) {
     await stateDb
       .insertInto('connections')
       .values({

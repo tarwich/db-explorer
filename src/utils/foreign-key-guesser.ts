@@ -1,6 +1,6 @@
-import { DeserializedTable } from '@/types/connections';
+import { DatabaseTable } from '@/types/connections';
 
-type DeserializedTableColumn = DeserializedTable['details']['columns'][number];
+type DatabaseTableColumn = DatabaseTable['details']['columns'][number];
 
 interface ForeignKeyGuess {
   sourceColumn: string;
@@ -31,7 +31,7 @@ const singularize = (name: string): string => {
   );
 };
 
-function isIdColumn(column: DeserializedTableColumn): boolean {
+function isIdColumn(column: DatabaseTableColumn): boolean {
   // Only allow id, uuid, or guid columns to be guessed as foreign keys
   if (column.type !== 'integer' && column.type !== 'uuid') {
     return false;
@@ -45,8 +45,8 @@ function isIdColumn(column: DeserializedTableColumn): boolean {
 }
 
 export function guessForeignKeys(
-  sourceColumns: DeserializedTable['details']['columns'],
-  allTables: DeserializedTable[]
+  sourceColumns: DatabaseTableColumn[],
+  allTables: DatabaseTable[]
 ): ForeignKeyGuess[] {
   return sourceColumns.map((column) => {
     const normalized = column.normalizedName.replace(ID_REGEX, '').trim();

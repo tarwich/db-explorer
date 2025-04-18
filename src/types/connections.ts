@@ -1,9 +1,18 @@
+import { TColorName } from '@/components/explorer/item-views/item-colors';
+import { TIconName } from '@/components/explorer/item-views/item-icon';
 import { JSONColumnType } from 'kysely';
+
+type ExcludeHiddenColumns<T> = Omit<
+  T,
+  '__insert__' | '__update__' | '__select__'
+>;
 
 export type StateDatabase = {
   connections: DatabaseConnection;
-  tables: SerializedDatabaseTable;
+  tables: DatabaseTable;
 };
+
+export type SslMode = 'disable' | 'require' | 'verify-full' | 'verify-ca';
 
 export interface IPostgresConnectionDetails {
   host: string;
@@ -11,6 +20,7 @@ export interface IPostgresConnectionDetails {
   database: string;
   username: string;
   password: string;
+  sslMode?: SslMode;
 }
 
 export const isPostgresConnection = (
@@ -37,32 +47,31 @@ export interface DatabaseConnection {
   id?: string;
   name: string;
   type: 'postgres' | 'sqlite';
-  details: Omit<
-    JSONColumnType<IPostgresConnectionDetails | ISqliteConnectionDetails>,
-    '__insert__' | '__update__' | '__select__'
+  details: ExcludeHiddenColumns<
+    JSONColumnType<IPostgresConnectionDetails | ISqliteConnectionDetails>
   >;
 }
 
-export interface SerializedDatabaseTable {
+export type DatabaseTable = {
   name: string;
   schema: string;
   connectionId: string;
-  details: string;
-}
-
-export interface DeserializedTable {
-  name: string;
-  schema: string;
-  connectionId: string;
-  details: {
+  details: ExcludeHiddenColumns<{
     normalizedName: string;
+    singularName: string;
+    pluralName: string;
+    color: TColorName;
+    icon: TIconName;
     displayColumns: string[];
     pk: string[];
     columns: {
       name: string;
       normalizedName: string;
+      icon: TIconName;
+      displayName: string;
       type: string;
       nullable: boolean;
+      hidden: boolean;
       enumOptions?: string[];
       foreignKey?: {
         targetTable: string;
@@ -70,21 +79,5 @@ export interface DeserializedTable {
         isGuessed: boolean;
       };
     }[];
-  };
-}
-
-export const serializeDatabaseTable = (table: DeserializedTable) => {
-  return {
-    ...table,
-    details: JSON.stringify(table.details),
-  };
-};
-
-export const deserializeDatabaseTable = (
-  table: SerializedDatabaseTable
-): DeserializedTable => {
-  return {
-    ...table,
-    details: JSON.parse(table.details as any),
-  };
+  }>;
 };

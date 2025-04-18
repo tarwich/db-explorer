@@ -87,6 +87,15 @@ export async function testConnection(connection: DatabaseConnection) {
               database: connection.details.database,
               user: connection.details.username,
               password: connection.details.password,
+              ssl:
+                connection.details.sslMode === 'disable'
+                  ? false
+                  : {
+                      rejectUnauthorized:
+                        connection.details.sslMode === 'verify-full'
+                          ? true
+                          : false,
+                    },
             }),
           }),
         })
@@ -133,6 +142,13 @@ export async function openConnection(
         'Opening new connection',
         `${connection.details.username}@${connection.details.host}:${connection.details.port}/${connection.details.database}`
       );
+      const ssl =
+        connection.details.sslMode === 'disable'
+          ? false
+          : {
+              rejectUnauthorized:
+                connection.details.sslMode === 'verify-full' ? true : false,
+            };
       return new Kysely({
         dialect: new PostgresDialect({
           pool: new Pool({
@@ -141,12 +157,9 @@ export async function openConnection(
             database: connection.details.database,
             user: connection.details.username,
             password: connection.details.password,
-            ssl: {
-              rejectUnauthorized: false,
-            },
+            ssl,
           }),
         }),
-        // log: ['query'],
       });
     } else if (isSqliteConnection(connection)) {
       console.log('Opening new connection', connection.details.path);

@@ -8,7 +8,7 @@ export const PostgresPlugin: IDatabasePlugin = {
   describeEnum: describeEnum,
 };
 
-export async function listTables(
+async function listTables(
   db: Kysely<any>,
   { schema = 'public' }: { schema?: string } = {}
 ) {
@@ -25,7 +25,7 @@ export async function listTables(
     );
 }
 
-export async function describeTable(db: Kysely<any>, table: string) {
+async function describeTable(db: Kysely<any>, table: string) {
   return db
     .selectFrom('information_schema.columns')
     .select([
@@ -40,17 +40,21 @@ export async function describeTable(db: Kysely<any>, table: string) {
     .orderBy('ordinal_position')
     .execute()
     .then((rows) =>
-      rows.map((row) => ({
-        name: row.column_name,
-        type: row.udt_name,
-        isNullable: row.is_nullable === 'YES',
-        default: row.column_default,
-        userDefined: row.data_type === 'USER-DEFINED',
-      }))
+      rows.map((row) => {
+        const userDefined = row.data_type === 'USER-DEFINED';
+
+        return {
+          name: row.column_name,
+          type: userDefined ? 'enum' : row.udt_name,
+          isNullable: row.is_nullable === 'YES',
+          default: row.column_default,
+          userDefined,
+        };
+      })
     );
 }
 
-export async function describeEnum(db: Kysely<any>, enumName: string) {
+async function describeEnum(db: Kysely<any>, enumName: string) {
   const result = await db
     .selectFrom('pg_enum')
     .select('enumlabel as value')

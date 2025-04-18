@@ -1,128 +1,129 @@
 'use server';
 
-import { openConnection } from '@/app/actions/connections';
-import { PostgresPlugin } from '@/db/plugins';
+import { openConnection } from '@/app/api/connections';
+import { loadConnection } from '@/components/connection-modal/connection-modal.actions';
+import { getPlugin, PostgresPlugin } from '@/db/plugins';
 import { getStateDb } from '@/db/state-db';
-import {
-  deserializeDatabaseTable,
-  DeserializedTable,
-  serializeDatabaseTable,
-} from '@/types/connections';
-import { determineDisplayColumns } from '@/utils/display-columns';
+import { DatabaseTable } from '@/types/connections';
+import { getBestIcon } from '@/utils/best-icon';
 import { guessForeignKeys } from '@/utils/foreign-key-guesser';
 import { normalizeName } from '@/utils/normalize-name';
 import { Kysely } from 'kysely';
+import { plural, singular } from 'pluralize';
+import { title } from 'radash';
 import { z } from 'zod';
 
 export async function getTables(connectionId: string) {
-  const db = await getStateDb();
-  const tables = await db
-    .selectFrom('tables')
-    .where('connectionId', '=', connectionId)
-    .selectAll()
-    .execute()
-    .then((tables) => tables.map(deserializeDatabaseTable));
+  const connection = await loadConnection(connectionId);
+
+  if (!connection) {
+    return [];
+  }
+
+  const db = await openConnection(connectionId);
+
+  const stateDb = await getStateDb();
+  const knownTables = Object.fromEntries(
+    await stateDb
+      .selectFrom('tables')
+      .where('connectionId', '=', connectionId)
+      .selectAll()
+      .execute()
+      .then((rows) => rows.map((r) => [r.name, r]))
+  );
+
+  const plugin = getPlugin(connection);
+  const dbTables = await plugin.listTables(db);
+
+  const tables = await Promise.all(
+    dbTables.map(async (table): Promise<DatabaseTable> => {
+      const knownTable = knownTables[table.name];
+
+      return {
+        name: knownTable?.name || table.name,
+        schema: knownTable?.schema || table.schema,
+        connectionId,
+        details: {
+          normalizedName:
+            knownTable?.details.normalizedName || normalizeName(table.name),
+          singularName:
+            knownTable?.details.singularName || title(singular(table.name)),
+          pluralName:
+            knownTable?.details.pluralName || title(plural(table.name)),
+          icon: knownTable?.details.icon || (await getBestIcon(table.name)),
+          color: knownTable?.details.color || 'green',
+          displayColumns: knownTable?.details.displayColumns || [],
+          pk: knownTable?.details.pk || [],
+          columns: knownTable?.details.columns || [],
+        },
+      };
+    })
+  );
+
   return tables;
 }
 
-export async function analyzeTables(connectionId: string) {
-  try {
-    try {
-      const stateDb = await getStateDb();
-      const db = await openConnection(connectionId);
-      const dbTables = await PostgresPlugin.listTables(db);
+export async function getTable(
+  connectionId: string,
+  tableId: string
+): Promise<DatabaseTable> {
+  const connection = await loadConnection(connectionId);
 
-      const existingTables = await getTables(connectionId);
-      const discoveredTables: DeserializedTable[] = [];
-
-      for (const table of dbTables) {
-        const columns = await PostgresPlugin.describeTable(db, table.name);
-
-        const payload = {
-          connectionId,
-          name: table.name,
-          schema: table.schema || 'public',
-          details: {
-            normalizedName: normalizeName(table.name),
-            displayColumns: [],
-            pk: [],
-            columns: [],
-          },
-        } satisfies DeserializedTable as DeserializedTable;
-
-        for (const column of columns) {
-          const columnPayload: DeserializedTable['details']['columns'][number] =
-            {
-              name: column.name,
-              type: column.type,
-              nullable: column.isNullable,
-              normalizedName: normalizeName(column.name),
-            };
-
-          if (column.userDefined) {
-            const enumOptions = await PostgresPlugin.describeEnum(
-              db,
-              column.type
-            );
-            columnPayload.type = 'enum';
-            columnPayload.enumOptions = enumOptions;
-          }
-
-          payload.details.columns.push(columnPayload);
-        }
-
-        payload.details.pk = await findPrimaryKey(db, table, columns);
-        payload.details.displayColumns = determineDisplayColumns(payload);
-
-        discoveredTables.push(payload);
-      }
-
-      for (const table of discoveredTables) {
-        await processForeignKeys(db, table, discoveredTables);
-      }
-
-      for (const table of discoveredTables) {
-        const tableExists = existingTables.some(
-          (t) => t.schema === table.schema && t.name === table.name
-        );
-
-        if (tableExists) {
-          await stateDb
-            .updateTable('tables')
-            .set(serializeDatabaseTable(table))
-            .where('connectionId', '=', connectionId)
-            .where('schema', '=', table.schema)
-            .where('name', '=', table.name)
-            .execute();
-        } else {
-          await stateDb
-            .insertInto('tables')
-            .values(serializeDatabaseTable(table))
-            .execute();
-        }
-      }
-
-      const result = await getTables(connectionId);
-
-      return {
-        success: true,
-        tables: result,
-      };
-    } catch (error) {
-      console.error(error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-  } catch (error) {
-    console.error(error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Invalid request',
-    };
+  if (!connection) {
+    throw new Error('Connection not found');
   }
+
+  const stateDb = await getStateDb();
+  const knownTable = await stateDb
+    .selectFrom('tables')
+    .selectAll()
+    .where('connectionId', '=', connectionId)
+    .where('name', '=', tableId)
+    .executeTakeFirst();
+
+  if (knownTable) {
+    return knownTable;
+  }
+
+  const db = await openConnection(connectionId);
+  const columns = await PostgresPlugin.describeTable(db, tableId);
+
+  const table = {
+    name: tableId,
+    schema: 'public',
+    connectionId,
+    details: {
+      normalizedName: normalizeName(tableId),
+      singularName: title(singular(tableId)),
+      pluralName: title(plural(tableId)),
+      icon: 'Table',
+      color: 'green',
+      displayColumns: [],
+      pk: [],
+      columns: columns.map((c) => ({
+        name: c.name,
+        type: c.type,
+        displayName: title(c.name),
+        icon: 'Box',
+        nullable: c.isNullable,
+        normalizedName: normalizeName(c.name),
+        userDefined: c.userDefined,
+        hidden: false,
+      })),
+    },
+  } as DatabaseTable;
+
+  table.details.columns = await Promise.all(
+    table.details.columns.map(async (c) => ({
+      ...c,
+      icon: 'Box',
+    }))
+  );
+
+  return table;
 }
+
+type Column = DatabaseTable['details']['columns'][number];
 
 const findPrimaryKey = async (
   client: Kysely<any>,
@@ -162,8 +163,8 @@ const connectionSchema = z.object({
 
 async function processForeignKeys(
   db: Kysely<any>,
-  table: DeserializedTable,
-  allTables: DeserializedTable[]
+  table: DatabaseTable,
+  allTables: DatabaseTable[]
 ): Promise<void> {
   const foreignKeysResult = await db
     .selectFrom('information_schema.table_constraints as tc')

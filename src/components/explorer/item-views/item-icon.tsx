@@ -1,15 +1,19 @@
 import { icons } from 'lucide-react';
 import { ComponentProps } from 'react';
-import { ICollection, IExplorerItem } from '../types';
+
+export type TIconName = keyof typeof icons;
+
+export const Icons = icons;
 
 export function ItemIcon({
   item,
   ...props
 }: {
-  item: IExplorerItem | ICollection;
+  item: {
+    icon: string;
+  };
 } & ComponentProps<(typeof icons)[keyof typeof icons]>) {
-  const TheIcon =
-    icons[item.icon] ?? (item.type === 'collection' ? icons.Boxes : icons.Box);
+  const TheIcon = Icons[item.icon as TIconName] || Icons.Box;
 
   return <TheIcon className="size-4" {...props} />;
 }

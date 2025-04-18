@@ -1,38 +1,29 @@
 'use client';
 
-import { ConnectionModal } from '@/components/connection-modal';
+import { ConnectionModal } from '@/components/connection-modal/connection-modal';
 import { ItemCardView } from '@/components/explorer/item-views/item-card-view';
-import { ICollection } from '@/components/explorer/types';
+import { TIconName } from '@/components/explorer/item-views/item-icon';
 import { Header } from '@/components/header';
 import { cn } from '@/lib/utils';
 import { isPostgresConnection, isSqliteConnection } from '@/types/connections';
+import { useDisclosure } from '@reactuses/core';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import pluralize, { isPlural } from 'pluralize';
 import { useState } from 'react';
-import { getConnections } from '../actions/connections';
+import { getConnections } from '../api/connections';
 
 export default function Home() {
+  const newConnection = useDisclosure();
   const [editConnectionId, setEditConnectionId] = useState<string | undefined>(
     undefined
   );
-  const router = useRouter();
-
-  const DatabaseCollection: ICollection = {
-    id: 'databases',
-    name: 'Databases',
-    type: 'collection',
-    pluralName: 'Databases',
-    icon: 'Database',
-    subName: 'Database Connections',
-  };
 
   const connectionsQuery = useQuery({
     queryKey: ['connections'],
     queryFn: () => getConnections(),
     select: (data) => {
-      return data.map((connection): ICollection => {
+      return data.map((connection) => {
         const subName = isPostgresConnection(connection)
           ? `${connection.details.username}@${connection.details.host}:${connection.details.port}/${connection.details.database}`
           : isSqliteConnection(connection)
@@ -45,18 +36,12 @@ export default function Home() {
           pluralName: isPlural(connection.name)
             ? connection.name
             : pluralize(connection.name),
-          icon: 'Database',
+          icon: 'Database' as TIconName,
           subName,
         };
       });
     },
   });
-
-  type Connection = Awaited<ReturnType<typeof getConnections>>[number];
-
-  const editConnection = (id: string) => {
-    setEditConnectionId(id);
-  };
 
   return (
     <div className="min-h-screen bg-gray-200 p-4 flex flex-col shadow-sm">
@@ -64,7 +49,7 @@ export default function Home() {
         <Header
           icon="Database"
           title="Connections"
-          onNew={() => editConnection('new')}
+          onNew={newConnection.onOpen}
         />
 
         {/* Connection List */}
@@ -75,16 +60,24 @@ export default function Home() {
           )}
         >
           {connectionsQuery.data?.map((connection) => (
-            <Link href={`/connections/${connection.id}`} key={connection.id}>
+            <Link
+              href={`/connections/${connection.id}/tables`}
+              key={connection.id}
+            >
               <ItemCardView
                 item={connection}
-                onMenuClick={() => editConnection(connection.id)}
+                onMenuClick={() => setEditConnectionId(connection.id)}
               />
             </Link>
           ))}
         </div>
       </main>
-
+      {newConnection.isOpen && (
+        <ConnectionModal
+          isOpen={newConnection.isOpen}
+          onOpenChange={newConnection.onOpenChange}
+        />
+      )}
       {editConnectionId && (
         <ConnectionModal
           isOpen={true}

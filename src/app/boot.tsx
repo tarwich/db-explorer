@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { boot } from './actions/boot';
+import { boot } from './api/boot';
 
 export default function Boot() {
   useQuery({

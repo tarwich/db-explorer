@@ -1,4 +1,4 @@
-import { DeserializedTable } from '@/types/connections';
+import { DatabaseTable } from '@/types/connections';
 
 /** Common meaningful column names that are good for display   */
 const COMMON_DISPLAY_COLUMNS = ['name', 'title', 'label', 'description'];
@@ -18,7 +18,7 @@ const TEXT_TYPES = [
  * @param primaryKey The table's primary key columns
  * @returns Array of column names to use for displaying records
  */
-export function determineDisplayColumns(table: DeserializedTable): string[] {
+export function determineDisplayColumns(table: DatabaseTable): string[] {
   const columns = table.details.columns;
   const primaryKey = table.details.pk;
 

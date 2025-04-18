@@ -1,6 +1,6 @@
 'use server';
 
-import { openConnection } from '@/app/actions/connections';
+import { openConnection } from '@/app/api/connections';
 import { getStateDb } from '@/db/state-db';
 import { deserializeDatabaseTable } from '@/types/connections';
 

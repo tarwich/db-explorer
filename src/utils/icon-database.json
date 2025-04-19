@@ -2417,7 +2417,7 @@
   {
     "name": "Database",
     "normalized": "database",
-    "synonyms": []
+    "synonyms": ["table", "collection", "data", "storage"]
   },
   {
     "name": "DatabaseBackup",
@@ -4457,7 +4457,7 @@
   {
     "name": "MapPin",
     "normalized": "map pin",
-    "synonyms": []
+    "synonyms": ["location", "airport", "place", "destination"]
   },
   {
     "name": "MapPinCheck",
@@ -5477,7 +5477,7 @@
   {
     "name": "Plane",
     "normalized": "plane",
-    "synonyms": []
+    "synonyms": ["aircraft", "flight", "airplane", "aviation"]
   },
   {
     "name": "PlaneLanding",
@@ -6132,7 +6132,7 @@
   {
     "name": "Settings",
     "normalized": "settings",
-    "synonyms": ["configuration", "preferences", "options", "setup", "admin"]
+    "synonyms": ["configuration", "preferences", "setup", "profile"]
   },
   {
     "name": "Settings2",
@@ -6997,12 +6997,12 @@
   {
     "name": "Tag",
     "normalized": "tag",
-    "synonyms": ["label", "category", "classification", "group", "mark"]
+    "synonyms": ["label", "category", "classification", "metadata"]
   },
   {
     "name": "Tags",
     "normalized": "tag",
-    "synonyms": ["label", "category", "classification", "group", "mark"]
+    "synonyms": ["label", "category", "classification", "metadata"]
   },
   {
     "name": "Tally1",
@@ -7472,7 +7472,7 @@
   {
     "name": "User",
     "normalized": "user",
-    "synonyms": []
+    "synonyms": ["accounts", "people", "personnel", "crew", "staff"]
   },
   {
     "name": "UserCheck",
@@ -7551,7 +7551,7 @@
   },
   {
     "name": "Users",
-    "normalized": "user",
+    "normalized": "users",
     "synonyms": []
   },
   {
@@ -7677,7 +7677,7 @@
   {
     "name": "Wallet",
     "normalized": "wallet",
-    "synonyms": []
+    "synonyms": ["payment", "billing", "invoice", "quote", "pricing"]
   },
   {
     "name": "WalletCards",
@@ -7832,7 +7832,7 @@
   {
     "name": "Wrench",
     "normalized": "wrench",
-    "synonyms": []
+    "synonyms": ["maintenance", "repair", "service", "squawk"]
   },
   {
     "name": "X",

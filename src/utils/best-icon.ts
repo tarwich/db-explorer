@@ -1,29 +1,51 @@
+'use server';
+
 import { TIconName } from '@/components/explorer/item-views/item-icon';
-import { icons } from 'lucide-react';
-import { BayesClassifier, WordNet } from 'natural';
-import * as iconDictionary from './icon-dictionary.json';
+import Fuse from 'fuse.js';
+import { sort } from 'radash';
+import typeIconDictionary from './data-type-icons.json';
+import iconDictionary from './icon-database.json';
 
-const ICON_NAMES = Object.keys(icons);
+type IconEntry = (typeof iconDictionary)[number];
+type TypeIconEntry = (typeof typeIconDictionary)[number];
 
-let classifier: BayesClassifier | undefined;
-const wordnet = new WordNet();
-
-type CallbackToPromise<T extends (...args: any[]) => any> = Parameters<
-  Parameters<T>[1]
->[0];
+let generalIconFuse: Fuse<IconEntry> | undefined;
+let typeIconFuse: Fuse<TypeIconEntry> | undefined;
 
 export async function getBestIcon(sentence: string): Promise<TIconName> {
-  if (!classifier) {
-    classifier = BayesClassifier.restore({ ...iconDictionary });
+  if (!generalIconFuse) {
+    generalIconFuse = new Fuse(iconDictionary, {
+      includeScore: true,
+      threshold: 0.2,
+      keys: ['name', 'normalized', 'synonyms'],
+    });
   }
 
-  // if (!classifier) return 'Box';
+  const results = sort(
+    generalIconFuse.search(sentence, { limit: 3 }),
+    (r) => r.score || 0
+  );
 
-  const synonyms = await new Promise<CallbackToPromise<typeof wordnet.lookup>>(
-    (ok) => wordnet.lookup(sentence, ok)
-  ).then((r) => r.flatMap((r) => r.synonyms));
-  const result = classifier.classify(`${sentence} ${synonyms.join(' ')}`);
-  console.log({ sentence, result });
+  if (!results.length) return 'Box';
 
-  return result as TIconName;
+  return results[0].item.name as TIconName;
+}
+
+export async function getBestIconForType(type: string): Promise<TIconName> {
+  if (!typeIconFuse) {
+    typeIconFuse = new Fuse(typeIconDictionary, {
+      includeScore: true,
+      threshold: 0.2,
+      keys: ['name', 'icon', 'synonyms'],
+    });
+  }
+
+  const results = sort(
+    typeIconFuse.search(type, { limit: 3 }),
+    (r) => r.score || 0
+  );
+
+  if (!results.length) return 'FileQuestion';
+
+  return results[0].item.icon as TIconName;
 }

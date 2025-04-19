@@ -1,6 +1,6 @@
-import { singular } from 'pluralize';
 import { noCase } from 'change-case';
+import pluralize from 'pluralize';
 
 export function normalizeName(name: string): string {
-  return singular(noCase(name));
+  return pluralize.singular(noCase(name));
 }

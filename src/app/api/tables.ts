@@ -5,7 +5,7 @@ import { loadConnection } from '@/components/connection-modal/connection-modal.a
 import { getPlugin, PostgresPlugin } from '@/db/plugins';
 import { getStateDb } from '@/db/state-db';
 import { DatabaseTable } from '@/types/connections';
-import { getBestIcon } from '@/utils/best-icon';
+import { getBestIcon, getBestIconForType } from '@/utils/best-icon';
 import { guessForeignKeys } from '@/utils/foreign-key-guesser';
 import { normalizeName } from '@/utils/normalize-name';
 import { Kysely } from 'kysely';
@@ -116,7 +116,7 @@ export async function getTable(
   table.details.columns = await Promise.all(
     table.details.columns.map(async (c) => ({
       ...c,
-      icon: 'Box',
+      icon: await getBestIconForType(c.type),
     }))
   );
 

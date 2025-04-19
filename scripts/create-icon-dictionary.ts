@@ -1,71 +1,107 @@
+import { writeFileSync } from 'fs';
+import Fuse from 'fuse.js';
 import { icons } from 'lucide-react';
-// import { BayesClassifier, WordNet } from 'natural';
-import { parseArgs } from 'node:util';
-import { title } from 'radash';
-
-const { BayesClassifier, WordNet } = await import('natural').then(
-  (m) => m.default
-);
-
-/** @typedef {import('natural').WordNet} WordNet */
-/** @typedef {import('natural').BayesClassifier} BayesClassifier */
+import natural from 'natural';
+import { sort, unique } from 'radash';
+import type { Synset } from 'wordpos';
+import WordPOS from 'wordpos';
+import { normalizeName } from '../src/utils/normalize-name';
 
 const ICON_NAMES = Object.keys(icons);
 
-async function main() {
-  const classifier = new BayesClassifier();
-  const wordnet = new WordNet();
+const database = ICON_NAMES.map((name) => ({
+  name,
+  normalized: normalizeName(name),
+  synonyms: [],
+}));
 
-  const {
-    values: { output: outputFile },
-  } = parseArgs({
-    options: {
-      output: { type: 'string', short: 'o' },
-    },
+writeFileSync('database.json', JSON.stringify(database, null, 2));
+
+const lookup = async (word: string, wordpos: WordPOS) => {
+  return new Promise<Synset[]>((ok) => {
+    wordpos.lookup(word, ok);
   });
-
-  if (!outputFile) {
-    throw new Error(`Usage: ${process.argv[1]} -o <output file>`);
-  }
-
-  for (const name of ICON_NAMES) {
-    const tokens = title(name).toLowerCase().split(' ');
-    const withSynonyms = await addSynonyms(tokens, wordnet);
-    classifier.addDocument(withSynonyms, name);
-  }
-
-  classifier.train();
-
-  await new Promise((resolve, reject) =>
-    classifier.save(outputFile, (err, classifier) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(classifier);
-    })
-  );
-}
-
-/**
- * @param {string} word
- * @param {WordNet} wordnet
- */
-function lookup(
-  word: string,
-  wordnet: WordNet
-): Promise<Parameters<Parameters<WordNet['lookup']>[1]>[0]> {
-  return new Promise((ok) => wordnet.lookup(word, ok));
-}
-
-const addSynonyms = async (tokens: string[], wordnet: WordNet) => {
-  const results = await Promise.all(
-    tokens.map(async (token) => {
-      const wordnetResults = await lookup(token, wordnet);
-      const synonyms = wordnetResults.flatMap((r) => r.synonyms);
-      return [token, ...synonyms];
-    })
-  );
-  return results.flat();
 };
 
-main();
+const getAllSynonyms = async (word: string, wordpos: WordPOS) => {
+  return unique(
+    (
+      await Promise.all(
+        word.split(/\W+/).map(async (word) => {
+          const results = await lookup(word, wordpos);
+          return results.flatMap((r) => r.synonyms);
+        })
+      )
+    ).flat()
+  );
+};
+
+const recursiveSearch = async (
+  phrase: string,
+  fuse: Fuse<any>,
+  wordpos: WordPOS,
+  maxDepth: number = 3,
+  currentDepth: number = 0,
+  visited: Set<string> = new Set()
+): Promise<any[]> => {
+  if (currentDepth >= maxDepth) {
+    return [];
+  }
+
+  const synonyms = await getAllSynonyms(phrase, wordpos);
+  console.log({ phrase, synonyms });
+  const results: any[] = [];
+
+  for (const synonym of synonyms) {
+    if (visited.has(synonym)) continue;
+    visited.add(synonym);
+
+    results.push(...fuse.search(synonym, { limit: 2 }));
+  }
+
+  if (results.length === 0) {
+    // If no results found, recursively search with this synonym
+    const deeperResults = await recursiveSearch(
+      synonyms.join(' '),
+      fuse,
+      wordpos,
+      maxDepth,
+      currentDepth + 1,
+      visited
+    );
+
+    results.push(...deeperResults);
+  }
+
+  return sort(results, (r) => r.score ?? Infinity);
+};
+
+export async function main() {
+  const wordpos = new WordPOS();
+
+  const dictionary = await Promise.all(
+    ICON_NAMES.map(async (name) => {
+      const normalized = normalizeName(name);
+      const synonyms = await getAllSynonyms(normalized, wordpos);
+
+      return { name, normalized, synonyms };
+    })
+  );
+
+  const fuse = new Fuse(dictionary, {
+    includeScore: true,
+    threshold: 0.2,
+    keys: ['name', 'normalized', 'synonyms'],
+  });
+
+  const search = 'employee';
+  const results = await recursiveSearch(search, fuse, wordpos, 10);
+  console.log([results[0]]);
+
+  const wordnet = new natural.WordNet();
+  const synonyms = await wordnet.lookup('employee', (results) => {
+    console.log(results);
+  });
+}
+
+main().catch(console.error);

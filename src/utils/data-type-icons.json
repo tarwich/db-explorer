@@ -1,0 +1,138 @@
+[
+  {
+    "name": "numeric",
+    "icon": "Hash",
+    "synonyms": [
+      "number",
+      "integer",
+      "float",
+      "decimal",
+      "numeric",
+      "amount",
+      "quantity"
+    ]
+  },
+  {
+    "name": "string",
+    "icon": "Type",
+    "synonyms": ["string", "char", "varchar", "paragraph", "words", "letters"]
+  },
+  {
+    "name": "longtext",
+    "icon": "AlignLeft",
+    "synonyms": ["text", "paragraph", "words", "letters"]
+  },
+  {
+    "name": "boolean",
+    "icon": "ToggleLeft",
+    "synonyms": ["bool", "true", "false", "yes", "no", "binary", "switch"]
+  },
+  {
+    "name": "date",
+    "icon": "Calendar",
+    "synonyms": [
+      "datetime",
+      "timestamp",
+      "time",
+      "schedule",
+      "day",
+      "month",
+      "year"
+    ]
+  },
+  {
+    "name": "binary",
+    "icon": "Binary",
+    "synonyms": ["blob", "byte", "bytes", "data", "file", "binary data"]
+  },
+  {
+    "name": "array",
+    "icon": "List",
+    "synonyms": ["collection", "items", "elements", "sequence", "series"]
+  },
+  {
+    "name": "object",
+    "icon": "Box",
+    "synonyms": ["json", "object", "struct", "record", "entity"]
+  },
+  {
+    "name": "uuid",
+    "icon": "KeyRound",
+    "synonyms": ["id", "identifier", "unique", "guid", "uuid"]
+  },
+  {
+    "name": "email",
+    "icon": "Mail",
+    "synonyms": ["email", "e-mail", "address", "contact"]
+  },
+  {
+    "name": "url",
+    "icon": "Link",
+    "synonyms": ["url", "uri", "web", "website", "hyperlink"]
+  },
+  {
+    "name": "phone",
+    "icon": "Phone",
+    "synonyms": ["telephone", "mobile", "cell", "contact number"]
+  },
+  {
+    "name": "currency",
+    "icon": "DollarSign",
+    "synonyms": ["money", "price", "cost", "amount", "currency"]
+  },
+  {
+    "name": "percentage",
+    "icon": "Percent",
+    "synonyms": ["percent", "percentage", "ratio", "rate"]
+  },
+  {
+    "name": "location",
+    "icon": "MapPin",
+    "synonyms": ["address", "location", "place", "coordinates", "geography"]
+  },
+  {
+    "name": "image",
+    "icon": "Image",
+    "synonyms": ["picture", "photo", "img", "image", "media"]
+  },
+  {
+    "name": "file",
+    "icon": "File",
+    "synonyms": ["document", "file", "attachment", "upload"]
+  },
+  {
+    "name": "password",
+    "icon": "Key",
+    "synonyms": ["password", "secret", "secure", "auth", "credentials"]
+  },
+  {
+    "name": "enum",
+    "icon": "ListOrdered",
+    "synonyms": ["enum", "enumeration", "options", "choices", "selection"]
+  },
+  {
+    "name": "json",
+    "icon": "Braces",
+    "synonyms": ["json", "object", "data", "structure", "format"]
+  },
+  {
+    "name": "xml",
+    "icon": "Code2",
+    "synonyms": ["xml", "markup", "structure", "format"]
+  },
+  {
+    "name": "html",
+    "icon": "Code",
+    "synonyms": ["html", "web", "markup", "page"]
+  },
+  {
+    "name": "color",
+    "icon": "Palette",
+    "synonyms": ["color", "colour", "hex", "rgb", "hue"]
+  },
+  {
+    "name": "tags",
+    "icon": "Tags",
+    "synonyms": ["tags", "categories", "labels", "keywords"]
+  }
+]

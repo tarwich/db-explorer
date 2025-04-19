@@ -1,0 +1,7887 @@
+[
+  {
+    "name": "AArrowDown",
+    "normalized": "a arrow down",
+    "synonyms": ["sort descending", "decrease", "lower"]
+  },
+  {
+    "name": "AArrowUp",
+    "normalized": "a arrow up",
+    "synonyms": ["sort ascending", "increase", "raise"]
+  },
+  {
+    "name": "ALargeSmall",
+    "normalized": "a large small",
+    "synonyms": ["resize", "scale", "adjust"]
+  },
+  {
+    "name": "Accessibility",
+    "normalized": "accessibility",
+    "synonyms": ["user profile", "account", "person"]
+  },
+  {
+    "name": "Activity",
+    "normalized": "activity",
+    "synonyms": [
+      "analytics",
+      "dashboard",
+      "metrics",
+      "performance",
+      "statistics"
+    ]
+  },
+  {
+    "name": "AirVent",
+    "normalized": "air vent",
+    "synonyms": ["ventilation", "airflow"]
+  },
+  {
+    "name": "Airplay",
+    "normalized": "airplay",
+    "synonyms": ["stream", "broadcast", "share"]
+  },
+  {
+    "name": "AlarmClock",
+    "normalized": "alarm clock",
+    "synonyms": ["schedule", "appointment", "reminder", "deadline"]
+  },
+  {
+    "name": "AlarmClockCheck",
+    "normalized": "alarm clock check",
+    "synonyms": [
+      "completed task",
+      "finished",
+      "done",
+      "verified",
+      "task completed",
+      "assignment done",
+      "checked off",
+      "marked complete"
+    ]
+  },
+  {
+    "name": "AlarmClockMinus",
+    "normalized": "alarm clock minus",
+    "synonyms": ["cancel appointment", "remove deadline", "delete schedule"]
+  },
+  {
+    "name": "AlarmClockOff",
+    "normalized": "alarm clock off",
+    "synonyms": ["disable notification", "mute alert", "stop reminder"]
+  },
+  {
+    "name": "AlarmClockPlus",
+    "normalized": "alarm clock plus",
+    "synonyms": ["add appointment", "create deadline", "new schedule"]
+  },
+  {
+    "name": "AlarmSmoke",
+    "normalized": "alarm smoke",
+    "synonyms": ["alert", "warning", "notification", "important"]
+  },
+  {
+    "name": "Album",
+    "normalized": "album",
+    "synonyms": ["collection", "portfolio", "gallery", "archive"]
+  },
+  {
+    "name": "AlignCenter",
+    "normalized": "align center",
+    "synonyms": ["center", "middle", "balanced"]
+  },
+  {
+    "name": "AlignCenterHorizontal",
+    "normalized": "align center horizontal",
+    "synonyms": ["center horizontally", "middle row"]
+  },
+  {
+    "name": "AlignCenterVertical",
+    "normalized": "align center vertical",
+    "synonyms": ["center vertically", "middle column"]
+  },
+  {
+    "name": "AlignEndHorizontal",
+    "normalized": "align end horizontal",
+    "synonyms": ["right align", "end row"]
+  },
+  {
+    "name": "AlignEndVertical",
+    "normalized": "align end vertical",
+    "synonyms": ["bottom align", "end column"]
+  },
+  {
+    "name": "AlignHorizontalDistributeCenter",
+    "normalized": "align horizontal distribute center",
+    "synonyms": []
+  },
+  {
+    "name": "AlignHorizontalDistributeEnd",
+    "normalized": "align horizontal distribute end",
+    "synonyms": []
+  },
+  {
+    "name": "AlignHorizontalDistributeStart",
+    "normalized": "align horizontal distribute start",
+    "synonyms": []
+  },
+  {
+    "name": "AlignHorizontalJustifyCenter",
+    "normalized": "align horizontal justify center",
+    "synonyms": []
+  },
+  {
+    "name": "AlignHorizontalJustifyEnd",
+    "normalized": "align horizontal justify end",
+    "synonyms": []
+  },
+  {
+    "name": "AlignHorizontalJustifyStart",
+    "normalized": "align horizontal justify start",
+    "synonyms": []
+  },
+  {
+    "name": "AlignHorizontalSpaceAround",
+    "normalized": "align horizontal space around",
+    "synonyms": []
+  },
+  {
+    "name": "AlignHorizontalSpaceBetween",
+    "normalized": "align horizontal space between",
+    "synonyms": []
+  },
+  {
+    "name": "AlignJustify",
+    "normalized": "align justify",
+    "synonyms": []
+  },
+  {
+    "name": "AlignLeft",
+    "normalized": "align left",
+    "synonyms": []
+  },
+  {
+    "name": "AlignRight",
+    "normalized": "align right",
+    "synonyms": []
+  },
+  {
+    "name": "AlignStartHorizontal",
+    "normalized": "align start horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "AlignStartVertical",
+    "normalized": "align start vertical",
+    "synonyms": []
+  },
+  {
+    "name": "AlignVerticalDistributeCenter",
+    "normalized": "align vertical distribute center",
+    "synonyms": []
+  },
+  {
+    "name": "AlignVerticalDistributeEnd",
+    "normalized": "align vertical distribute end",
+    "synonyms": []
+  },
+  {
+    "name": "AlignVerticalDistributeStart",
+    "normalized": "align vertical distribute start",
+    "synonyms": []
+  },
+  {
+    "name": "AlignVerticalJustifyCenter",
+    "normalized": "align vertical justify center",
+    "synonyms": []
+  },
+  {
+    "name": "AlignVerticalJustifyEnd",
+    "normalized": "align vertical justify end",
+    "synonyms": []
+  },
+  {
+    "name": "AlignVerticalJustifyStart",
+    "normalized": "align vertical justify start",
+    "synonyms": []
+  },
+  {
+    "name": "AlignVerticalSpaceAround",
+    "normalized": "align vertical space around",
+    "synonyms": []
+  },
+  {
+    "name": "AlignVerticalSpaceBetween",
+    "normalized": "align vertical space between",
+    "synonyms": []
+  },
+  {
+    "name": "Ambulance",
+    "normalized": "ambulance",
+    "synonyms": []
+  },
+  {
+    "name": "Ampersand",
+    "normalized": "ampersand",
+    "synonyms": []
+  },
+  {
+    "name": "Ampersands",
+    "normalized": "ampersand",
+    "synonyms": []
+  },
+  {
+    "name": "Amphora",
+    "normalized": "amphora",
+    "synonyms": []
+  },
+  {
+    "name": "Anchor",
+    "normalized": "anchor",
+    "synonyms": []
+  },
+  {
+    "name": "Angry",
+    "normalized": "angry",
+    "synonyms": []
+  },
+  {
+    "name": "Annoyed",
+    "normalized": "annoyed",
+    "synonyms": []
+  },
+  {
+    "name": "Antenna",
+    "normalized": "antenna",
+    "synonyms": []
+  },
+  {
+    "name": "Anvil",
+    "normalized": "anvil",
+    "synonyms": []
+  },
+  {
+    "name": "Aperture",
+    "normalized": "aperture",
+    "synonyms": []
+  },
+  {
+    "name": "AppWindow",
+    "normalized": "app window",
+    "synonyms": []
+  },
+  {
+    "name": "AppWindowMac",
+    "normalized": "app window mac",
+    "synonyms": []
+  },
+  {
+    "name": "Apple",
+    "normalized": "apple",
+    "synonyms": []
+  },
+  {
+    "name": "Archive",
+    "normalized": "archive",
+    "synonyms": []
+  },
+  {
+    "name": "ArchiveRestore",
+    "normalized": "archive restore",
+    "synonyms": []
+  },
+  {
+    "name": "ArchiveX",
+    "normalized": "archive x",
+    "synonyms": []
+  },
+  {
+    "name": "Armchair",
+    "normalized": "armchair",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowBigDown",
+    "normalized": "arrow big down",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowBigDownDash",
+    "normalized": "arrow big down dash",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowBigLeft",
+    "normalized": "arrow big left",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowBigLeftDash",
+    "normalized": "arrow big left dash",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowBigRight",
+    "normalized": "arrow big right",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowBigRightDash",
+    "normalized": "arrow big right dash",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowBigUp",
+    "normalized": "arrow big up",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowBigUpDash",
+    "normalized": "arrow big up dash",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowDown",
+    "normalized": "arrow down",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowDown01",
+    "normalized": "arrow down01",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowDown10",
+    "normalized": "arrow down10",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowDownAZ",
+    "normalized": "arrow down az",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowDownFromLine",
+    "normalized": "arrow down from line",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowDownLeft",
+    "normalized": "arrow down left",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowDownNarrowWide",
+    "normalized": "arrow down narrow wide",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowDownRight",
+    "normalized": "arrow down right",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowDownToDot",
+    "normalized": "arrow down to dot",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowDownToLine",
+    "normalized": "arrow down to line",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowDownUp",
+    "normalized": "arrow down up",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowDownWideNarrow",
+    "normalized": "arrow down wide narrow",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowDownZA",
+    "normalized": "arrow down za",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowLeft",
+    "normalized": "arrow left",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowLeftFromLine",
+    "normalized": "arrow left from line",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowLeftRight",
+    "normalized": "arrow left right",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowLeftToLine",
+    "normalized": "arrow left to line",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowRight",
+    "normalized": "arrow right",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowRightFromLine",
+    "normalized": "arrow right from line",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowRightLeft",
+    "normalized": "arrow right left",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowRightToLine",
+    "normalized": "arrow right to line",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowUp",
+    "normalized": "arrow up",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowUp01",
+    "normalized": "arrow up01",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowUp10",
+    "normalized": "arrow up10",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowUpAZ",
+    "normalized": "arrow up az",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowUpDown",
+    "normalized": "arrow up down",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowUpFromDot",
+    "normalized": "arrow up from dot",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowUpFromLine",
+    "normalized": "arrow up from line",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowUpLeft",
+    "normalized": "arrow up left",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowUpNarrowWide",
+    "normalized": "arrow up narrow wide",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowUpRight",
+    "normalized": "arrow up right",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowUpToLine",
+    "normalized": "arrow up to line",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowUpWideNarrow",
+    "normalized": "arrow up wide narrow",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowUpZA",
+    "normalized": "arrow up za",
+    "synonyms": []
+  },
+  {
+    "name": "ArrowsUpFromLine",
+    "normalized": "arrows up from line",
+    "synonyms": []
+  },
+  {
+    "name": "Asterisk",
+    "normalized": "asterisk",
+    "synonyms": []
+  },
+  {
+    "name": "AtSign",
+    "normalized": "at sign",
+    "synonyms": []
+  },
+  {
+    "name": "Atom",
+    "normalized": "atom",
+    "synonyms": []
+  },
+  {
+    "name": "AudioLines",
+    "normalized": "audio line",
+    "synonyms": []
+  },
+  {
+    "name": "AudioWaveform",
+    "normalized": "audio waveform",
+    "synonyms": []
+  },
+  {
+    "name": "Award",
+    "normalized": "award",
+    "synonyms": []
+  },
+  {
+    "name": "Axe",
+    "normalized": "axe",
+    "synonyms": []
+  },
+  {
+    "name": "Axis3d",
+    "normalized": "axis3d",
+    "synonyms": []
+  },
+  {
+    "name": "Baby",
+    "normalized": "baby",
+    "synonyms": []
+  },
+  {
+    "name": "Backpack",
+    "normalized": "backpack",
+    "synonyms": []
+  },
+  {
+    "name": "Badge",
+    "normalized": "badge",
+    "synonyms": []
+  },
+  {
+    "name": "BadgeAlert",
+    "normalized": "badge alert",
+    "synonyms": []
+  },
+  {
+    "name": "BadgeCent",
+    "normalized": "badge cent",
+    "synonyms": []
+  },
+  {
+    "name": "BadgeCheck",
+    "normalized": "badge check",
+    "synonyms": []
+  },
+  {
+    "name": "BadgeDollarSign",
+    "normalized": "badge dollar sign",
+    "synonyms": []
+  },
+  {
+    "name": "BadgeEuro",
+    "normalized": "badge euro",
+    "synonyms": []
+  },
+  {
+    "name": "BadgeHelp",
+    "normalized": "badge help",
+    "synonyms": []
+  },
+  {
+    "name": "BadgeIndianRupee",
+    "normalized": "badge indian rupee",
+    "synonyms": []
+  },
+  {
+    "name": "BadgeInfo",
+    "normalized": "badge info",
+    "synonyms": []
+  },
+  {
+    "name": "BadgeJapaneseYen",
+    "normalized": "badge japanese yen",
+    "synonyms": []
+  },
+  {
+    "name": "BadgeMinus",
+    "normalized": "badge minus",
+    "synonyms": []
+  },
+  {
+    "name": "BadgePercent",
+    "normalized": "badge percent",
+    "synonyms": []
+  },
+  {
+    "name": "BadgePlus",
+    "normalized": "badge plus",
+    "synonyms": []
+  },
+  {
+    "name": "BadgePoundSterling",
+    "normalized": "badge pound sterling",
+    "synonyms": []
+  },
+  {
+    "name": "BadgeRussianRuble",
+    "normalized": "badge russian ruble",
+    "synonyms": []
+  },
+  {
+    "name": "BadgeSwissFranc",
+    "normalized": "badge swiss franc",
+    "synonyms": []
+  },
+  {
+    "name": "BadgeX",
+    "normalized": "badge x",
+    "synonyms": []
+  },
+  {
+    "name": "BaggageClaim",
+    "normalized": "baggage claim",
+    "synonyms": []
+  },
+  {
+    "name": "Ban",
+    "normalized": "ban",
+    "synonyms": []
+  },
+  {
+    "name": "Banana",
+    "normalized": "banana",
+    "synonyms": []
+  },
+  {
+    "name": "Bandage",
+    "normalized": "bandage",
+    "synonyms": []
+  },
+  {
+    "name": "Banknote",
+    "normalized": "banknote",
+    "synonyms": [
+      "money",
+      "currency",
+      "payment",
+      "bill",
+      "invoice",
+      "transaction"
+    ]
+  },
+  {
+    "name": "BanknoteArrowDown",
+    "normalized": "banknote arrow down",
+    "synonyms": ["income", "revenue", "deposit", "payment received"]
+  },
+  {
+    "name": "BanknoteArrowUp",
+    "normalized": "banknote arrow up",
+    "synonyms": ["expense", "payment sent", "withdrawal", "cost"]
+  },
+  {
+    "name": "BanknoteX",
+    "normalized": "banknote x",
+    "synonyms": ["refund", "cancelled payment", "void transaction"]
+  },
+  {
+    "name": "Barcode",
+    "normalized": "barcode",
+    "synonyms": []
+  },
+  {
+    "name": "Baseline",
+    "normalized": "baseline",
+    "synonyms": []
+  },
+  {
+    "name": "Bath",
+    "normalized": "bath",
+    "synonyms": []
+  },
+  {
+    "name": "Battery",
+    "normalized": "battery",
+    "synonyms": []
+  },
+  {
+    "name": "BatteryCharging",
+    "normalized": "battery charging",
+    "synonyms": []
+  },
+  {
+    "name": "BatteryFull",
+    "normalized": "battery full",
+    "synonyms": []
+  },
+  {
+    "name": "BatteryLow",
+    "normalized": "battery low",
+    "synonyms": []
+  },
+  {
+    "name": "BatteryMedium",
+    "normalized": "battery medium",
+    "synonyms": []
+  },
+  {
+    "name": "BatteryPlus",
+    "normalized": "battery plus",
+    "synonyms": []
+  },
+  {
+    "name": "BatteryWarning",
+    "normalized": "battery warning",
+    "synonyms": []
+  },
+  {
+    "name": "Beaker",
+    "normalized": "beaker",
+    "synonyms": []
+  },
+  {
+    "name": "Bean",
+    "normalized": "bean",
+    "synonyms": []
+  },
+  {
+    "name": "BeanOff",
+    "normalized": "bean off",
+    "synonyms": []
+  },
+  {
+    "name": "Bed",
+    "normalized": "bed",
+    "synonyms": []
+  },
+  {
+    "name": "BedDouble",
+    "normalized": "bed double",
+    "synonyms": []
+  },
+  {
+    "name": "BedSingle",
+    "normalized": "bed single",
+    "synonyms": []
+  },
+  {
+    "name": "Beef",
+    "normalized": "beef",
+    "synonyms": []
+  },
+  {
+    "name": "Beer",
+    "normalized": "beer",
+    "synonyms": []
+  },
+  {
+    "name": "BeerOff",
+    "normalized": "beer off",
+    "synonyms": []
+  },
+  {
+    "name": "Bell",
+    "normalized": "bell",
+    "synonyms": []
+  },
+  {
+    "name": "BellDot",
+    "normalized": "bell dot",
+    "synonyms": []
+  },
+  {
+    "name": "BellElectric",
+    "normalized": "bell electric",
+    "synonyms": []
+  },
+  {
+    "name": "BellMinus",
+    "normalized": "bell minus",
+    "synonyms": []
+  },
+  {
+    "name": "BellOff",
+    "normalized": "bell off",
+    "synonyms": []
+  },
+  {
+    "name": "BellPlus",
+    "normalized": "bell plus",
+    "synonyms": []
+  },
+  {
+    "name": "BellRing",
+    "normalized": "bell ring",
+    "synonyms": []
+  },
+  {
+    "name": "BetweenHorizontalEnd",
+    "normalized": "between horizontal end",
+    "synonyms": []
+  },
+  {
+    "name": "BetweenHorizontalStart",
+    "normalized": "between horizontal start",
+    "synonyms": []
+  },
+  {
+    "name": "BetweenVerticalEnd",
+    "normalized": "between vertical end",
+    "synonyms": []
+  },
+  {
+    "name": "BetweenVerticalStart",
+    "normalized": "between vertical start",
+    "synonyms": []
+  },
+  {
+    "name": "BicepsFlexed",
+    "normalized": "biceps flexed",
+    "synonyms": []
+  },
+  {
+    "name": "Bike",
+    "normalized": "bike",
+    "synonyms": []
+  },
+  {
+    "name": "Binary",
+    "normalized": "binary",
+    "synonyms": []
+  },
+  {
+    "name": "Binoculars",
+    "normalized": "binocular",
+    "synonyms": []
+  },
+  {
+    "name": "Biohazard",
+    "normalized": "biohazard",
+    "synonyms": []
+  },
+  {
+    "name": "Bird",
+    "normalized": "bird",
+    "synonyms": []
+  },
+  {
+    "name": "Bitcoin",
+    "normalized": "bitcoin",
+    "synonyms": []
+  },
+  {
+    "name": "Blend",
+    "normalized": "blend",
+    "synonyms": []
+  },
+  {
+    "name": "Blinds",
+    "normalized": "blind",
+    "synonyms": []
+  },
+  {
+    "name": "Blocks",
+    "normalized": "block",
+    "synonyms": []
+  },
+  {
+    "name": "Bluetooth",
+    "normalized": "bluetooth",
+    "synonyms": []
+  },
+  {
+    "name": "BluetoothConnected",
+    "normalized": "bluetooth connected",
+    "synonyms": []
+  },
+  {
+    "name": "BluetoothOff",
+    "normalized": "bluetooth off",
+    "synonyms": []
+  },
+  {
+    "name": "BluetoothSearching",
+    "normalized": "bluetooth searching",
+    "synonyms": []
+  },
+  {
+    "name": "Bold",
+    "normalized": "bold",
+    "synonyms": []
+  },
+  {
+    "name": "Bolt",
+    "normalized": "bolt",
+    "synonyms": []
+  },
+  {
+    "name": "Bomb",
+    "normalized": "bomb",
+    "synonyms": []
+  },
+  {
+    "name": "Bone",
+    "normalized": "bone",
+    "synonyms": []
+  },
+  {
+    "name": "Book",
+    "normalized": "book",
+    "synonyms": []
+  },
+  {
+    "name": "BookA",
+    "normalized": "book a",
+    "synonyms": []
+  },
+  {
+    "name": "BookAudio",
+    "normalized": "book audio",
+    "synonyms": []
+  },
+  {
+    "name": "BookCheck",
+    "normalized": "book check",
+    "synonyms": []
+  },
+  {
+    "name": "BookCopy",
+    "normalized": "book copy",
+    "synonyms": []
+  },
+  {
+    "name": "BookDashed",
+    "normalized": "book dashed",
+    "synonyms": []
+  },
+  {
+    "name": "BookDown",
+    "normalized": "book down",
+    "synonyms": []
+  },
+  {
+    "name": "BookHeadphones",
+    "normalized": "book headphone",
+    "synonyms": []
+  },
+  {
+    "name": "BookHeart",
+    "normalized": "book heart",
+    "synonyms": []
+  },
+  {
+    "name": "BookImage",
+    "normalized": "book image",
+    "synonyms": []
+  },
+  {
+    "name": "BookKey",
+    "normalized": "book key",
+    "synonyms": []
+  },
+  {
+    "name": "BookLock",
+    "normalized": "book lock",
+    "synonyms": []
+  },
+  {
+    "name": "BookMarked",
+    "normalized": "book marked",
+    "synonyms": []
+  },
+  {
+    "name": "BookMinus",
+    "normalized": "book minus",
+    "synonyms": []
+  },
+  {
+    "name": "BookOpen",
+    "normalized": "book open",
+    "synonyms": []
+  },
+  {
+    "name": "BookOpenCheck",
+    "normalized": "book open check",
+    "synonyms": []
+  },
+  {
+    "name": "BookOpenText",
+    "normalized": "book open text",
+    "synonyms": []
+  },
+  {
+    "name": "BookPlus",
+    "normalized": "book plus",
+    "synonyms": []
+  },
+  {
+    "name": "BookText",
+    "normalized": "book text",
+    "synonyms": []
+  },
+  {
+    "name": "BookType",
+    "normalized": "book type",
+    "synonyms": []
+  },
+  {
+    "name": "BookUp",
+    "normalized": "book up",
+    "synonyms": []
+  },
+  {
+    "name": "BookUp2",
+    "normalized": "book up2",
+    "synonyms": []
+  },
+  {
+    "name": "BookUser",
+    "normalized": "book user",
+    "synonyms": ["employee record", "staff directory", "personnel file"]
+  },
+  {
+    "name": "BookX",
+    "normalized": "book x",
+    "synonyms": []
+  },
+  {
+    "name": "Bookmark",
+    "normalized": "bookmark",
+    "synonyms": []
+  },
+  {
+    "name": "BookmarkCheck",
+    "normalized": "bookmark check",
+    "synonyms": []
+  },
+  {
+    "name": "BookmarkMinus",
+    "normalized": "bookmark minus",
+    "synonyms": []
+  },
+  {
+    "name": "BookmarkPlus",
+    "normalized": "bookmark plus",
+    "synonyms": []
+  },
+  {
+    "name": "BookmarkX",
+    "normalized": "bookmark x",
+    "synonyms": []
+  },
+  {
+    "name": "BoomBox",
+    "normalized": "boom box",
+    "synonyms": []
+  },
+  {
+    "name": "Bot",
+    "normalized": "bot",
+    "synonyms": []
+  },
+  {
+    "name": "BotMessageSquare",
+    "normalized": "bot message square",
+    "synonyms": []
+  },
+  {
+    "name": "BotOff",
+    "normalized": "bot off",
+    "synonyms": []
+  },
+  {
+    "name": "Box",
+    "normalized": "box",
+    "synonyms": []
+  },
+  {
+    "name": "Boxes",
+    "normalized": "box",
+    "synonyms": []
+  },
+  {
+    "name": "Braces",
+    "normalized": "brace",
+    "synonyms": []
+  },
+  {
+    "name": "Brackets",
+    "normalized": "bracket",
+    "synonyms": []
+  },
+  {
+    "name": "Brain",
+    "normalized": "brain",
+    "synonyms": []
+  },
+  {
+    "name": "BrainCircuit",
+    "normalized": "brain circuit",
+    "synonyms": []
+  },
+  {
+    "name": "BrainCog",
+    "normalized": "brain cog",
+    "synonyms": []
+  },
+  {
+    "name": "BrickWall",
+    "normalized": "brick wall",
+    "synonyms": []
+  },
+  {
+    "name": "Briefcase",
+    "normalized": "briefcase",
+    "synonyms": []
+  },
+  {
+    "name": "BriefcaseBusiness",
+    "normalized": "briefcase business",
+    "synonyms": []
+  },
+  {
+    "name": "BriefcaseConveyorBelt",
+    "normalized": "briefcase conveyor belt",
+    "synonyms": []
+  },
+  {
+    "name": "BriefcaseMedical",
+    "normalized": "briefcase medical",
+    "synonyms": []
+  },
+  {
+    "name": "BringToFront",
+    "normalized": "bring to front",
+    "synonyms": []
+  },
+  {
+    "name": "Brush",
+    "normalized": "brush",
+    "synonyms": []
+  },
+  {
+    "name": "Bug",
+    "normalized": "bug",
+    "synonyms": []
+  },
+  {
+    "name": "BugOff",
+    "normalized": "bug off",
+    "synonyms": []
+  },
+  {
+    "name": "BugPlay",
+    "normalized": "bug play",
+    "synonyms": []
+  },
+  {
+    "name": "Building",
+    "normalized": "building",
+    "synonyms": []
+  },
+  {
+    "name": "Building2",
+    "normalized": "building2",
+    "synonyms": []
+  },
+  {
+    "name": "Bus",
+    "normalized": "bus",
+    "synonyms": []
+  },
+  {
+    "name": "BusFront",
+    "normalized": "bus front",
+    "synonyms": []
+  },
+  {
+    "name": "Cable",
+    "normalized": "cable",
+    "synonyms": []
+  },
+  {
+    "name": "CableCar",
+    "normalized": "cable car",
+    "synonyms": []
+  },
+  {
+    "name": "Cake",
+    "normalized": "cake",
+    "synonyms": []
+  },
+  {
+    "name": "CakeSlice",
+    "normalized": "cake slice",
+    "synonyms": []
+  },
+  {
+    "name": "Calculator",
+    "normalized": "calculator",
+    "synonyms": []
+  },
+  {
+    "name": "Calendar",
+    "normalized": "calendar",
+    "synonyms": []
+  },
+  {
+    "name": "Calendar1",
+    "normalized": "calendar1",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarArrowDown",
+    "normalized": "calendar arrow down",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarArrowUp",
+    "normalized": "calendar arrow up",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarCheck",
+    "normalized": "calendar check",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarCheck2",
+    "normalized": "calendar check2",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarClock",
+    "normalized": "calendar clock",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarCog",
+    "normalized": "calendar cog",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarDays",
+    "normalized": "calendar day",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarFold",
+    "normalized": "calendar fold",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarHeart",
+    "normalized": "calendar heart",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarMinus",
+    "normalized": "calendar minus",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarMinus2",
+    "normalized": "calendar minus2",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarOff",
+    "normalized": "calendar off",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarPlus",
+    "normalized": "calendar plus",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarPlus2",
+    "normalized": "calendar plus2",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarRange",
+    "normalized": "calendar range",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarSearch",
+    "normalized": "calendar search",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarSync",
+    "normalized": "calendar sync",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarX",
+    "normalized": "calendar x",
+    "synonyms": []
+  },
+  {
+    "name": "CalendarX2",
+    "normalized": "calendar x2",
+    "synonyms": []
+  },
+  {
+    "name": "Camera",
+    "normalized": "camera",
+    "synonyms": []
+  },
+  {
+    "name": "CameraOff",
+    "normalized": "camera off",
+    "synonyms": []
+  },
+  {
+    "name": "Candy",
+    "normalized": "candy",
+    "synonyms": []
+  },
+  {
+    "name": "CandyCane",
+    "normalized": "candy cane",
+    "synonyms": []
+  },
+  {
+    "name": "CandyOff",
+    "normalized": "candy off",
+    "synonyms": []
+  },
+  {
+    "name": "Cannabis",
+    "normalized": "cannabi",
+    "synonyms": []
+  },
+  {
+    "name": "Captions",
+    "normalized": "caption",
+    "synonyms": []
+  },
+  {
+    "name": "CaptionsOff",
+    "normalized": "captions off",
+    "synonyms": []
+  },
+  {
+    "name": "Car",
+    "normalized": "car",
+    "synonyms": []
+  },
+  {
+    "name": "CarFront",
+    "normalized": "car front",
+    "synonyms": []
+  },
+  {
+    "name": "CarTaxiFront",
+    "normalized": "car taxi front",
+    "synonyms": []
+  },
+  {
+    "name": "Caravan",
+    "normalized": "caravan",
+    "synonyms": []
+  },
+  {
+    "name": "Carrot",
+    "normalized": "carrot",
+    "synonyms": []
+  },
+  {
+    "name": "CaseLower",
+    "normalized": "case lower",
+    "synonyms": []
+  },
+  {
+    "name": "CaseSensitive",
+    "normalized": "case sensitive",
+    "synonyms": []
+  },
+  {
+    "name": "CaseUpper",
+    "normalized": "case upper",
+    "synonyms": []
+  },
+  {
+    "name": "CassetteTape",
+    "normalized": "cassette tape",
+    "synonyms": []
+  },
+  {
+    "name": "Cast",
+    "normalized": "cast",
+    "synonyms": []
+  },
+  {
+    "name": "Castle",
+    "normalized": "castle",
+    "synonyms": []
+  },
+  {
+    "name": "Cat",
+    "normalized": "cat",
+    "synonyms": []
+  },
+  {
+    "name": "Cctv",
+    "normalized": "cctv",
+    "synonyms": []
+  },
+  {
+    "name": "ChartArea",
+    "normalized": "chart area",
+    "synonyms": ["trend analysis", "performance metrics", "business growth"]
+  },
+  {
+    "name": "ChartBar",
+    "normalized": "chart bar",
+    "synonyms": ["statistics", "comparison", "metrics", "analytics"]
+  },
+  {
+    "name": "ChartBarBig",
+    "normalized": "chart bar big",
+    "synonyms": ["dashboard", "key metrics", "performance overview"]
+  },
+  {
+    "name": "ChartBarDecreasing",
+    "normalized": "chart bar decreasing",
+    "synonyms": ["decline", "reduction", "decrease", "downward trend"]
+  },
+  {
+    "name": "ChartBarIncreasing",
+    "normalized": "chart bar increasing",
+    "synonyms": ["growth", "improvement", "increase", "upward trend"]
+  },
+  {
+    "name": "ChartBarStacked",
+    "normalized": "chart bar stacked",
+    "synonyms": ["cumulative data", "total comparison", "aggregate view"]
+  },
+  {
+    "name": "ChartCandlestick",
+    "normalized": "chart candlestick",
+    "synonyms": ["financial chart", "stock market", "trading", "market data"]
+  },
+  {
+    "name": "ChartColumn",
+    "normalized": "chart column",
+    "synonyms": ["comparison", "metrics", "measurement", "data visualization"]
+  },
+  {
+    "name": "ChartColumnBig",
+    "normalized": "chart column big",
+    "synonyms": []
+  },
+  {
+    "name": "ChartColumnDecreasing",
+    "normalized": "chart column decreasing",
+    "synonyms": []
+  },
+  {
+    "name": "ChartColumnIncreasing",
+    "normalized": "chart column increasing",
+    "synonyms": []
+  },
+  {
+    "name": "ChartColumnStacked",
+    "normalized": "chart column stacked",
+    "synonyms": []
+  },
+  {
+    "name": "ChartGantt",
+    "normalized": "chart gantt",
+    "synonyms": []
+  },
+  {
+    "name": "ChartLine",
+    "normalized": "chart line",
+    "synonyms": ["trend", "progress", "timeline", "performance tracking"]
+  },
+  {
+    "name": "ChartNetwork",
+    "normalized": "chart network",
+    "synonyms": []
+  },
+  {
+    "name": "ChartNoAxesColumn",
+    "normalized": "chart no axes column",
+    "synonyms": []
+  },
+  {
+    "name": "ChartNoAxesColumnDecreasing",
+    "normalized": "chart no axes column decreasing",
+    "synonyms": []
+  },
+  {
+    "name": "ChartNoAxesColumnIncreasing",
+    "normalized": "chart no axes column increasing",
+    "synonyms": []
+  },
+  {
+    "name": "ChartNoAxesCombined",
+    "normalized": "chart no axes combined",
+    "synonyms": []
+  },
+  {
+    "name": "ChartNoAxesGantt",
+    "normalized": "chart no axes gantt",
+    "synonyms": []
+  },
+  {
+    "name": "ChartPie",
+    "normalized": "chart pie",
+    "synonyms": ["distribution", "percentage", "proportion", "breakdown"]
+  },
+  {
+    "name": "ChartScatter",
+    "normalized": "chart scatter",
+    "synonyms": []
+  },
+  {
+    "name": "ChartSpline",
+    "normalized": "chart spline",
+    "synonyms": []
+  },
+  {
+    "name": "Check",
+    "normalized": "check",
+    "synonyms": []
+  },
+  {
+    "name": "CheckCheck",
+    "normalized": "check check",
+    "synonyms": []
+  },
+  {
+    "name": "ChefHat",
+    "normalized": "chef hat",
+    "synonyms": []
+  },
+  {
+    "name": "Cherry",
+    "normalized": "cherry",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronDown",
+    "normalized": "chevron down",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronFirst",
+    "normalized": "chevron first",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronLast",
+    "normalized": "chevron last",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronLeft",
+    "normalized": "chevron left",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronRight",
+    "normalized": "chevron right",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronUp",
+    "normalized": "chevron up",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronsDown",
+    "normalized": "chevrons down",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronsDownUp",
+    "normalized": "chevrons down up",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronsLeft",
+    "normalized": "chevrons left",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronsLeftRight",
+    "normalized": "chevrons left right",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronsLeftRightEllipsis",
+    "normalized": "chevrons left right ellipsi",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronsRight",
+    "normalized": "chevrons right",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronsRightLeft",
+    "normalized": "chevrons right left",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronsUp",
+    "normalized": "chevrons up",
+    "synonyms": []
+  },
+  {
+    "name": "ChevronsUpDown",
+    "normalized": "chevrons up down",
+    "synonyms": []
+  },
+  {
+    "name": "Chrome",
+    "normalized": "chrome",
+    "synonyms": []
+  },
+  {
+    "name": "Church",
+    "normalized": "church",
+    "synonyms": []
+  },
+  {
+    "name": "Cigarette",
+    "normalized": "cigarette",
+    "synonyms": []
+  },
+  {
+    "name": "CigaretteOff",
+    "normalized": "cigarette off",
+    "synonyms": []
+  },
+  {
+    "name": "Circle",
+    "normalized": "circle",
+    "synonyms": []
+  },
+  {
+    "name": "CircleAlert",
+    "normalized": "circle alert",
+    "synonyms": []
+  },
+  {
+    "name": "CircleArrowDown",
+    "normalized": "circle arrow down",
+    "synonyms": []
+  },
+  {
+    "name": "CircleArrowLeft",
+    "normalized": "circle arrow left",
+    "synonyms": []
+  },
+  {
+    "name": "CircleArrowOutDownLeft",
+    "normalized": "circle arrow out down left",
+    "synonyms": []
+  },
+  {
+    "name": "CircleArrowOutDownRight",
+    "normalized": "circle arrow out down right",
+    "synonyms": []
+  },
+  {
+    "name": "CircleArrowOutUpLeft",
+    "normalized": "circle arrow out up left",
+    "synonyms": []
+  },
+  {
+    "name": "CircleArrowOutUpRight",
+    "normalized": "circle arrow out up right",
+    "synonyms": []
+  },
+  {
+    "name": "CircleArrowRight",
+    "normalized": "circle arrow right",
+    "synonyms": []
+  },
+  {
+    "name": "CircleArrowUp",
+    "normalized": "circle arrow up",
+    "synonyms": []
+  },
+  {
+    "name": "CircleCheck",
+    "normalized": "circle check",
+    "synonyms": []
+  },
+  {
+    "name": "CircleCheckBig",
+    "normalized": "circle check big",
+    "synonyms": []
+  },
+  {
+    "name": "CircleChevronDown",
+    "normalized": "circle chevron down",
+    "synonyms": []
+  },
+  {
+    "name": "CircleChevronLeft",
+    "normalized": "circle chevron left",
+    "synonyms": []
+  },
+  {
+    "name": "CircleChevronRight",
+    "normalized": "circle chevron right",
+    "synonyms": []
+  },
+  {
+    "name": "CircleChevronUp",
+    "normalized": "circle chevron up",
+    "synonyms": []
+  },
+  {
+    "name": "CircleDashed",
+    "normalized": "circle dashed",
+    "synonyms": []
+  },
+  {
+    "name": "CircleDivide",
+    "normalized": "circle divide",
+    "synonyms": []
+  },
+  {
+    "name": "CircleDollarSign",
+    "normalized": "circle dollar sign",
+    "synonyms": []
+  },
+  {
+    "name": "CircleDot",
+    "normalized": "circle dot",
+    "synonyms": []
+  },
+  {
+    "name": "CircleDotDashed",
+    "normalized": "circle dot dashed",
+    "synonyms": []
+  },
+  {
+    "name": "CircleEllipsis",
+    "normalized": "circle ellipsi",
+    "synonyms": []
+  },
+  {
+    "name": "CircleEqual",
+    "normalized": "circle equal",
+    "synonyms": []
+  },
+  {
+    "name": "CircleFadingArrowUp",
+    "normalized": "circle fading arrow up",
+    "synonyms": []
+  },
+  {
+    "name": "CircleFadingPlus",
+    "normalized": "circle fading plus",
+    "synonyms": []
+  },
+  {
+    "name": "CircleGauge",
+    "normalized": "circle gauge",
+    "synonyms": []
+  },
+  {
+    "name": "CircleHelp",
+    "normalized": "circle help",
+    "synonyms": []
+  },
+  {
+    "name": "CircleMinus",
+    "normalized": "circle minus",
+    "synonyms": []
+  },
+  {
+    "name": "CircleOff",
+    "normalized": "circle off",
+    "synonyms": []
+  },
+  {
+    "name": "CircleParking",
+    "normalized": "circle parking",
+    "synonyms": []
+  },
+  {
+    "name": "CircleParkingOff",
+    "normalized": "circle parking off",
+    "synonyms": []
+  },
+  {
+    "name": "CirclePause",
+    "normalized": "circle pause",
+    "synonyms": []
+  },
+  {
+    "name": "CirclePercent",
+    "normalized": "circle percent",
+    "synonyms": []
+  },
+  {
+    "name": "CirclePlay",
+    "normalized": "circle play",
+    "synonyms": []
+  },
+  {
+    "name": "CirclePlus",
+    "normalized": "circle plus",
+    "synonyms": []
+  },
+  {
+    "name": "CirclePower",
+    "normalized": "circle power",
+    "synonyms": []
+  },
+  {
+    "name": "CircleSlash",
+    "normalized": "circle slash",
+    "synonyms": []
+  },
+  {
+    "name": "CircleSlash2",
+    "normalized": "circle slash2",
+    "synonyms": []
+  },
+  {
+    "name": "CircleSmall",
+    "normalized": "circle small",
+    "synonyms": []
+  },
+  {
+    "name": "CircleStop",
+    "normalized": "circle stop",
+    "synonyms": []
+  },
+  {
+    "name": "CircleUser",
+    "normalized": "circle user",
+    "synonyms": ["profile", "account", "person", "employee", "staff"]
+  },
+  {
+    "name": "CircleUserRound",
+    "normalized": "circle user round",
+    "synonyms": []
+  },
+  {
+    "name": "CircleX",
+    "normalized": "circle x",
+    "synonyms": []
+  },
+  {
+    "name": "CircuitBoard",
+    "normalized": "circuit board",
+    "synonyms": []
+  },
+  {
+    "name": "Citrus",
+    "normalized": "citrus",
+    "synonyms": []
+  },
+  {
+    "name": "Clapperboard",
+    "normalized": "clapperboard",
+    "synonyms": []
+  },
+  {
+    "name": "Clipboard",
+    "normalized": "clipboard",
+    "synonyms": []
+  },
+  {
+    "name": "ClipboardCheck",
+    "normalized": "clipboard check",
+    "synonyms": [
+      "tasks",
+      "assignments",
+      "todo",
+      "checklist",
+      "completed items",
+      "task list",
+      "project management"
+    ]
+  },
+  {
+    "name": "ClipboardCopy",
+    "normalized": "clipboard copy",
+    "synonyms": []
+  },
+  {
+    "name": "ClipboardList",
+    "normalized": "clipboard list",
+    "synonyms": []
+  },
+  {
+    "name": "ClipboardMinus",
+    "normalized": "clipboard minus",
+    "synonyms": []
+  },
+  {
+    "name": "ClipboardPaste",
+    "normalized": "clipboard paste",
+    "synonyms": []
+  },
+  {
+    "name": "ClipboardPen",
+    "normalized": "clipboard pen",
+    "synonyms": []
+  },
+  {
+    "name": "ClipboardPenLine",
+    "normalized": "clipboard pen line",
+    "synonyms": []
+  },
+  {
+    "name": "ClipboardPlus",
+    "normalized": "clipboard plus",
+    "synonyms": []
+  },
+  {
+    "name": "ClipboardType",
+    "normalized": "clipboard type",
+    "synonyms": []
+  },
+  {
+    "name": "ClipboardX",
+    "normalized": "clipboard x",
+    "synonyms": []
+  },
+  {
+    "name": "Clock",
+    "normalized": "clock",
+    "synonyms": []
+  },
+  {
+    "name": "Clock1",
+    "normalized": "clock1",
+    "synonyms": []
+  },
+  {
+    "name": "Clock10",
+    "normalized": "clock10",
+    "synonyms": []
+  },
+  {
+    "name": "Clock11",
+    "normalized": "clock11",
+    "synonyms": []
+  },
+  {
+    "name": "Clock12",
+    "normalized": "clock12",
+    "synonyms": []
+  },
+  {
+    "name": "Clock2",
+    "normalized": "clock2",
+    "synonyms": []
+  },
+  {
+    "name": "Clock3",
+    "normalized": "clock3",
+    "synonyms": []
+  },
+  {
+    "name": "Clock4",
+    "normalized": "clock4",
+    "synonyms": []
+  },
+  {
+    "name": "Clock5",
+    "normalized": "clock5",
+    "synonyms": []
+  },
+  {
+    "name": "Clock6",
+    "normalized": "clock6",
+    "synonyms": []
+  },
+  {
+    "name": "Clock7",
+    "normalized": "clock7",
+    "synonyms": []
+  },
+  {
+    "name": "Clock8",
+    "normalized": "clock8",
+    "synonyms": []
+  },
+  {
+    "name": "Clock9",
+    "normalized": "clock9",
+    "synonyms": []
+  },
+  {
+    "name": "ClockAlert",
+    "normalized": "clock alert",
+    "synonyms": []
+  },
+  {
+    "name": "ClockArrowDown",
+    "normalized": "clock arrow down",
+    "synonyms": []
+  },
+  {
+    "name": "ClockArrowUp",
+    "normalized": "clock arrow up",
+    "synonyms": []
+  },
+  {
+    "name": "ClockFading",
+    "normalized": "clock fading",
+    "synonyms": []
+  },
+  {
+    "name": "Cloud",
+    "normalized": "cloud",
+    "synonyms": []
+  },
+  {
+    "name": "CloudAlert",
+    "normalized": "cloud alert",
+    "synonyms": []
+  },
+  {
+    "name": "CloudCog",
+    "normalized": "cloud cog",
+    "synonyms": []
+  },
+  {
+    "name": "CloudDownload",
+    "normalized": "cloud download",
+    "synonyms": []
+  },
+  {
+    "name": "CloudDrizzle",
+    "normalized": "cloud drizzle",
+    "synonyms": []
+  },
+  {
+    "name": "CloudFog",
+    "normalized": "cloud fog",
+    "synonyms": []
+  },
+  {
+    "name": "CloudHail",
+    "normalized": "cloud hail",
+    "synonyms": []
+  },
+  {
+    "name": "CloudLightning",
+    "normalized": "cloud lightning",
+    "synonyms": []
+  },
+  {
+    "name": "CloudMoon",
+    "normalized": "cloud moon",
+    "synonyms": []
+  },
+  {
+    "name": "CloudMoonRain",
+    "normalized": "cloud moon rain",
+    "synonyms": []
+  },
+  {
+    "name": "CloudOff",
+    "normalized": "cloud off",
+    "synonyms": []
+  },
+  {
+    "name": "CloudRain",
+    "normalized": "cloud rain",
+    "synonyms": []
+  },
+  {
+    "name": "CloudRainWind",
+    "normalized": "cloud rain wind",
+    "synonyms": []
+  },
+  {
+    "name": "CloudSnow",
+    "normalized": "cloud snow",
+    "synonyms": []
+  },
+  {
+    "name": "CloudSun",
+    "normalized": "cloud sun",
+    "synonyms": []
+  },
+  {
+    "name": "CloudSunRain",
+    "normalized": "cloud sun rain",
+    "synonyms": []
+  },
+  {
+    "name": "CloudUpload",
+    "normalized": "cloud upload",
+    "synonyms": []
+  },
+  {
+    "name": "Cloudy",
+    "normalized": "cloudy",
+    "synonyms": []
+  },
+  {
+    "name": "Clover",
+    "normalized": "clover",
+    "synonyms": []
+  },
+  {
+    "name": "Club",
+    "normalized": "club",
+    "synonyms": []
+  },
+  {
+    "name": "Code",
+    "normalized": "code",
+    "synonyms": []
+  },
+  {
+    "name": "CodeXml",
+    "normalized": "code xml",
+    "synonyms": []
+  },
+  {
+    "name": "Codepen",
+    "normalized": "codepen",
+    "synonyms": []
+  },
+  {
+    "name": "Codesandbox",
+    "normalized": "codesandbox",
+    "synonyms": []
+  },
+  {
+    "name": "Coffee",
+    "normalized": "coffee",
+    "synonyms": []
+  },
+  {
+    "name": "Cog",
+    "normalized": "cog",
+    "synonyms": []
+  },
+  {
+    "name": "Coins",
+    "normalized": "coin",
+    "synonyms": []
+  },
+  {
+    "name": "Columns2",
+    "normalized": "columns2",
+    "synonyms": []
+  },
+  {
+    "name": "Columns3",
+    "normalized": "columns3",
+    "synonyms": []
+  },
+  {
+    "name": "Columns4",
+    "normalized": "columns4",
+    "synonyms": []
+  },
+  {
+    "name": "Combine",
+    "normalized": "combine",
+    "synonyms": []
+  },
+  {
+    "name": "Command",
+    "normalized": "command",
+    "synonyms": []
+  },
+  {
+    "name": "Compass",
+    "normalized": "compass",
+    "synonyms": []
+  },
+  {
+    "name": "Component",
+    "normalized": "component",
+    "synonyms": []
+  },
+  {
+    "name": "Computer",
+    "normalized": "computer",
+    "synonyms": []
+  },
+  {
+    "name": "ConciergeBell",
+    "normalized": "concierge bell",
+    "synonyms": []
+  },
+  {
+    "name": "Cone",
+    "normalized": "cone",
+    "synonyms": []
+  },
+  {
+    "name": "Construction",
+    "normalized": "construction",
+    "synonyms": []
+  },
+  {
+    "name": "Contact",
+    "normalized": "contact",
+    "synonyms": []
+  },
+  {
+    "name": "ContactRound",
+    "normalized": "contact round",
+    "synonyms": []
+  },
+  {
+    "name": "Container",
+    "normalized": "container",
+    "synonyms": []
+  },
+  {
+    "name": "Contrast",
+    "normalized": "contrast",
+    "synonyms": []
+  },
+  {
+    "name": "Cookie",
+    "normalized": "cookie",
+    "synonyms": []
+  },
+  {
+    "name": "CookingPot",
+    "normalized": "cooking pot",
+    "synonyms": []
+  },
+  {
+    "name": "Copy",
+    "normalized": "copy",
+    "synonyms": []
+  },
+  {
+    "name": "CopyCheck",
+    "normalized": "copy check",
+    "synonyms": []
+  },
+  {
+    "name": "CopyMinus",
+    "normalized": "copy minus",
+    "synonyms": []
+  },
+  {
+    "name": "CopyPlus",
+    "normalized": "copy plus",
+    "synonyms": []
+  },
+  {
+    "name": "CopySlash",
+    "normalized": "copy slash",
+    "synonyms": []
+  },
+  {
+    "name": "CopyX",
+    "normalized": "copy x",
+    "synonyms": []
+  },
+  {
+    "name": "Copyleft",
+    "normalized": "copyleft",
+    "synonyms": []
+  },
+  {
+    "name": "Copyright",
+    "normalized": "copyright",
+    "synonyms": []
+  },
+  {
+    "name": "CornerDownLeft",
+    "normalized": "corner down left",
+    "synonyms": []
+  },
+  {
+    "name": "CornerDownRight",
+    "normalized": "corner down right",
+    "synonyms": []
+  },
+  {
+    "name": "CornerLeftDown",
+    "normalized": "corner left down",
+    "synonyms": []
+  },
+  {
+    "name": "CornerLeftUp",
+    "normalized": "corner left up",
+    "synonyms": []
+  },
+  {
+    "name": "CornerRightDown",
+    "normalized": "corner right down",
+    "synonyms": []
+  },
+  {
+    "name": "CornerRightUp",
+    "normalized": "corner right up",
+    "synonyms": []
+  },
+  {
+    "name": "CornerUpLeft",
+    "normalized": "corner up left",
+    "synonyms": []
+  },
+  {
+    "name": "CornerUpRight",
+    "normalized": "corner up right",
+    "synonyms": []
+  },
+  {
+    "name": "Cpu",
+    "normalized": "cpu",
+    "synonyms": []
+  },
+  {
+    "name": "CreativeCommons",
+    "normalized": "creative common",
+    "synonyms": []
+  },
+  {
+    "name": "CreditCard",
+    "normalized": "credit card",
+    "synonyms": ["payment method", "transaction", "purchase", "billing"]
+  },
+  {
+    "name": "Croissant",
+    "normalized": "croissant",
+    "synonyms": []
+  },
+  {
+    "name": "Crop",
+    "normalized": "crop",
+    "synonyms": []
+  },
+  {
+    "name": "Cross",
+    "normalized": "cross",
+    "synonyms": []
+  },
+  {
+    "name": "Crosshair",
+    "normalized": "crosshair",
+    "synonyms": []
+  },
+  {
+    "name": "Crown",
+    "normalized": "crown",
+    "synonyms": []
+  },
+  {
+    "name": "Cuboid",
+    "normalized": "cuboid",
+    "synonyms": []
+  },
+  {
+    "name": "CupSoda",
+    "normalized": "cup soda",
+    "synonyms": []
+  },
+  {
+    "name": "Currency",
+    "normalized": "currency",
+    "synonyms": []
+  },
+  {
+    "name": "Cylinder",
+    "normalized": "cylinder",
+    "synonyms": []
+  },
+  {
+    "name": "Dam",
+    "normalized": "dam",
+    "synonyms": []
+  },
+  {
+    "name": "Database",
+    "normalized": "database",
+    "synonyms": []
+  },
+  {
+    "name": "DatabaseBackup",
+    "normalized": "database backup",
+    "synonyms": []
+  },
+  {
+    "name": "DatabaseZap",
+    "normalized": "database zap",
+    "synonyms": []
+  },
+  {
+    "name": "Delete",
+    "normalized": "delete",
+    "synonyms": []
+  },
+  {
+    "name": "Dessert",
+    "normalized": "dessert",
+    "synonyms": []
+  },
+  {
+    "name": "Diameter",
+    "normalized": "diameter",
+    "synonyms": []
+  },
+  {
+    "name": "Diamond",
+    "normalized": "diamond",
+    "synonyms": []
+  },
+  {
+    "name": "DiamondMinus",
+    "normalized": "diamond minus",
+    "synonyms": []
+  },
+  {
+    "name": "DiamondPercent",
+    "normalized": "diamond percent",
+    "synonyms": []
+  },
+  {
+    "name": "DiamondPlus",
+    "normalized": "diamond plus",
+    "synonyms": []
+  },
+  {
+    "name": "Dice1",
+    "normalized": "dice1",
+    "synonyms": []
+  },
+  {
+    "name": "Dice2",
+    "normalized": "dice2",
+    "synonyms": []
+  },
+  {
+    "name": "Dice3",
+    "normalized": "dice3",
+    "synonyms": []
+  },
+  {
+    "name": "Dice4",
+    "normalized": "dice4",
+    "synonyms": []
+  },
+  {
+    "name": "Dice5",
+    "normalized": "dice5",
+    "synonyms": []
+  },
+  {
+    "name": "Dice6",
+    "normalized": "dice6",
+    "synonyms": []
+  },
+  {
+    "name": "Dices",
+    "normalized": "dice",
+    "synonyms": []
+  },
+  {
+    "name": "Diff",
+    "normalized": "diff",
+    "synonyms": []
+  },
+  {
+    "name": "Disc",
+    "normalized": "disc",
+    "synonyms": []
+  },
+  {
+    "name": "Disc2",
+    "normalized": "disc2",
+    "synonyms": []
+  },
+  {
+    "name": "Disc3",
+    "normalized": "disc3",
+    "synonyms": []
+  },
+  {
+    "name": "DiscAlbum",
+    "normalized": "disc album",
+    "synonyms": []
+  },
+  {
+    "name": "Divide",
+    "normalized": "divide",
+    "synonyms": []
+  },
+  {
+    "name": "Dna",
+    "normalized": "dna",
+    "synonyms": []
+  },
+  {
+    "name": "DnaOff",
+    "normalized": "dna off",
+    "synonyms": []
+  },
+  {
+    "name": "Dock",
+    "normalized": "dock",
+    "synonyms": []
+  },
+  {
+    "name": "Dog",
+    "normalized": "dog",
+    "synonyms": []
+  },
+  {
+    "name": "DollarSign",
+    "normalized": "dollar sign",
+    "synonyms": []
+  },
+  {
+    "name": "Donut",
+    "normalized": "donut",
+    "synonyms": []
+  },
+  {
+    "name": "DoorClosed",
+    "normalized": "door closed",
+    "synonyms": []
+  },
+  {
+    "name": "DoorOpen",
+    "normalized": "door open",
+    "synonyms": []
+  },
+  {
+    "name": "Dot",
+    "normalized": "dot",
+    "synonyms": []
+  },
+  {
+    "name": "Download",
+    "normalized": "download",
+    "synonyms": []
+  },
+  {
+    "name": "DraftingCompass",
+    "normalized": "drafting compass",
+    "synonyms": []
+  },
+  {
+    "name": "Drama",
+    "normalized": "drama",
+    "synonyms": []
+  },
+  {
+    "name": "Dribbble",
+    "normalized": "dribbble",
+    "synonyms": []
+  },
+  {
+    "name": "Drill",
+    "normalized": "drill",
+    "synonyms": []
+  },
+  {
+    "name": "Droplet",
+    "normalized": "droplet",
+    "synonyms": []
+  },
+  {
+    "name": "DropletOff",
+    "normalized": "droplet off",
+    "synonyms": []
+  },
+  {
+    "name": "Droplets",
+    "normalized": "droplet",
+    "synonyms": []
+  },
+  {
+    "name": "Drum",
+    "normalized": "drum",
+    "synonyms": []
+  },
+  {
+    "name": "Drumstick",
+    "normalized": "drumstick",
+    "synonyms": []
+  },
+  {
+    "name": "Dumbbell",
+    "normalized": "dumbbell",
+    "synonyms": []
+  },
+  {
+    "name": "Ear",
+    "normalized": "ear",
+    "synonyms": []
+  },
+  {
+    "name": "EarOff",
+    "normalized": "ear off",
+    "synonyms": []
+  },
+  {
+    "name": "Earth",
+    "normalized": "earth",
+    "synonyms": []
+  },
+  {
+    "name": "EarthLock",
+    "normalized": "earth lock",
+    "synonyms": []
+  },
+  {
+    "name": "Eclipse",
+    "normalized": "eclipse",
+    "synonyms": []
+  },
+  {
+    "name": "Egg",
+    "normalized": "egg",
+    "synonyms": []
+  },
+  {
+    "name": "EggFried",
+    "normalized": "egg fried",
+    "synonyms": []
+  },
+  {
+    "name": "EggOff",
+    "normalized": "egg off",
+    "synonyms": []
+  },
+  {
+    "name": "Ellipsis",
+    "normalized": "ellipsi",
+    "synonyms": []
+  },
+  {
+    "name": "EllipsisVertical",
+    "normalized": "ellipsis vertical",
+    "synonyms": []
+  },
+  {
+    "name": "Equal",
+    "normalized": "equal",
+    "synonyms": []
+  },
+  {
+    "name": "EqualApproximately",
+    "normalized": "equal approximately",
+    "synonyms": []
+  },
+  {
+    "name": "EqualNot",
+    "normalized": "equal not",
+    "synonyms": []
+  },
+  {
+    "name": "Eraser",
+    "normalized": "eraser",
+    "synonyms": []
+  },
+  {
+    "name": "EthernetPort",
+    "normalized": "ethernet port",
+    "synonyms": []
+  },
+  {
+    "name": "Euro",
+    "normalized": "euro",
+    "synonyms": []
+  },
+  {
+    "name": "Expand",
+    "normalized": "expand",
+    "synonyms": []
+  },
+  {
+    "name": "ExternalLink",
+    "normalized": "external link",
+    "synonyms": []
+  },
+  {
+    "name": "Eye",
+    "normalized": "eye",
+    "synonyms": []
+  },
+  {
+    "name": "EyeClosed",
+    "normalized": "eye closed",
+    "synonyms": []
+  },
+  {
+    "name": "EyeOff",
+    "normalized": "eye off",
+    "synonyms": []
+  },
+  {
+    "name": "Facebook",
+    "normalized": "facebook",
+    "synonyms": []
+  },
+  {
+    "name": "Factory",
+    "normalized": "factory",
+    "synonyms": []
+  },
+  {
+    "name": "Fan",
+    "normalized": "fan",
+    "synonyms": []
+  },
+  {
+    "name": "FastForward",
+    "normalized": "fast forward",
+    "synonyms": []
+  },
+  {
+    "name": "Feather",
+    "normalized": "feather",
+    "synonyms": []
+  },
+  {
+    "name": "Fence",
+    "normalized": "fence",
+    "synonyms": []
+  },
+  {
+    "name": "FerrisWheel",
+    "normalized": "ferris wheel",
+    "synonyms": []
+  },
+  {
+    "name": "Figma",
+    "normalized": "figma",
+    "synonyms": []
+  },
+  {
+    "name": "File",
+    "normalized": "file",
+    "synonyms": []
+  },
+  {
+    "name": "FileArchive",
+    "normalized": "file archive",
+    "synonyms": []
+  },
+  {
+    "name": "FileAudio",
+    "normalized": "file audio",
+    "synonyms": []
+  },
+  {
+    "name": "FileAudio2",
+    "normalized": "file audio2",
+    "synonyms": []
+  },
+  {
+    "name": "FileAxis3d",
+    "normalized": "file axis3d",
+    "synonyms": []
+  },
+  {
+    "name": "FileBadge",
+    "normalized": "file badge",
+    "synonyms": []
+  },
+  {
+    "name": "FileBadge2",
+    "normalized": "file badge2",
+    "synonyms": []
+  },
+  {
+    "name": "FileBox",
+    "normalized": "file box",
+    "synonyms": []
+  },
+  {
+    "name": "FileChartColumn",
+    "normalized": "file chart column",
+    "synonyms": []
+  },
+  {
+    "name": "FileChartColumnIncreasing",
+    "normalized": "file chart column increasing",
+    "synonyms": []
+  },
+  {
+    "name": "FileChartLine",
+    "normalized": "file chart line",
+    "synonyms": []
+  },
+  {
+    "name": "FileChartPie",
+    "normalized": "file chart pie",
+    "synonyms": []
+  },
+  {
+    "name": "FileCheck",
+    "normalized": "file check",
+    "synonyms": []
+  },
+  {
+    "name": "FileCheck2",
+    "normalized": "file check2",
+    "synonyms": []
+  },
+  {
+    "name": "FileClock",
+    "normalized": "file clock",
+    "synonyms": []
+  },
+  {
+    "name": "FileCode",
+    "normalized": "file code",
+    "synonyms": []
+  },
+  {
+    "name": "FileCode2",
+    "normalized": "file code2",
+    "synonyms": []
+  },
+  {
+    "name": "FileCog",
+    "normalized": "file cog",
+    "synonyms": []
+  },
+  {
+    "name": "FileDiff",
+    "normalized": "file diff",
+    "synonyms": []
+  },
+  {
+    "name": "FileDigit",
+    "normalized": "file digit",
+    "synonyms": []
+  },
+  {
+    "name": "FileDown",
+    "normalized": "file down",
+    "synonyms": []
+  },
+  {
+    "name": "FileHeart",
+    "normalized": "file heart",
+    "synonyms": []
+  },
+  {
+    "name": "FileImage",
+    "normalized": "file image",
+    "synonyms": []
+  },
+  {
+    "name": "FileInput",
+    "normalized": "file input",
+    "synonyms": []
+  },
+  {
+    "name": "FileJson",
+    "normalized": "file json",
+    "synonyms": []
+  },
+  {
+    "name": "FileJson2",
+    "normalized": "file json2",
+    "synonyms": []
+  },
+  {
+    "name": "FileKey",
+    "normalized": "file key",
+    "synonyms": []
+  },
+  {
+    "name": "FileKey2",
+    "normalized": "file key2",
+    "synonyms": []
+  },
+  {
+    "name": "FileLock",
+    "normalized": "file lock",
+    "synonyms": []
+  },
+  {
+    "name": "FileLock2",
+    "normalized": "file lock2",
+    "synonyms": []
+  },
+  {
+    "name": "FileMinus",
+    "normalized": "file minus",
+    "synonyms": []
+  },
+  {
+    "name": "FileMinus2",
+    "normalized": "file minus2",
+    "synonyms": []
+  },
+  {
+    "name": "FileMusic",
+    "normalized": "file music",
+    "synonyms": []
+  },
+  {
+    "name": "FileOutput",
+    "normalized": "file output",
+    "synonyms": []
+  },
+  {
+    "name": "FilePen",
+    "normalized": "file pen",
+    "synonyms": []
+  },
+  {
+    "name": "FilePenLine",
+    "normalized": "file pen line",
+    "synonyms": []
+  },
+  {
+    "name": "FilePlus",
+    "normalized": "file plus",
+    "synonyms": []
+  },
+  {
+    "name": "FilePlus2",
+    "normalized": "file plus2",
+    "synonyms": []
+  },
+  {
+    "name": "FileQuestion",
+    "normalized": "file question",
+    "synonyms": []
+  },
+  {
+    "name": "FileScan",
+    "normalized": "file scan",
+    "synonyms": []
+  },
+  {
+    "name": "FileSearch",
+    "normalized": "file search",
+    "synonyms": []
+  },
+  {
+    "name": "FileSearch2",
+    "normalized": "file search2",
+    "synonyms": []
+  },
+  {
+    "name": "FileSliders",
+    "normalized": "file slider",
+    "synonyms": []
+  },
+  {
+    "name": "FileSpreadsheet",
+    "normalized": "file spreadsheet",
+    "synonyms": []
+  },
+  {
+    "name": "FileStack",
+    "normalized": "file stack",
+    "synonyms": []
+  },
+  {
+    "name": "FileSymlink",
+    "normalized": "file symlink",
+    "synonyms": []
+  },
+  {
+    "name": "FileTerminal",
+    "normalized": "file terminal",
+    "synonyms": []
+  },
+  {
+    "name": "FileText",
+    "normalized": "file text",
+    "synonyms": ["document", "report", "contract", "agreement", "proposal"]
+  },
+  {
+    "name": "FileType",
+    "normalized": "file type",
+    "synonyms": []
+  },
+  {
+    "name": "FileType2",
+    "normalized": "file type2",
+    "synonyms": []
+  },
+  {
+    "name": "FileUp",
+    "normalized": "file up",
+    "synonyms": []
+  },
+  {
+    "name": "FileUser",
+    "normalized": "file user",
+    "synonyms": []
+  },
+  {
+    "name": "FileVideo",
+    "normalized": "file video",
+    "synonyms": []
+  },
+  {
+    "name": "FileVideo2",
+    "normalized": "file video2",
+    "synonyms": []
+  },
+  {
+    "name": "FileVolume",
+    "normalized": "file volume",
+    "synonyms": []
+  },
+  {
+    "name": "FileVolume2",
+    "normalized": "file volume2",
+    "synonyms": []
+  },
+  {
+    "name": "FileWarning",
+    "normalized": "file warning",
+    "synonyms": []
+  },
+  {
+    "name": "FileX",
+    "normalized": "file x",
+    "synonyms": ["rejected document", "cancelled", "void", "deleted"]
+  },
+  {
+    "name": "FileX2",
+    "normalized": "file x2",
+    "synonyms": []
+  },
+  {
+    "name": "Files",
+    "normalized": "file",
+    "synonyms": []
+  },
+  {
+    "name": "Film",
+    "normalized": "film",
+    "synonyms": []
+  },
+  {
+    "name": "Fingerprint",
+    "normalized": "fingerprint",
+    "synonyms": []
+  },
+  {
+    "name": "FireExtinguisher",
+    "normalized": "fire extinguisher",
+    "synonyms": []
+  },
+  {
+    "name": "Fish",
+    "normalized": "fish",
+    "synonyms": []
+  },
+  {
+    "name": "FishOff",
+    "normalized": "fish off",
+    "synonyms": []
+  },
+  {
+    "name": "FishSymbol",
+    "normalized": "fish symbol",
+    "synonyms": []
+  },
+  {
+    "name": "Flag",
+    "normalized": "flag",
+    "synonyms": []
+  },
+  {
+    "name": "FlagOff",
+    "normalized": "flag off",
+    "synonyms": []
+  },
+  {
+    "name": "FlagTriangleLeft",
+    "normalized": "flag triangle left",
+    "synonyms": []
+  },
+  {
+    "name": "FlagTriangleRight",
+    "normalized": "flag triangle right",
+    "synonyms": []
+  },
+  {
+    "name": "Flame",
+    "normalized": "flame",
+    "synonyms": []
+  },
+  {
+    "name": "FlameKindling",
+    "normalized": "flame kindling",
+    "synonyms": []
+  },
+  {
+    "name": "Flashlight",
+    "normalized": "flashlight",
+    "synonyms": []
+  },
+  {
+    "name": "FlashlightOff",
+    "normalized": "flashlight off",
+    "synonyms": []
+  },
+  {
+    "name": "FlaskConical",
+    "normalized": "flask conical",
+    "synonyms": []
+  },
+  {
+    "name": "FlaskConicalOff",
+    "normalized": "flask conical off",
+    "synonyms": []
+  },
+  {
+    "name": "FlaskRound",
+    "normalized": "flask round",
+    "synonyms": []
+  },
+  {
+    "name": "FlipHorizontal",
+    "normalized": "flip horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "FlipHorizontal2",
+    "normalized": "flip horizontal2",
+    "synonyms": []
+  },
+  {
+    "name": "FlipVertical",
+    "normalized": "flip vertical",
+    "synonyms": []
+  },
+  {
+    "name": "FlipVertical2",
+    "normalized": "flip vertical2",
+    "synonyms": []
+  },
+  {
+    "name": "Flower",
+    "normalized": "flower",
+    "synonyms": []
+  },
+  {
+    "name": "Flower2",
+    "normalized": "flower2",
+    "synonyms": []
+  },
+  {
+    "name": "Focus",
+    "normalized": "focus",
+    "synonyms": []
+  },
+  {
+    "name": "FoldHorizontal",
+    "normalized": "fold horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "FoldVertical",
+    "normalized": "fold vertical",
+    "synonyms": []
+  },
+  {
+    "name": "Folder",
+    "normalized": "folder",
+    "synonyms": ["projects", "directory", "collection", "group", "workspace"]
+  },
+  {
+    "name": "FolderArchive",
+    "normalized": "folder archive",
+    "synonyms": []
+  },
+  {
+    "name": "FolderCheck",
+    "normalized": "folder check",
+    "synonyms": []
+  },
+  {
+    "name": "FolderClock",
+    "normalized": "folder clock",
+    "synonyms": []
+  },
+  {
+    "name": "FolderClosed",
+    "normalized": "folder closed",
+    "synonyms": []
+  },
+  {
+    "name": "FolderCode",
+    "normalized": "folder code",
+    "synonyms": []
+  },
+  {
+    "name": "FolderCog",
+    "normalized": "folder cog",
+    "synonyms": []
+  },
+  {
+    "name": "FolderDot",
+    "normalized": "folder dot",
+    "synonyms": []
+  },
+  {
+    "name": "FolderDown",
+    "normalized": "folder down",
+    "synonyms": []
+  },
+  {
+    "name": "FolderGit",
+    "normalized": "folder git",
+    "synonyms": []
+  },
+  {
+    "name": "FolderGit2",
+    "normalized": "folder git2",
+    "synonyms": []
+  },
+  {
+    "name": "FolderHeart",
+    "normalized": "folder heart",
+    "synonyms": []
+  },
+  {
+    "name": "FolderInput",
+    "normalized": "folder input",
+    "synonyms": []
+  },
+  {
+    "name": "FolderKanban",
+    "normalized": "folder kanban",
+    "synonyms": []
+  },
+  {
+    "name": "FolderKey",
+    "normalized": "folder key",
+    "synonyms": []
+  },
+  {
+    "name": "FolderLock",
+    "normalized": "folder lock",
+    "synonyms": []
+  },
+  {
+    "name": "FolderMinus",
+    "normalized": "folder minus",
+    "synonyms": []
+  },
+  {
+    "name": "FolderOpen",
+    "normalized": "folder open",
+    "synonyms": []
+  },
+  {
+    "name": "FolderOpenDot",
+    "normalized": "folder open dot",
+    "synonyms": []
+  },
+  {
+    "name": "FolderOutput",
+    "normalized": "folder output",
+    "synonyms": []
+  },
+  {
+    "name": "FolderPen",
+    "normalized": "folder pen",
+    "synonyms": []
+  },
+  {
+    "name": "FolderPlus",
+    "normalized": "folder plus",
+    "synonyms": []
+  },
+  {
+    "name": "FolderRoot",
+    "normalized": "folder root",
+    "synonyms": []
+  },
+  {
+    "name": "FolderSearch",
+    "normalized": "folder search",
+    "synonyms": []
+  },
+  {
+    "name": "FolderSearch2",
+    "normalized": "folder search2",
+    "synonyms": []
+  },
+  {
+    "name": "FolderSymlink",
+    "normalized": "folder symlink",
+    "synonyms": []
+  },
+  {
+    "name": "FolderSync",
+    "normalized": "folder sync",
+    "synonyms": []
+  },
+  {
+    "name": "FolderTree",
+    "normalized": "folder tree",
+    "synonyms": []
+  },
+  {
+    "name": "FolderUp",
+    "normalized": "folder up",
+    "synonyms": []
+  },
+  {
+    "name": "FolderX",
+    "normalized": "folder x",
+    "synonyms": []
+  },
+  {
+    "name": "Folders",
+    "normalized": "folder",
+    "synonyms": []
+  },
+  {
+    "name": "Footprints",
+    "normalized": "footprint",
+    "synonyms": []
+  },
+  {
+    "name": "Forklift",
+    "normalized": "forklift",
+    "synonyms": []
+  },
+  {
+    "name": "Forward",
+    "normalized": "forward",
+    "synonyms": []
+  },
+  {
+    "name": "Frame",
+    "normalized": "frame",
+    "synonyms": []
+  },
+  {
+    "name": "Framer",
+    "normalized": "framer",
+    "synonyms": []
+  },
+  {
+    "name": "Frown",
+    "normalized": "frown",
+    "synonyms": []
+  },
+  {
+    "name": "Fuel",
+    "normalized": "fuel",
+    "synonyms": []
+  },
+  {
+    "name": "Fullscreen",
+    "normalized": "fullscreen",
+    "synonyms": []
+  },
+  {
+    "name": "Funnel",
+    "normalized": "funnel",
+    "synonyms": []
+  },
+  {
+    "name": "FunnelPlus",
+    "normalized": "funnel plus",
+    "synonyms": []
+  },
+  {
+    "name": "FunnelX",
+    "normalized": "funnel x",
+    "synonyms": []
+  },
+  {
+    "name": "GalleryHorizontal",
+    "normalized": "gallery horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "GalleryHorizontalEnd",
+    "normalized": "gallery horizontal end",
+    "synonyms": []
+  },
+  {
+    "name": "GalleryThumbnails",
+    "normalized": "gallery thumbnail",
+    "synonyms": []
+  },
+  {
+    "name": "GalleryVertical",
+    "normalized": "gallery vertical",
+    "synonyms": []
+  },
+  {
+    "name": "GalleryVerticalEnd",
+    "normalized": "gallery vertical end",
+    "synonyms": []
+  },
+  {
+    "name": "Gamepad",
+    "normalized": "gamepad",
+    "synonyms": []
+  },
+  {
+    "name": "Gamepad2",
+    "normalized": "gamepad2",
+    "synonyms": []
+  },
+  {
+    "name": "Gauge",
+    "normalized": "gauge",
+    "synonyms": []
+  },
+  {
+    "name": "Gavel",
+    "normalized": "gavel",
+    "synonyms": []
+  },
+  {
+    "name": "Gem",
+    "normalized": "gem",
+    "synonyms": []
+  },
+  {
+    "name": "Ghost",
+    "normalized": "ghost",
+    "synonyms": []
+  },
+  {
+    "name": "Gift",
+    "normalized": "gift",
+    "synonyms": []
+  },
+  {
+    "name": "GitBranch",
+    "normalized": "git branch",
+    "synonyms": []
+  },
+  {
+    "name": "GitBranchPlus",
+    "normalized": "git branch plus",
+    "synonyms": []
+  },
+  {
+    "name": "GitCommitHorizontal",
+    "normalized": "git commit horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "GitCommitVertical",
+    "normalized": "git commit vertical",
+    "synonyms": []
+  },
+  {
+    "name": "GitCompare",
+    "normalized": "git compare",
+    "synonyms": []
+  },
+  {
+    "name": "GitCompareArrows",
+    "normalized": "git compare arrow",
+    "synonyms": []
+  },
+  {
+    "name": "GitFork",
+    "normalized": "git fork",
+    "synonyms": []
+  },
+  {
+    "name": "GitGraph",
+    "normalized": "git graph",
+    "synonyms": []
+  },
+  {
+    "name": "GitMerge",
+    "normalized": "git merge",
+    "synonyms": []
+  },
+  {
+    "name": "GitPullRequest",
+    "normalized": "git pull request",
+    "synonyms": []
+  },
+  {
+    "name": "GitPullRequestArrow",
+    "normalized": "git pull request arrow",
+    "synonyms": []
+  },
+  {
+    "name": "GitPullRequestClosed",
+    "normalized": "git pull request closed",
+    "synonyms": []
+  },
+  {
+    "name": "GitPullRequestCreate",
+    "normalized": "git pull request create",
+    "synonyms": []
+  },
+  {
+    "name": "GitPullRequestCreateArrow",
+    "normalized": "git pull request create arrow",
+    "synonyms": []
+  },
+  {
+    "name": "GitPullRequestDraft",
+    "normalized": "git pull request draft",
+    "synonyms": []
+  },
+  {
+    "name": "Github",
+    "normalized": "github",
+    "synonyms": []
+  },
+  {
+    "name": "Gitlab",
+    "normalized": "gitlab",
+    "synonyms": []
+  },
+  {
+    "name": "GlassWater",
+    "normalized": "glass water",
+    "synonyms": []
+  },
+  {
+    "name": "Glasses",
+    "normalized": "glass",
+    "synonyms": []
+  },
+  {
+    "name": "Globe",
+    "normalized": "globe",
+    "synonyms": []
+  },
+  {
+    "name": "GlobeLock",
+    "normalized": "globe lock",
+    "synonyms": []
+  },
+  {
+    "name": "Goal",
+    "normalized": "goal",
+    "synonyms": []
+  },
+  {
+    "name": "Grab",
+    "normalized": "grab",
+    "synonyms": []
+  },
+  {
+    "name": "GraduationCap",
+    "normalized": "graduation cap",
+    "synonyms": []
+  },
+  {
+    "name": "Grape",
+    "normalized": "grape",
+    "synonyms": []
+  },
+  {
+    "name": "Grid2x2",
+    "normalized": "grid2x2",
+    "synonyms": []
+  },
+  {
+    "name": "Grid2x2Check",
+    "normalized": "grid2x2 check",
+    "synonyms": []
+  },
+  {
+    "name": "Grid2x2Plus",
+    "normalized": "grid2x2 plus",
+    "synonyms": []
+  },
+  {
+    "name": "Grid2x2X",
+    "normalized": "grid2x2 x",
+    "synonyms": []
+  },
+  {
+    "name": "Grid3x3",
+    "normalized": "grid3x3",
+    "synonyms": []
+  },
+  {
+    "name": "Grip",
+    "normalized": "grip",
+    "synonyms": []
+  },
+  {
+    "name": "GripHorizontal",
+    "normalized": "grip horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "GripVertical",
+    "normalized": "grip vertical",
+    "synonyms": []
+  },
+  {
+    "name": "Group",
+    "normalized": "group",
+    "synonyms": []
+  },
+  {
+    "name": "Guitar",
+    "normalized": "guitar",
+    "synonyms": []
+  },
+  {
+    "name": "Ham",
+    "normalized": "ham",
+    "synonyms": []
+  },
+  {
+    "name": "Hammer",
+    "normalized": "hammer",
+    "synonyms": []
+  },
+  {
+    "name": "Hand",
+    "normalized": "hand",
+    "synonyms": []
+  },
+  {
+    "name": "HandCoins",
+    "normalized": "hand coin",
+    "synonyms": []
+  },
+  {
+    "name": "HandHeart",
+    "normalized": "hand heart",
+    "synonyms": []
+  },
+  {
+    "name": "HandHelping",
+    "normalized": "hand helping",
+    "synonyms": []
+  },
+  {
+    "name": "HandMetal",
+    "normalized": "hand metal",
+    "synonyms": []
+  },
+  {
+    "name": "HandPlatter",
+    "normalized": "hand platter",
+    "synonyms": []
+  },
+  {
+    "name": "Handshake",
+    "normalized": "handshake",
+    "synonyms": []
+  },
+  {
+    "name": "HardDrive",
+    "normalized": "hard drive",
+    "synonyms": []
+  },
+  {
+    "name": "HardDriveDownload",
+    "normalized": "hard drive download",
+    "synonyms": []
+  },
+  {
+    "name": "HardDriveUpload",
+    "normalized": "hard drive upload",
+    "synonyms": []
+  },
+  {
+    "name": "HardHat",
+    "normalized": "hard hat",
+    "synonyms": []
+  },
+  {
+    "name": "Hash",
+    "normalized": "hash",
+    "synonyms": []
+  },
+  {
+    "name": "Haze",
+    "normalized": "haze",
+    "synonyms": []
+  },
+  {
+    "name": "HdmiPort",
+    "normalized": "hdmi port",
+    "synonyms": []
+  },
+  {
+    "name": "Heading",
+    "normalized": "heading",
+    "synonyms": []
+  },
+  {
+    "name": "Heading1",
+    "normalized": "heading1",
+    "synonyms": []
+  },
+  {
+    "name": "Heading2",
+    "normalized": "heading2",
+    "synonyms": []
+  },
+  {
+    "name": "Heading3",
+    "normalized": "heading3",
+    "synonyms": []
+  },
+  {
+    "name": "Heading4",
+    "normalized": "heading4",
+    "synonyms": []
+  },
+  {
+    "name": "Heading5",
+    "normalized": "heading5",
+    "synonyms": []
+  },
+  {
+    "name": "Heading6",
+    "normalized": "heading6",
+    "synonyms": []
+  },
+  {
+    "name": "HeadphoneOff",
+    "normalized": "headphone off",
+    "synonyms": []
+  },
+  {
+    "name": "Headphones",
+    "normalized": "headphone",
+    "synonyms": []
+  },
+  {
+    "name": "Headset",
+    "normalized": "headset",
+    "synonyms": []
+  },
+  {
+    "name": "Heart",
+    "normalized": "heart",
+    "synonyms": []
+  },
+  {
+    "name": "HeartCrack",
+    "normalized": "heart crack",
+    "synonyms": []
+  },
+  {
+    "name": "HeartHandshake",
+    "normalized": "heart handshake",
+    "synonyms": []
+  },
+  {
+    "name": "HeartOff",
+    "normalized": "heart off",
+    "synonyms": []
+  },
+  {
+    "name": "HeartPulse",
+    "normalized": "heart pulse",
+    "synonyms": []
+  },
+  {
+    "name": "Heater",
+    "normalized": "heater",
+    "synonyms": []
+  },
+  {
+    "name": "Hexagon",
+    "normalized": "hexagon",
+    "synonyms": []
+  },
+  {
+    "name": "Highlighter",
+    "normalized": "highlighter",
+    "synonyms": []
+  },
+  {
+    "name": "History",
+    "normalized": "history",
+    "synonyms": []
+  },
+  {
+    "name": "Hop",
+    "normalized": "hop",
+    "synonyms": []
+  },
+  {
+    "name": "HopOff",
+    "normalized": "hop off",
+    "synonyms": []
+  },
+  {
+    "name": "Hospital",
+    "normalized": "hospital",
+    "synonyms": []
+  },
+  {
+    "name": "Hotel",
+    "normalized": "hotel",
+    "synonyms": []
+  },
+  {
+    "name": "Hourglass",
+    "normalized": "hourglass",
+    "synonyms": []
+  },
+  {
+    "name": "House",
+    "normalized": "house",
+    "synonyms": []
+  },
+  {
+    "name": "HousePlug",
+    "normalized": "house plug",
+    "synonyms": []
+  },
+  {
+    "name": "HousePlus",
+    "normalized": "house plus",
+    "synonyms": []
+  },
+  {
+    "name": "HouseWifi",
+    "normalized": "house wifi",
+    "synonyms": []
+  },
+  {
+    "name": "IceCreamBowl",
+    "normalized": "ice cream bowl",
+    "synonyms": []
+  },
+  {
+    "name": "IceCreamCone",
+    "normalized": "ice cream cone",
+    "synonyms": []
+  },
+  {
+    "name": "IdCard",
+    "normalized": "id card",
+    "synonyms": ["employee id", "staff card", "identification", "badge"]
+  },
+  {
+    "name": "Image",
+    "normalized": "image",
+    "synonyms": []
+  },
+  {
+    "name": "ImageDown",
+    "normalized": "image down",
+    "synonyms": []
+  },
+  {
+    "name": "ImageMinus",
+    "normalized": "image minus",
+    "synonyms": []
+  },
+  {
+    "name": "ImageOff",
+    "normalized": "image off",
+    "synonyms": []
+  },
+  {
+    "name": "ImagePlay",
+    "normalized": "image play",
+    "synonyms": []
+  },
+  {
+    "name": "ImagePlus",
+    "normalized": "image plus",
+    "synonyms": []
+  },
+  {
+    "name": "ImageUp",
+    "normalized": "image up",
+    "synonyms": []
+  },
+  {
+    "name": "ImageUpscale",
+    "normalized": "image upscale",
+    "synonyms": []
+  },
+  {
+    "name": "Images",
+    "normalized": "image",
+    "synonyms": []
+  },
+  {
+    "name": "Import",
+    "normalized": "import",
+    "synonyms": []
+  },
+  {
+    "name": "Inbox",
+    "normalized": "inbox",
+    "synonyms": []
+  },
+  {
+    "name": "IndentDecrease",
+    "normalized": "indent decrease",
+    "synonyms": []
+  },
+  {
+    "name": "IndentIncrease",
+    "normalized": "indent increase",
+    "synonyms": []
+  },
+  {
+    "name": "IndianRupee",
+    "normalized": "indian rupee",
+    "synonyms": []
+  },
+  {
+    "name": "Infinity",
+    "normalized": "infinity",
+    "synonyms": []
+  },
+  {
+    "name": "Info",
+    "normalized": "info",
+    "synonyms": []
+  },
+  {
+    "name": "InspectionPanel",
+    "normalized": "inspection panel",
+    "synonyms": []
+  },
+  {
+    "name": "Instagram",
+    "normalized": "instagram",
+    "synonyms": []
+  },
+  {
+    "name": "Italic",
+    "normalized": "italic",
+    "synonyms": []
+  },
+  {
+    "name": "IterationCcw",
+    "normalized": "iteration ccw",
+    "synonyms": []
+  },
+  {
+    "name": "IterationCw",
+    "normalized": "iteration cw",
+    "synonyms": []
+  },
+  {
+    "name": "JapaneseYen",
+    "normalized": "japanese yen",
+    "synonyms": []
+  },
+  {
+    "name": "Joystick",
+    "normalized": "joystick",
+    "synonyms": []
+  },
+  {
+    "name": "Kanban",
+    "normalized": "kanban",
+    "synonyms": []
+  },
+  {
+    "name": "Key",
+    "normalized": "key",
+    "synonyms": []
+  },
+  {
+    "name": "KeyRound",
+    "normalized": "key round",
+    "synonyms": []
+  },
+  {
+    "name": "KeySquare",
+    "normalized": "key square",
+    "synonyms": []
+  },
+  {
+    "name": "Keyboard",
+    "normalized": "keyboard",
+    "synonyms": []
+  },
+  {
+    "name": "KeyboardMusic",
+    "normalized": "keyboard music",
+    "synonyms": []
+  },
+  {
+    "name": "KeyboardOff",
+    "normalized": "keyboard off",
+    "synonyms": []
+  },
+  {
+    "name": "Lamp",
+    "normalized": "lamp",
+    "synonyms": []
+  },
+  {
+    "name": "LampCeiling",
+    "normalized": "lamp ceiling",
+    "synonyms": []
+  },
+  {
+    "name": "LampDesk",
+    "normalized": "lamp desk",
+    "synonyms": []
+  },
+  {
+    "name": "LampFloor",
+    "normalized": "lamp floor",
+    "synonyms": []
+  },
+  {
+    "name": "LampWallDown",
+    "normalized": "lamp wall down",
+    "synonyms": []
+  },
+  {
+    "name": "LampWallUp",
+    "normalized": "lamp wall up",
+    "synonyms": []
+  },
+  {
+    "name": "LandPlot",
+    "normalized": "land plot",
+    "synonyms": []
+  },
+  {
+    "name": "Landmark",
+    "normalized": "landmark",
+    "synonyms": []
+  },
+  {
+    "name": "Languages",
+    "normalized": "language",
+    "synonyms": []
+  },
+  {
+    "name": "Laptop",
+    "normalized": "laptop",
+    "synonyms": []
+  },
+  {
+    "name": "LaptopMinimal",
+    "normalized": "laptop minimal",
+    "synonyms": []
+  },
+  {
+    "name": "LaptopMinimalCheck",
+    "normalized": "laptop minimal check",
+    "synonyms": []
+  },
+  {
+    "name": "Lasso",
+    "normalized": "lasso",
+    "synonyms": []
+  },
+  {
+    "name": "LassoSelect",
+    "normalized": "lasso select",
+    "synonyms": []
+  },
+  {
+    "name": "Laugh",
+    "normalized": "laugh",
+    "synonyms": []
+  },
+  {
+    "name": "Layers",
+    "normalized": "layer",
+    "synonyms": []
+  },
+  {
+    "name": "Layers2",
+    "normalized": "layers2",
+    "synonyms": []
+  },
+  {
+    "name": "LayoutDashboard",
+    "normalized": "layout dashboard",
+    "synonyms": ["analytics", "overview", "metrics", "business intelligence"]
+  },
+  {
+    "name": "LayoutGrid",
+    "normalized": "layout grid",
+    "synonyms": []
+  },
+  {
+    "name": "LayoutList",
+    "normalized": "layout list",
+    "synonyms": []
+  },
+  {
+    "name": "LayoutPanelLeft",
+    "normalized": "layout panel left",
+    "synonyms": []
+  },
+  {
+    "name": "LayoutPanelTop",
+    "normalized": "layout panel top",
+    "synonyms": []
+  },
+  {
+    "name": "LayoutTemplate",
+    "normalized": "layout template",
+    "synonyms": []
+  },
+  {
+    "name": "Leaf",
+    "normalized": "leaf",
+    "synonyms": []
+  },
+  {
+    "name": "LeafyGreen",
+    "normalized": "leafy green",
+    "synonyms": []
+  },
+  {
+    "name": "Lectern",
+    "normalized": "lectern",
+    "synonyms": []
+  },
+  {
+    "name": "LetterText",
+    "normalized": "letter text",
+    "synonyms": []
+  },
+  {
+    "name": "Library",
+    "normalized": "library",
+    "synonyms": []
+  },
+  {
+    "name": "LibraryBig",
+    "normalized": "library big",
+    "synonyms": []
+  },
+  {
+    "name": "LifeBuoy",
+    "normalized": "life buoy",
+    "synonyms": []
+  },
+  {
+    "name": "Ligature",
+    "normalized": "ligature",
+    "synonyms": []
+  },
+  {
+    "name": "Lightbulb",
+    "normalized": "lightbulb",
+    "synonyms": []
+  },
+  {
+    "name": "LightbulbOff",
+    "normalized": "lightbulb off",
+    "synonyms": []
+  },
+  {
+    "name": "Link",
+    "normalized": "link",
+    "synonyms": []
+  },
+  {
+    "name": "Link2",
+    "normalized": "link2",
+    "synonyms": []
+  },
+  {
+    "name": "Link2Off",
+    "normalized": "link2 off",
+    "synonyms": []
+  },
+  {
+    "name": "Linkedin",
+    "normalized": "linkedin",
+    "synonyms": []
+  },
+  {
+    "name": "List",
+    "normalized": "list",
+    "synonyms": []
+  },
+  {
+    "name": "ListCheck",
+    "normalized": "list check",
+    "synonyms": []
+  },
+  {
+    "name": "ListChecks",
+    "normalized": "list check",
+    "synonyms": []
+  },
+  {
+    "name": "ListCollapse",
+    "normalized": "list collapse",
+    "synonyms": []
+  },
+  {
+    "name": "ListEnd",
+    "normalized": "list end",
+    "synonyms": []
+  },
+  {
+    "name": "ListFilter",
+    "normalized": "list filter",
+    "synonyms": []
+  },
+  {
+    "name": "ListFilterPlus",
+    "normalized": "list filter plus",
+    "synonyms": []
+  },
+  {
+    "name": "ListMinus",
+    "normalized": "list minus",
+    "synonyms": []
+  },
+  {
+    "name": "ListMusic",
+    "normalized": "list music",
+    "synonyms": []
+  },
+  {
+    "name": "ListOrdered",
+    "normalized": "list ordered",
+    "synonyms": []
+  },
+  {
+    "name": "ListPlus",
+    "normalized": "list plus",
+    "synonyms": []
+  },
+  {
+    "name": "ListRestart",
+    "normalized": "list restart",
+    "synonyms": []
+  },
+  {
+    "name": "ListStart",
+    "normalized": "list start",
+    "synonyms": []
+  },
+  {
+    "name": "ListTodo",
+    "normalized": "list todo",
+    "synonyms": [
+      "tasks",
+      "assignments",
+      "checklist",
+      "todo list",
+      "task list",
+      "project tasks",
+      "work items",
+      "to-do",
+      "pending items"
+    ]
+  },
+  {
+    "name": "ListTree",
+    "normalized": "list tree",
+    "synonyms": []
+  },
+  {
+    "name": "ListVideo",
+    "normalized": "list video",
+    "synonyms": []
+  },
+  {
+    "name": "ListX",
+    "normalized": "list x",
+    "synonyms": []
+  },
+  {
+    "name": "Loader",
+    "normalized": "loader",
+    "synonyms": []
+  },
+  {
+    "name": "LoaderCircle",
+    "normalized": "loader circle",
+    "synonyms": []
+  },
+  {
+    "name": "LoaderPinwheel",
+    "normalized": "loader pinwheel",
+    "synonyms": []
+  },
+  {
+    "name": "Locate",
+    "normalized": "locate",
+    "synonyms": []
+  },
+  {
+    "name": "LocateFixed",
+    "normalized": "locate fixed",
+    "synonyms": []
+  },
+  {
+    "name": "LocateOff",
+    "normalized": "locate off",
+    "synonyms": []
+  },
+  {
+    "name": "Lock",
+    "normalized": "lock",
+    "synonyms": ["secure", "protected", "private", "restricted", "confidential"]
+  },
+  {
+    "name": "LockKeyhole",
+    "normalized": "lock keyhole",
+    "synonyms": []
+  },
+  {
+    "name": "LockKeyholeOpen",
+    "normalized": "lock keyhole open",
+    "synonyms": []
+  },
+  {
+    "name": "LockOpen",
+    "normalized": "lock open",
+    "synonyms": []
+  },
+  {
+    "name": "LogIn",
+    "normalized": "log in",
+    "synonyms": []
+  },
+  {
+    "name": "LogOut",
+    "normalized": "log out",
+    "synonyms": []
+  },
+  {
+    "name": "Logs",
+    "normalized": "log",
+    "synonyms": []
+  },
+  {
+    "name": "Lollipop",
+    "normalized": "lollipop",
+    "synonyms": []
+  },
+  {
+    "name": "Luggage",
+    "normalized": "luggage",
+    "synonyms": []
+  },
+  {
+    "name": "Magnet",
+    "normalized": "magnet",
+    "synonyms": []
+  },
+  {
+    "name": "Mail",
+    "normalized": "mail",
+    "synonyms": ["email", "message", "communication", "notification"]
+  },
+  {
+    "name": "MailCheck",
+    "normalized": "mail check",
+    "synonyms": []
+  },
+  {
+    "name": "MailMinus",
+    "normalized": "mail minus",
+    "synonyms": []
+  },
+  {
+    "name": "MailOpen",
+    "normalized": "mail open",
+    "synonyms": []
+  },
+  {
+    "name": "MailPlus",
+    "normalized": "mail plus",
+    "synonyms": []
+  },
+  {
+    "name": "MailQuestion",
+    "normalized": "mail question",
+    "synonyms": []
+  },
+  {
+    "name": "MailSearch",
+    "normalized": "mail search",
+    "synonyms": []
+  },
+  {
+    "name": "MailWarning",
+    "normalized": "mail warning",
+    "synonyms": []
+  },
+  {
+    "name": "MailX",
+    "normalized": "mail x",
+    "synonyms": []
+  },
+  {
+    "name": "Mailbox",
+    "normalized": "mailbox",
+    "synonyms": []
+  },
+  {
+    "name": "Mails",
+    "normalized": "mail",
+    "synonyms": []
+  },
+  {
+    "name": "Map",
+    "normalized": "map",
+    "synonyms": []
+  },
+  {
+    "name": "MapPin",
+    "normalized": "map pin",
+    "synonyms": []
+  },
+  {
+    "name": "MapPinCheck",
+    "normalized": "map pin check",
+    "synonyms": []
+  },
+  {
+    "name": "MapPinCheckInside",
+    "normalized": "map pin check inside",
+    "synonyms": []
+  },
+  {
+    "name": "MapPinHouse",
+    "normalized": "map pin house",
+    "synonyms": []
+  },
+  {
+    "name": "MapPinMinus",
+    "normalized": "map pin minus",
+    "synonyms": []
+  },
+  {
+    "name": "MapPinMinusInside",
+    "normalized": "map pin minus inside",
+    "synonyms": []
+  },
+  {
+    "name": "MapPinOff",
+    "normalized": "map pin off",
+    "synonyms": []
+  },
+  {
+    "name": "MapPinPlus",
+    "normalized": "map pin plus",
+    "synonyms": []
+  },
+  {
+    "name": "MapPinPlusInside",
+    "normalized": "map pin plus inside",
+    "synonyms": []
+  },
+  {
+    "name": "MapPinX",
+    "normalized": "map pin x",
+    "synonyms": []
+  },
+  {
+    "name": "MapPinXInside",
+    "normalized": "map pin x inside",
+    "synonyms": []
+  },
+  {
+    "name": "MapPinned",
+    "normalized": "map pinned",
+    "synonyms": []
+  },
+  {
+    "name": "MapPlus",
+    "normalized": "map plus",
+    "synonyms": []
+  },
+  {
+    "name": "Mars",
+    "normalized": "mar",
+    "synonyms": []
+  },
+  {
+    "name": "MarsStroke",
+    "normalized": "mars stroke",
+    "synonyms": []
+  },
+  {
+    "name": "Martini",
+    "normalized": "martini",
+    "synonyms": []
+  },
+  {
+    "name": "Maximize",
+    "normalized": "maximize",
+    "synonyms": []
+  },
+  {
+    "name": "Maximize2",
+    "normalized": "maximize2",
+    "synonyms": []
+  },
+  {
+    "name": "Medal",
+    "normalized": "medal",
+    "synonyms": []
+  },
+  {
+    "name": "Megaphone",
+    "normalized": "megaphone",
+    "synonyms": []
+  },
+  {
+    "name": "MegaphoneOff",
+    "normalized": "megaphone off",
+    "synonyms": []
+  },
+  {
+    "name": "Meh",
+    "normalized": "meh",
+    "synonyms": []
+  },
+  {
+    "name": "MemoryStick",
+    "normalized": "memory stick",
+    "synonyms": []
+  },
+  {
+    "name": "Menu",
+    "normalized": "menu",
+    "synonyms": []
+  },
+  {
+    "name": "Merge",
+    "normalized": "merge",
+    "synonyms": []
+  },
+  {
+    "name": "MessageCircle",
+    "normalized": "message circle",
+    "synonyms": ["chat", "communication", "discussion", "support", "feedback"]
+  },
+  {
+    "name": "MessageCircleCode",
+    "normalized": "message circle code",
+    "synonyms": []
+  },
+  {
+    "name": "MessageCircleDashed",
+    "normalized": "message circle dashed",
+    "synonyms": []
+  },
+  {
+    "name": "MessageCircleHeart",
+    "normalized": "message circle heart",
+    "synonyms": []
+  },
+  {
+    "name": "MessageCircleMore",
+    "normalized": "message circle more",
+    "synonyms": []
+  },
+  {
+    "name": "MessageCircleOff",
+    "normalized": "message circle off",
+    "synonyms": []
+  },
+  {
+    "name": "MessageCirclePlus",
+    "normalized": "message circle plus",
+    "synonyms": []
+  },
+  {
+    "name": "MessageCircleQuestion",
+    "normalized": "message circle question",
+    "synonyms": []
+  },
+  {
+    "name": "MessageCircleReply",
+    "normalized": "message circle reply",
+    "synonyms": []
+  },
+  {
+    "name": "MessageCircleWarning",
+    "normalized": "message circle warning",
+    "synonyms": []
+  },
+  {
+    "name": "MessageCircleX",
+    "normalized": "message circle x",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquare",
+    "normalized": "message square",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareCode",
+    "normalized": "message square code",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareDashed",
+    "normalized": "message square dashed",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareDiff",
+    "normalized": "message square diff",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareDot",
+    "normalized": "message square dot",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareHeart",
+    "normalized": "message square heart",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareLock",
+    "normalized": "message square lock",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareMore",
+    "normalized": "message square more",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareOff",
+    "normalized": "message square off",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquarePlus",
+    "normalized": "message square plus",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareQuote",
+    "normalized": "message square quote",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareReply",
+    "normalized": "message square reply",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareShare",
+    "normalized": "message square share",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareText",
+    "normalized": "message square text",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareWarning",
+    "normalized": "message square warning",
+    "synonyms": []
+  },
+  {
+    "name": "MessageSquareX",
+    "normalized": "message square x",
+    "synonyms": []
+  },
+  {
+    "name": "MessagesSquare",
+    "normalized": "messages square",
+    "synonyms": []
+  },
+  {
+    "name": "Mic",
+    "normalized": "mic",
+    "synonyms": []
+  },
+  {
+    "name": "MicOff",
+    "normalized": "mic off",
+    "synonyms": []
+  },
+  {
+    "name": "MicVocal",
+    "normalized": "mic vocal",
+    "synonyms": []
+  },
+  {
+    "name": "Microchip",
+    "normalized": "microchip",
+    "synonyms": []
+  },
+  {
+    "name": "Microscope",
+    "normalized": "microscope",
+    "synonyms": []
+  },
+  {
+    "name": "Microwave",
+    "normalized": "microwave",
+    "synonyms": []
+  },
+  {
+    "name": "Milestone",
+    "normalized": "milestone",
+    "synonyms": []
+  },
+  {
+    "name": "Milk",
+    "normalized": "milk",
+    "synonyms": []
+  },
+  {
+    "name": "MilkOff",
+    "normalized": "milk off",
+    "synonyms": []
+  },
+  {
+    "name": "Minimize",
+    "normalized": "minimize",
+    "synonyms": []
+  },
+  {
+    "name": "Minimize2",
+    "normalized": "minimize2",
+    "synonyms": []
+  },
+  {
+    "name": "Minus",
+    "normalized": "minus",
+    "synonyms": []
+  },
+  {
+    "name": "Monitor",
+    "normalized": "monitor",
+    "synonyms": []
+  },
+  {
+    "name": "MonitorCheck",
+    "normalized": "monitor check",
+    "synonyms": []
+  },
+  {
+    "name": "MonitorCog",
+    "normalized": "monitor cog",
+    "synonyms": []
+  },
+  {
+    "name": "MonitorDot",
+    "normalized": "monitor dot",
+    "synonyms": []
+  },
+  {
+    "name": "MonitorDown",
+    "normalized": "monitor down",
+    "synonyms": []
+  },
+  {
+    "name": "MonitorOff",
+    "normalized": "monitor off",
+    "synonyms": []
+  },
+  {
+    "name": "MonitorPause",
+    "normalized": "monitor pause",
+    "synonyms": []
+  },
+  {
+    "name": "MonitorPlay",
+    "normalized": "monitor play",
+    "synonyms": []
+  },
+  {
+    "name": "MonitorSmartphone",
+    "normalized": "monitor smartphone",
+    "synonyms": []
+  },
+  {
+    "name": "MonitorSpeaker",
+    "normalized": "monitor speaker",
+    "synonyms": []
+  },
+  {
+    "name": "MonitorStop",
+    "normalized": "monitor stop",
+    "synonyms": []
+  },
+  {
+    "name": "MonitorUp",
+    "normalized": "monitor up",
+    "synonyms": []
+  },
+  {
+    "name": "MonitorX",
+    "normalized": "monitor x",
+    "synonyms": []
+  },
+  {
+    "name": "Moon",
+    "normalized": "moon",
+    "synonyms": []
+  },
+  {
+    "name": "MoonStar",
+    "normalized": "moon star",
+    "synonyms": []
+  },
+  {
+    "name": "Mountain",
+    "normalized": "mountain",
+    "synonyms": []
+  },
+  {
+    "name": "MountainSnow",
+    "normalized": "mountain snow",
+    "synonyms": []
+  },
+  {
+    "name": "Mouse",
+    "normalized": "mouse",
+    "synonyms": []
+  },
+  {
+    "name": "MouseOff",
+    "normalized": "mouse off",
+    "synonyms": []
+  },
+  {
+    "name": "MousePointer",
+    "normalized": "mouse pointer",
+    "synonyms": []
+  },
+  {
+    "name": "MousePointer2",
+    "normalized": "mouse pointer2",
+    "synonyms": []
+  },
+  {
+    "name": "MousePointerBan",
+    "normalized": "mouse pointer ban",
+    "synonyms": []
+  },
+  {
+    "name": "MousePointerClick",
+    "normalized": "mouse pointer click",
+    "synonyms": []
+  },
+  {
+    "name": "Move",
+    "normalized": "move",
+    "synonyms": []
+  },
+  {
+    "name": "Move3d",
+    "normalized": "move3d",
+    "synonyms": []
+  },
+  {
+    "name": "MoveDiagonal",
+    "normalized": "move diagonal",
+    "synonyms": []
+  },
+  {
+    "name": "MoveDiagonal2",
+    "normalized": "move diagonal2",
+    "synonyms": []
+  },
+  {
+    "name": "MoveDown",
+    "normalized": "move down",
+    "synonyms": []
+  },
+  {
+    "name": "MoveDownLeft",
+    "normalized": "move down left",
+    "synonyms": []
+  },
+  {
+    "name": "MoveDownRight",
+    "normalized": "move down right",
+    "synonyms": []
+  },
+  {
+    "name": "MoveHorizontal",
+    "normalized": "move horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "MoveLeft",
+    "normalized": "move left",
+    "synonyms": []
+  },
+  {
+    "name": "MoveRight",
+    "normalized": "move right",
+    "synonyms": []
+  },
+  {
+    "name": "MoveUp",
+    "normalized": "move up",
+    "synonyms": []
+  },
+  {
+    "name": "MoveUpLeft",
+    "normalized": "move up left",
+    "synonyms": []
+  },
+  {
+    "name": "MoveUpRight",
+    "normalized": "move up right",
+    "synonyms": []
+  },
+  {
+    "name": "MoveVertical",
+    "normalized": "move vertical",
+    "synonyms": []
+  },
+  {
+    "name": "Music",
+    "normalized": "music",
+    "synonyms": []
+  },
+  {
+    "name": "Music2",
+    "normalized": "music2",
+    "synonyms": []
+  },
+  {
+    "name": "Music3",
+    "normalized": "music3",
+    "synonyms": []
+  },
+  {
+    "name": "Music4",
+    "normalized": "music4",
+    "synonyms": []
+  },
+  {
+    "name": "Navigation",
+    "normalized": "navigation",
+    "synonyms": []
+  },
+  {
+    "name": "Navigation2",
+    "normalized": "navigation2",
+    "synonyms": []
+  },
+  {
+    "name": "Navigation2Off",
+    "normalized": "navigation2 off",
+    "synonyms": []
+  },
+  {
+    "name": "NavigationOff",
+    "normalized": "navigation off",
+    "synonyms": []
+  },
+  {
+    "name": "Network",
+    "normalized": "network",
+    "synonyms": []
+  },
+  {
+    "name": "Newspaper",
+    "normalized": "newspaper",
+    "synonyms": []
+  },
+  {
+    "name": "Nfc",
+    "normalized": "nfc",
+    "synonyms": []
+  },
+  {
+    "name": "NonBinary",
+    "normalized": "non binary",
+    "synonyms": []
+  },
+  {
+    "name": "Notebook",
+    "normalized": "notebook",
+    "synonyms": []
+  },
+  {
+    "name": "NotebookPen",
+    "normalized": "notebook pen",
+    "synonyms": []
+  },
+  {
+    "name": "NotebookTabs",
+    "normalized": "notebook tab",
+    "synonyms": []
+  },
+  {
+    "name": "NotebookText",
+    "normalized": "notebook text",
+    "synonyms": []
+  },
+  {
+    "name": "NotepadText",
+    "normalized": "notepad text",
+    "synonyms": []
+  },
+  {
+    "name": "NotepadTextDashed",
+    "normalized": "notepad text dashed",
+    "synonyms": []
+  },
+  {
+    "name": "Nut",
+    "normalized": "nut",
+    "synonyms": []
+  },
+  {
+    "name": "NutOff",
+    "normalized": "nut off",
+    "synonyms": []
+  },
+  {
+    "name": "Octagon",
+    "normalized": "octagon",
+    "synonyms": []
+  },
+  {
+    "name": "OctagonAlert",
+    "normalized": "octagon alert",
+    "synonyms": []
+  },
+  {
+    "name": "OctagonMinus",
+    "normalized": "octagon minus",
+    "synonyms": []
+  },
+  {
+    "name": "OctagonPause",
+    "normalized": "octagon pause",
+    "synonyms": []
+  },
+  {
+    "name": "OctagonX",
+    "normalized": "octagon x",
+    "synonyms": []
+  },
+  {
+    "name": "Omega",
+    "normalized": "omega",
+    "synonyms": []
+  },
+  {
+    "name": "Option",
+    "normalized": "option",
+    "synonyms": []
+  },
+  {
+    "name": "Orbit",
+    "normalized": "orbit",
+    "synonyms": []
+  },
+  {
+    "name": "Origami",
+    "normalized": "origami",
+    "synonyms": []
+  },
+  {
+    "name": "Package",
+    "normalized": "package",
+    "synonyms": []
+  },
+  {
+    "name": "Package2",
+    "normalized": "package2",
+    "synonyms": []
+  },
+  {
+    "name": "PackageCheck",
+    "normalized": "package check",
+    "synonyms": []
+  },
+  {
+    "name": "PackageMinus",
+    "normalized": "package minus",
+    "synonyms": []
+  },
+  {
+    "name": "PackageOpen",
+    "normalized": "package open",
+    "synonyms": []
+  },
+  {
+    "name": "PackagePlus",
+    "normalized": "package plus",
+    "synonyms": []
+  },
+  {
+    "name": "PackageSearch",
+    "normalized": "package search",
+    "synonyms": []
+  },
+  {
+    "name": "PackageX",
+    "normalized": "package x",
+    "synonyms": []
+  },
+  {
+    "name": "PaintBucket",
+    "normalized": "paint bucket",
+    "synonyms": []
+  },
+  {
+    "name": "PaintRoller",
+    "normalized": "paint roller",
+    "synonyms": []
+  },
+  {
+    "name": "Paintbrush",
+    "normalized": "paintbrush",
+    "synonyms": []
+  },
+  {
+    "name": "PaintbrushVertical",
+    "normalized": "paintbrush vertical",
+    "synonyms": []
+  },
+  {
+    "name": "Palette",
+    "normalized": "palette",
+    "synonyms": []
+  },
+  {
+    "name": "PanelBottom",
+    "normalized": "panel bottom",
+    "synonyms": []
+  },
+  {
+    "name": "PanelBottomClose",
+    "normalized": "panel bottom close",
+    "synonyms": []
+  },
+  {
+    "name": "PanelBottomDashed",
+    "normalized": "panel bottom dashed",
+    "synonyms": []
+  },
+  {
+    "name": "PanelBottomOpen",
+    "normalized": "panel bottom open",
+    "synonyms": []
+  },
+  {
+    "name": "PanelLeft",
+    "normalized": "panel left",
+    "synonyms": []
+  },
+  {
+    "name": "PanelLeftClose",
+    "normalized": "panel left close",
+    "synonyms": []
+  },
+  {
+    "name": "PanelLeftDashed",
+    "normalized": "panel left dashed",
+    "synonyms": []
+  },
+  {
+    "name": "PanelLeftOpen",
+    "normalized": "panel left open",
+    "synonyms": []
+  },
+  {
+    "name": "PanelRight",
+    "normalized": "panel right",
+    "synonyms": []
+  },
+  {
+    "name": "PanelRightClose",
+    "normalized": "panel right close",
+    "synonyms": []
+  },
+  {
+    "name": "PanelRightDashed",
+    "normalized": "panel right dashed",
+    "synonyms": []
+  },
+  {
+    "name": "PanelRightOpen",
+    "normalized": "panel right open",
+    "synonyms": []
+  },
+  {
+    "name": "PanelTop",
+    "normalized": "panel top",
+    "synonyms": []
+  },
+  {
+    "name": "PanelTopClose",
+    "normalized": "panel top close",
+    "synonyms": []
+  },
+  {
+    "name": "PanelTopDashed",
+    "normalized": "panel top dashed",
+    "synonyms": []
+  },
+  {
+    "name": "PanelTopOpen",
+    "normalized": "panel top open",
+    "synonyms": []
+  },
+  {
+    "name": "PanelsLeftBottom",
+    "normalized": "panels left bottom",
+    "synonyms": []
+  },
+  {
+    "name": "PanelsRightBottom",
+    "normalized": "panels right bottom",
+    "synonyms": []
+  },
+  {
+    "name": "PanelsTopLeft",
+    "normalized": "panels top left",
+    "synonyms": []
+  },
+  {
+    "name": "Paperclip",
+    "normalized": "paperclip",
+    "synonyms": []
+  },
+  {
+    "name": "Parentheses",
+    "normalized": "parenthesis",
+    "synonyms": []
+  },
+  {
+    "name": "ParkingMeter",
+    "normalized": "parking meter",
+    "synonyms": []
+  },
+  {
+    "name": "PartyPopper",
+    "normalized": "party popper",
+    "synonyms": []
+  },
+  {
+    "name": "Pause",
+    "normalized": "pause",
+    "synonyms": []
+  },
+  {
+    "name": "PawPrint",
+    "normalized": "paw print",
+    "synonyms": []
+  },
+  {
+    "name": "PcCase",
+    "normalized": "pc case",
+    "synonyms": []
+  },
+  {
+    "name": "Pen",
+    "normalized": "pen",
+    "synonyms": []
+  },
+  {
+    "name": "PenLine",
+    "normalized": "pen line",
+    "synonyms": []
+  },
+  {
+    "name": "PenOff",
+    "normalized": "pen off",
+    "synonyms": []
+  },
+  {
+    "name": "PenTool",
+    "normalized": "pen tool",
+    "synonyms": []
+  },
+  {
+    "name": "Pencil",
+    "normalized": "pencil",
+    "synonyms": []
+  },
+  {
+    "name": "PencilLine",
+    "normalized": "pencil line",
+    "synonyms": []
+  },
+  {
+    "name": "PencilOff",
+    "normalized": "pencil off",
+    "synonyms": []
+  },
+  {
+    "name": "PencilRuler",
+    "normalized": "pencil ruler",
+    "synonyms": []
+  },
+  {
+    "name": "Pentagon",
+    "normalized": "pentagon",
+    "synonyms": []
+  },
+  {
+    "name": "Percent",
+    "normalized": "percent",
+    "synonyms": []
+  },
+  {
+    "name": "PersonStanding",
+    "normalized": "person standing",
+    "synonyms": []
+  },
+  {
+    "name": "PhilippinePeso",
+    "normalized": "philippine peso",
+    "synonyms": []
+  },
+  {
+    "name": "Phone",
+    "normalized": "phone",
+    "synonyms": ["call", "contact", "communication", "support", "help"]
+  },
+  {
+    "name": "PhoneCall",
+    "normalized": "phone call",
+    "synonyms": []
+  },
+  {
+    "name": "PhoneForwarded",
+    "normalized": "phone forwarded",
+    "synonyms": []
+  },
+  {
+    "name": "PhoneIncoming",
+    "normalized": "phone incoming",
+    "synonyms": []
+  },
+  {
+    "name": "PhoneMissed",
+    "normalized": "phone missed",
+    "synonyms": []
+  },
+  {
+    "name": "PhoneOff",
+    "normalized": "phone off",
+    "synonyms": []
+  },
+  {
+    "name": "PhoneOutgoing",
+    "normalized": "phone outgoing",
+    "synonyms": []
+  },
+  {
+    "name": "Pi",
+    "normalized": "pi",
+    "synonyms": []
+  },
+  {
+    "name": "Piano",
+    "normalized": "piano",
+    "synonyms": []
+  },
+  {
+    "name": "Pickaxe",
+    "normalized": "pickaxe",
+    "synonyms": []
+  },
+  {
+    "name": "PictureInPicture",
+    "normalized": "picture in picture",
+    "synonyms": []
+  },
+  {
+    "name": "PictureInPicture2",
+    "normalized": "picture in picture2",
+    "synonyms": []
+  },
+  {
+    "name": "PiggyBank",
+    "normalized": "piggy bank",
+    "synonyms": ["savings", "budget", "financial planning", "reserves"]
+  },
+  {
+    "name": "Pilcrow",
+    "normalized": "pilcrow",
+    "synonyms": []
+  },
+  {
+    "name": "PilcrowLeft",
+    "normalized": "pilcrow left",
+    "synonyms": []
+  },
+  {
+    "name": "PilcrowRight",
+    "normalized": "pilcrow right",
+    "synonyms": []
+  },
+  {
+    "name": "Pill",
+    "normalized": "pill",
+    "synonyms": []
+  },
+  {
+    "name": "PillBottle",
+    "normalized": "pill bottle",
+    "synonyms": []
+  },
+  {
+    "name": "Pin",
+    "normalized": "pin",
+    "synonyms": []
+  },
+  {
+    "name": "PinOff",
+    "normalized": "pin off",
+    "synonyms": []
+  },
+  {
+    "name": "Pipette",
+    "normalized": "pipette",
+    "synonyms": []
+  },
+  {
+    "name": "Pizza",
+    "normalized": "pizza",
+    "synonyms": []
+  },
+  {
+    "name": "Plane",
+    "normalized": "plane",
+    "synonyms": []
+  },
+  {
+    "name": "PlaneLanding",
+    "normalized": "plane landing",
+    "synonyms": []
+  },
+  {
+    "name": "PlaneTakeoff",
+    "normalized": "plane takeoff",
+    "synonyms": []
+  },
+  {
+    "name": "Play",
+    "normalized": "play",
+    "synonyms": []
+  },
+  {
+    "name": "Plug",
+    "normalized": "plug",
+    "synonyms": []
+  },
+  {
+    "name": "Plug2",
+    "normalized": "plug2",
+    "synonyms": []
+  },
+  {
+    "name": "PlugZap",
+    "normalized": "plug zap",
+    "synonyms": []
+  },
+  {
+    "name": "Plus",
+    "normalized": "plus",
+    "synonyms": []
+  },
+  {
+    "name": "Pocket",
+    "normalized": "pocket",
+    "synonyms": []
+  },
+  {
+    "name": "PocketKnife",
+    "normalized": "pocket knife",
+    "synonyms": []
+  },
+  {
+    "name": "Podcast",
+    "normalized": "podcast",
+    "synonyms": []
+  },
+  {
+    "name": "Pointer",
+    "normalized": "pointer",
+    "synonyms": []
+  },
+  {
+    "name": "PointerOff",
+    "normalized": "pointer off",
+    "synonyms": []
+  },
+  {
+    "name": "Popcorn",
+    "normalized": "popcorn",
+    "synonyms": []
+  },
+  {
+    "name": "Popsicle",
+    "normalized": "popsicle",
+    "synonyms": []
+  },
+  {
+    "name": "PoundSterling",
+    "normalized": "pound sterling",
+    "synonyms": []
+  },
+  {
+    "name": "Power",
+    "normalized": "power",
+    "synonyms": []
+  },
+  {
+    "name": "PowerOff",
+    "normalized": "power off",
+    "synonyms": []
+  },
+  {
+    "name": "Presentation",
+    "normalized": "presentation",
+    "synonyms": []
+  },
+  {
+    "name": "Printer",
+    "normalized": "printer",
+    "synonyms": []
+  },
+  {
+    "name": "PrinterCheck",
+    "normalized": "printer check",
+    "synonyms": []
+  },
+  {
+    "name": "Projector",
+    "normalized": "projector",
+    "synonyms": ["presentation", "display", "screen", "present", "show"]
+  },
+  {
+    "name": "Proportions",
+    "normalized": "proportion",
+    "synonyms": []
+  },
+  {
+    "name": "Puzzle",
+    "normalized": "puzzle",
+    "synonyms": []
+  },
+  {
+    "name": "Pyramid",
+    "normalized": "pyramid",
+    "synonyms": []
+  },
+  {
+    "name": "QrCode",
+    "normalized": "qr code",
+    "synonyms": []
+  },
+  {
+    "name": "Quote",
+    "normalized": "quote",
+    "synonyms": []
+  },
+  {
+    "name": "Rabbit",
+    "normalized": "rabbit",
+    "synonyms": []
+  },
+  {
+    "name": "Radar",
+    "normalized": "radar",
+    "synonyms": []
+  },
+  {
+    "name": "Radiation",
+    "normalized": "radiation",
+    "synonyms": []
+  },
+  {
+    "name": "Radical",
+    "normalized": "radical",
+    "synonyms": []
+  },
+  {
+    "name": "Radio",
+    "normalized": "radio",
+    "synonyms": []
+  },
+  {
+    "name": "RadioReceiver",
+    "normalized": "radio receiver",
+    "synonyms": []
+  },
+  {
+    "name": "RadioTower",
+    "normalized": "radio tower",
+    "synonyms": []
+  },
+  {
+    "name": "Radius",
+    "normalized": "radius",
+    "synonyms": []
+  },
+  {
+    "name": "RailSymbol",
+    "normalized": "rail symbol",
+    "synonyms": []
+  },
+  {
+    "name": "Rainbow",
+    "normalized": "rainbow",
+    "synonyms": []
+  },
+  {
+    "name": "Rat",
+    "normalized": "rat",
+    "synonyms": []
+  },
+  {
+    "name": "Ratio",
+    "normalized": "ratio",
+    "synonyms": []
+  },
+  {
+    "name": "Receipt",
+    "normalized": "receipt",
+    "synonyms": []
+  },
+  {
+    "name": "ReceiptCent",
+    "normalized": "receipt cent",
+    "synonyms": []
+  },
+  {
+    "name": "ReceiptEuro",
+    "normalized": "receipt euro",
+    "synonyms": []
+  },
+  {
+    "name": "ReceiptIndianRupee",
+    "normalized": "receipt indian rupee",
+    "synonyms": []
+  },
+  {
+    "name": "ReceiptJapaneseYen",
+    "normalized": "receipt japanese yen",
+    "synonyms": []
+  },
+  {
+    "name": "ReceiptPoundSterling",
+    "normalized": "receipt pound sterling",
+    "synonyms": []
+  },
+  {
+    "name": "ReceiptRussianRuble",
+    "normalized": "receipt russian ruble",
+    "synonyms": []
+  },
+  {
+    "name": "ReceiptSwissFranc",
+    "normalized": "receipt swiss franc",
+    "synonyms": []
+  },
+  {
+    "name": "ReceiptText",
+    "normalized": "receipt text",
+    "synonyms": []
+  },
+  {
+    "name": "RectangleEllipsis",
+    "normalized": "rectangle ellipsi",
+    "synonyms": []
+  },
+  {
+    "name": "RectangleHorizontal",
+    "normalized": "rectangle horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "RectangleVertical",
+    "normalized": "rectangle vertical",
+    "synonyms": []
+  },
+  {
+    "name": "Recycle",
+    "normalized": "recycle",
+    "synonyms": []
+  },
+  {
+    "name": "Redo",
+    "normalized": "redo",
+    "synonyms": []
+  },
+  {
+    "name": "Redo2",
+    "normalized": "redo2",
+    "synonyms": []
+  },
+  {
+    "name": "RedoDot",
+    "normalized": "redo dot",
+    "synonyms": []
+  },
+  {
+    "name": "RefreshCcw",
+    "normalized": "refresh ccw",
+    "synonyms": []
+  },
+  {
+    "name": "RefreshCcwDot",
+    "normalized": "refresh ccw dot",
+    "synonyms": []
+  },
+  {
+    "name": "RefreshCw",
+    "normalized": "refresh cw",
+    "synonyms": []
+  },
+  {
+    "name": "RefreshCwOff",
+    "normalized": "refresh cw off",
+    "synonyms": []
+  },
+  {
+    "name": "Refrigerator",
+    "normalized": "refrigerator",
+    "synonyms": []
+  },
+  {
+    "name": "Regex",
+    "normalized": "regex",
+    "synonyms": []
+  },
+  {
+    "name": "RemoveFormatting",
+    "normalized": "remove formatting",
+    "synonyms": []
+  },
+  {
+    "name": "Repeat",
+    "normalized": "repeat",
+    "synonyms": []
+  },
+  {
+    "name": "Repeat1",
+    "normalized": "repeat1",
+    "synonyms": []
+  },
+  {
+    "name": "Repeat2",
+    "normalized": "repeat2",
+    "synonyms": []
+  },
+  {
+    "name": "Replace",
+    "normalized": "replace",
+    "synonyms": []
+  },
+  {
+    "name": "ReplaceAll",
+    "normalized": "replace all",
+    "synonyms": []
+  },
+  {
+    "name": "Reply",
+    "normalized": "reply",
+    "synonyms": []
+  },
+  {
+    "name": "ReplyAll",
+    "normalized": "reply all",
+    "synonyms": []
+  },
+  {
+    "name": "Rewind",
+    "normalized": "rewind",
+    "synonyms": []
+  },
+  {
+    "name": "Ribbon",
+    "normalized": "ribbon",
+    "synonyms": []
+  },
+  {
+    "name": "Rocket",
+    "normalized": "rocket",
+    "synonyms": []
+  },
+  {
+    "name": "RockingChair",
+    "normalized": "rocking chair",
+    "synonyms": []
+  },
+  {
+    "name": "RollerCoaster",
+    "normalized": "roller coaster",
+    "synonyms": []
+  },
+  {
+    "name": "Rotate3d",
+    "normalized": "rotate3d",
+    "synonyms": []
+  },
+  {
+    "name": "RotateCcw",
+    "normalized": "rotate ccw",
+    "synonyms": []
+  },
+  {
+    "name": "RotateCcwSquare",
+    "normalized": "rotate ccw square",
+    "synonyms": []
+  },
+  {
+    "name": "RotateCw",
+    "normalized": "rotate cw",
+    "synonyms": []
+  },
+  {
+    "name": "RotateCwSquare",
+    "normalized": "rotate cw square",
+    "synonyms": []
+  },
+  {
+    "name": "Route",
+    "normalized": "route",
+    "synonyms": []
+  },
+  {
+    "name": "RouteOff",
+    "normalized": "route off",
+    "synonyms": []
+  },
+  {
+    "name": "Router",
+    "normalized": "router",
+    "synonyms": []
+  },
+  {
+    "name": "Rows2",
+    "normalized": "rows2",
+    "synonyms": []
+  },
+  {
+    "name": "Rows3",
+    "normalized": "rows3",
+    "synonyms": []
+  },
+  {
+    "name": "Rows4",
+    "normalized": "rows4",
+    "synonyms": []
+  },
+  {
+    "name": "Rss",
+    "normalized": "rss",
+    "synonyms": []
+  },
+  {
+    "name": "Ruler",
+    "normalized": "ruler",
+    "synonyms": []
+  },
+  {
+    "name": "RussianRuble",
+    "normalized": "russian ruble",
+    "synonyms": []
+  },
+  {
+    "name": "Sailboat",
+    "normalized": "sailboat",
+    "synonyms": []
+  },
+  {
+    "name": "Salad",
+    "normalized": "salad",
+    "synonyms": []
+  },
+  {
+    "name": "Sandwich",
+    "normalized": "sandwich",
+    "synonyms": []
+  },
+  {
+    "name": "Satellite",
+    "normalized": "satellite",
+    "synonyms": []
+  },
+  {
+    "name": "SatelliteDish",
+    "normalized": "satellite dish",
+    "synonyms": []
+  },
+  {
+    "name": "SaudiRiyal",
+    "normalized": "saudi riyal",
+    "synonyms": []
+  },
+  {
+    "name": "Save",
+    "normalized": "save",
+    "synonyms": []
+  },
+  {
+    "name": "SaveAll",
+    "normalized": "save all",
+    "synonyms": []
+  },
+  {
+    "name": "SaveOff",
+    "normalized": "save off",
+    "synonyms": []
+  },
+  {
+    "name": "Scale",
+    "normalized": "scale",
+    "synonyms": []
+  },
+  {
+    "name": "Scale3d",
+    "normalized": "scale3d",
+    "synonyms": []
+  },
+  {
+    "name": "Scaling",
+    "normalized": "scaling",
+    "synonyms": []
+  },
+  {
+    "name": "Scan",
+    "normalized": "scan",
+    "synonyms": []
+  },
+  {
+    "name": "ScanBarcode",
+    "normalized": "scan barcode",
+    "synonyms": []
+  },
+  {
+    "name": "ScanEye",
+    "normalized": "scan eye",
+    "synonyms": []
+  },
+  {
+    "name": "ScanFace",
+    "normalized": "scan face",
+    "synonyms": []
+  },
+  {
+    "name": "ScanHeart",
+    "normalized": "scan heart",
+    "synonyms": []
+  },
+  {
+    "name": "ScanLine",
+    "normalized": "scan line",
+    "synonyms": []
+  },
+  {
+    "name": "ScanQrCode",
+    "normalized": "scan qr code",
+    "synonyms": []
+  },
+  {
+    "name": "ScanSearch",
+    "normalized": "scan search",
+    "synonyms": []
+  },
+  {
+    "name": "ScanText",
+    "normalized": "scan text",
+    "synonyms": []
+  },
+  {
+    "name": "School",
+    "normalized": "school",
+    "synonyms": []
+  },
+  {
+    "name": "Scissors",
+    "normalized": "scissors",
+    "synonyms": []
+  },
+  {
+    "name": "ScissorsLineDashed",
+    "normalized": "scissors line dashed",
+    "synonyms": []
+  },
+  {
+    "name": "ScreenShare",
+    "normalized": "screen share",
+    "synonyms": []
+  },
+  {
+    "name": "ScreenShareOff",
+    "normalized": "screen share off",
+    "synonyms": []
+  },
+  {
+    "name": "Scroll",
+    "normalized": "scroll",
+    "synonyms": []
+  },
+  {
+    "name": "ScrollText",
+    "normalized": "scroll text",
+    "synonyms": []
+  },
+  {
+    "name": "Search",
+    "normalized": "search",
+    "synonyms": []
+  },
+  {
+    "name": "SearchCheck",
+    "normalized": "search check",
+    "synonyms": []
+  },
+  {
+    "name": "SearchCode",
+    "normalized": "search code",
+    "synonyms": []
+  },
+  {
+    "name": "SearchSlash",
+    "normalized": "search slash",
+    "synonyms": []
+  },
+  {
+    "name": "SearchX",
+    "normalized": "search x",
+    "synonyms": []
+  },
+  {
+    "name": "Section",
+    "normalized": "section",
+    "synonyms": []
+  },
+  {
+    "name": "Send",
+    "normalized": "send",
+    "synonyms": []
+  },
+  {
+    "name": "SendHorizontal",
+    "normalized": "send horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "SendToBack",
+    "normalized": "send to back",
+    "synonyms": []
+  },
+  {
+    "name": "SeparatorHorizontal",
+    "normalized": "separator horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "SeparatorVertical",
+    "normalized": "separator vertical",
+    "synonyms": []
+  },
+  {
+    "name": "Server",
+    "normalized": "server",
+    "synonyms": []
+  },
+  {
+    "name": "ServerCog",
+    "normalized": "server cog",
+    "synonyms": []
+  },
+  {
+    "name": "ServerCrash",
+    "normalized": "server crash",
+    "synonyms": []
+  },
+  {
+    "name": "ServerOff",
+    "normalized": "server off",
+    "synonyms": []
+  },
+  {
+    "name": "Settings",
+    "normalized": "settings",
+    "synonyms": ["configuration", "preferences", "options", "setup", "admin"]
+  },
+  {
+    "name": "Settings2",
+    "normalized": "settings2",
+    "synonyms": []
+  },
+  {
+    "name": "Shapes",
+    "normalized": "shape",
+    "synonyms": []
+  },
+  {
+    "name": "Share",
+    "normalized": "share",
+    "synonyms": []
+  },
+  {
+    "name": "Share2",
+    "normalized": "share2",
+    "synonyms": []
+  },
+  {
+    "name": "Sheet",
+    "normalized": "sheet",
+    "synonyms": []
+  },
+  {
+    "name": "Shell",
+    "normalized": "shell",
+    "synonyms": []
+  },
+  {
+    "name": "Shield",
+    "normalized": "shield",
+    "synonyms": []
+  },
+  {
+    "name": "ShieldAlert",
+    "normalized": "shield alert",
+    "synonyms": []
+  },
+  {
+    "name": "ShieldBan",
+    "normalized": "shield ban",
+    "synonyms": []
+  },
+  {
+    "name": "ShieldCheck",
+    "normalized": "shield check",
+    "synonyms": []
+  },
+  {
+    "name": "ShieldEllipsis",
+    "normalized": "shield ellipsi",
+    "synonyms": []
+  },
+  {
+    "name": "ShieldHalf",
+    "normalized": "shield half",
+    "synonyms": []
+  },
+  {
+    "name": "ShieldMinus",
+    "normalized": "shield minus",
+    "synonyms": []
+  },
+  {
+    "name": "ShieldOff",
+    "normalized": "shield off",
+    "synonyms": []
+  },
+  {
+    "name": "ShieldPlus",
+    "normalized": "shield plus",
+    "synonyms": []
+  },
+  {
+    "name": "ShieldQuestion",
+    "normalized": "shield question",
+    "synonyms": []
+  },
+  {
+    "name": "ShieldUser",
+    "normalized": "shield user",
+    "synonyms": ["secure account", "protected profile", "authorized user"]
+  },
+  {
+    "name": "ShieldX",
+    "normalized": "shield x",
+    "synonyms": []
+  },
+  {
+    "name": "Ship",
+    "normalized": "ship",
+    "synonyms": []
+  },
+  {
+    "name": "ShipWheel",
+    "normalized": "ship wheel",
+    "synonyms": []
+  },
+  {
+    "name": "Shirt",
+    "normalized": "shirt",
+    "synonyms": []
+  },
+  {
+    "name": "ShoppingBag",
+    "normalized": "shopping bag",
+    "synonyms": ["purchase", "order", "cart", "retail"]
+  },
+  {
+    "name": "ShoppingBasket",
+    "normalized": "shopping basket",
+    "synonyms": ["cart", "order", "items", "products"]
+  },
+  {
+    "name": "ShoppingCart",
+    "normalized": "shopping cart",
+    "synonyms": ["checkout", "purchase", "order", "retail"]
+  },
+  {
+    "name": "Shovel",
+    "normalized": "shovel",
+    "synonyms": []
+  },
+  {
+    "name": "ShowerHead",
+    "normalized": "shower head",
+    "synonyms": []
+  },
+  {
+    "name": "Shrimp",
+    "normalized": "shrimp",
+    "synonyms": []
+  },
+  {
+    "name": "Shrink",
+    "normalized": "shrink",
+    "synonyms": []
+  },
+  {
+    "name": "Shrub",
+    "normalized": "shrub",
+    "synonyms": []
+  },
+  {
+    "name": "Shuffle",
+    "normalized": "shuffle",
+    "synonyms": []
+  },
+  {
+    "name": "Sigma",
+    "normalized": "sigma",
+    "synonyms": []
+  },
+  {
+    "name": "Signal",
+    "normalized": "signal",
+    "synonyms": []
+  },
+  {
+    "name": "SignalHigh",
+    "normalized": "signal high",
+    "synonyms": []
+  },
+  {
+    "name": "SignalLow",
+    "normalized": "signal low",
+    "synonyms": []
+  },
+  {
+    "name": "SignalMedium",
+    "normalized": "signal medium",
+    "synonyms": []
+  },
+  {
+    "name": "SignalZero",
+    "normalized": "signal zero",
+    "synonyms": []
+  },
+  {
+    "name": "Signature",
+    "normalized": "signature",
+    "synonyms": []
+  },
+  {
+    "name": "Signpost",
+    "normalized": "signpost",
+    "synonyms": []
+  },
+  {
+    "name": "SignpostBig",
+    "normalized": "signpost big",
+    "synonyms": []
+  },
+  {
+    "name": "Siren",
+    "normalized": "siren",
+    "synonyms": []
+  },
+  {
+    "name": "SkipBack",
+    "normalized": "skip back",
+    "synonyms": []
+  },
+  {
+    "name": "SkipForward",
+    "normalized": "skip forward",
+    "synonyms": []
+  },
+  {
+    "name": "Skull",
+    "normalized": "skull",
+    "synonyms": []
+  },
+  {
+    "name": "Slack",
+    "normalized": "slack",
+    "synonyms": []
+  },
+  {
+    "name": "Slash",
+    "normalized": "slash",
+    "synonyms": []
+  },
+  {
+    "name": "Slice",
+    "normalized": "slice",
+    "synonyms": []
+  },
+  {
+    "name": "SlidersHorizontal",
+    "normalized": "sliders horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "SlidersVertical",
+    "normalized": "sliders vertical",
+    "synonyms": []
+  },
+  {
+    "name": "Smartphone",
+    "normalized": "smartphone",
+    "synonyms": []
+  },
+  {
+    "name": "SmartphoneCharging",
+    "normalized": "smartphone charging",
+    "synonyms": []
+  },
+  {
+    "name": "SmartphoneNfc",
+    "normalized": "smartphone nfc",
+    "synonyms": []
+  },
+  {
+    "name": "Smile",
+    "normalized": "smile",
+    "synonyms": []
+  },
+  {
+    "name": "SmilePlus",
+    "normalized": "smile plus",
+    "synonyms": []
+  },
+  {
+    "name": "Snail",
+    "normalized": "snail",
+    "synonyms": []
+  },
+  {
+    "name": "Snowflake",
+    "normalized": "snowflake",
+    "synonyms": []
+  },
+  {
+    "name": "Sofa",
+    "normalized": "sofa",
+    "synonyms": []
+  },
+  {
+    "name": "Soup",
+    "normalized": "soup",
+    "synonyms": []
+  },
+  {
+    "name": "Space",
+    "normalized": "space",
+    "synonyms": []
+  },
+  {
+    "name": "Spade",
+    "normalized": "spade",
+    "synonyms": []
+  },
+  {
+    "name": "Sparkle",
+    "normalized": "sparkle",
+    "synonyms": []
+  },
+  {
+    "name": "Sparkles",
+    "normalized": "sparkle",
+    "synonyms": []
+  },
+  {
+    "name": "Speaker",
+    "normalized": "speaker",
+    "synonyms": []
+  },
+  {
+    "name": "Speech",
+    "normalized": "speech",
+    "synonyms": []
+  },
+  {
+    "name": "SpellCheck",
+    "normalized": "spell check",
+    "synonyms": []
+  },
+  {
+    "name": "SpellCheck2",
+    "normalized": "spell check2",
+    "synonyms": []
+  },
+  {
+    "name": "Spline",
+    "normalized": "spline",
+    "synonyms": []
+  },
+  {
+    "name": "SplinePointer",
+    "normalized": "spline pointer",
+    "synonyms": []
+  },
+  {
+    "name": "Split",
+    "normalized": "split",
+    "synonyms": []
+  },
+  {
+    "name": "SprayCan",
+    "normalized": "spray can",
+    "synonyms": []
+  },
+  {
+    "name": "Sprout",
+    "normalized": "sprout",
+    "synonyms": []
+  },
+  {
+    "name": "Square",
+    "normalized": "square",
+    "synonyms": []
+  },
+  {
+    "name": "SquareActivity",
+    "normalized": "square activity",
+    "synonyms": []
+  },
+  {
+    "name": "SquareArrowDown",
+    "normalized": "square arrow down",
+    "synonyms": []
+  },
+  {
+    "name": "SquareArrowDownLeft",
+    "normalized": "square arrow down left",
+    "synonyms": []
+  },
+  {
+    "name": "SquareArrowDownRight",
+    "normalized": "square arrow down right",
+    "synonyms": []
+  },
+  {
+    "name": "SquareArrowLeft",
+    "normalized": "square arrow left",
+    "synonyms": []
+  },
+  {
+    "name": "SquareArrowOutDownLeft",
+    "normalized": "square arrow out down left",
+    "synonyms": []
+  },
+  {
+    "name": "SquareArrowOutDownRight",
+    "normalized": "square arrow out down right",
+    "synonyms": []
+  },
+  {
+    "name": "SquareArrowOutUpLeft",
+    "normalized": "square arrow out up left",
+    "synonyms": []
+  },
+  {
+    "name": "SquareArrowOutUpRight",
+    "normalized": "square arrow out up right",
+    "synonyms": []
+  },
+  {
+    "name": "SquareArrowRight",
+    "normalized": "square arrow right",
+    "synonyms": []
+  },
+  {
+    "name": "SquareArrowUp",
+    "normalized": "square arrow up",
+    "synonyms": []
+  },
+  {
+    "name": "SquareArrowUpLeft",
+    "normalized": "square arrow up left",
+    "synonyms": []
+  },
+  {
+    "name": "SquareArrowUpRight",
+    "normalized": "square arrow up right",
+    "synonyms": []
+  },
+  {
+    "name": "SquareAsterisk",
+    "normalized": "square asterisk",
+    "synonyms": []
+  },
+  {
+    "name": "SquareBottomDashedScissors",
+    "normalized": "square bottom dashed scissor",
+    "synonyms": []
+  },
+  {
+    "name": "SquareChartGantt",
+    "normalized": "square chart gantt",
+    "synonyms": []
+  },
+  {
+    "name": "SquareCheck",
+    "normalized": "square check",
+    "synonyms": []
+  },
+  {
+    "name": "SquareCheckBig",
+    "normalized": "square check big",
+    "synonyms": []
+  },
+  {
+    "name": "SquareChevronDown",
+    "normalized": "square chevron down",
+    "synonyms": []
+  },
+  {
+    "name": "SquareChevronLeft",
+    "normalized": "square chevron left",
+    "synonyms": []
+  },
+  {
+    "name": "SquareChevronRight",
+    "normalized": "square chevron right",
+    "synonyms": []
+  },
+  {
+    "name": "SquareChevronUp",
+    "normalized": "square chevron up",
+    "synonyms": []
+  },
+  {
+    "name": "SquareCode",
+    "normalized": "square code",
+    "synonyms": []
+  },
+  {
+    "name": "SquareDashed",
+    "normalized": "square dashed",
+    "synonyms": []
+  },
+  {
+    "name": "SquareDashedBottom",
+    "normalized": "square dashed bottom",
+    "synonyms": []
+  },
+  {
+    "name": "SquareDashedBottomCode",
+    "normalized": "square dashed bottom code",
+    "synonyms": []
+  },
+  {
+    "name": "SquareDashedKanban",
+    "normalized": "square dashed kanban",
+    "synonyms": []
+  },
+  {
+    "name": "SquareDashedMousePointer",
+    "normalized": "square dashed mouse pointer",
+    "synonyms": []
+  },
+  {
+    "name": "SquareDivide",
+    "normalized": "square divide",
+    "synonyms": []
+  },
+  {
+    "name": "SquareDot",
+    "normalized": "square dot",
+    "synonyms": []
+  },
+  {
+    "name": "SquareEqual",
+    "normalized": "square equal",
+    "synonyms": []
+  },
+  {
+    "name": "SquareFunction",
+    "normalized": "square function",
+    "synonyms": []
+  },
+  {
+    "name": "SquareKanban",
+    "normalized": "square kanban",
+    "synonyms": []
+  },
+  {
+    "name": "SquareLibrary",
+    "normalized": "square library",
+    "synonyms": []
+  },
+  {
+    "name": "SquareM",
+    "normalized": "square m",
+    "synonyms": []
+  },
+  {
+    "name": "SquareMenu",
+    "normalized": "square menu",
+    "synonyms": []
+  },
+  {
+    "name": "SquareMinus",
+    "normalized": "square minus",
+    "synonyms": []
+  },
+  {
+    "name": "SquareMousePointer",
+    "normalized": "square mouse pointer",
+    "synonyms": []
+  },
+  {
+    "name": "SquareParking",
+    "normalized": "square parking",
+    "synonyms": []
+  },
+  {
+    "name": "SquareParkingOff",
+    "normalized": "square parking off",
+    "synonyms": []
+  },
+  {
+    "name": "SquarePen",
+    "normalized": "square pen",
+    "synonyms": []
+  },
+  {
+    "name": "SquarePercent",
+    "normalized": "square percent",
+    "synonyms": []
+  },
+  {
+    "name": "SquarePi",
+    "normalized": "square pi",
+    "synonyms": []
+  },
+  {
+    "name": "SquarePilcrow",
+    "normalized": "square pilcrow",
+    "synonyms": []
+  },
+  {
+    "name": "SquarePlay",
+    "normalized": "square play",
+    "synonyms": []
+  },
+  {
+    "name": "SquarePlus",
+    "normalized": "square plus",
+    "synonyms": []
+  },
+  {
+    "name": "SquarePower",
+    "normalized": "square power",
+    "synonyms": []
+  },
+  {
+    "name": "SquareRadical",
+    "normalized": "square radical",
+    "synonyms": []
+  },
+  {
+    "name": "SquareRoundCorner",
+    "normalized": "square round corner",
+    "synonyms": []
+  },
+  {
+    "name": "SquareScissors",
+    "normalized": "square scissor",
+    "synonyms": []
+  },
+  {
+    "name": "SquareSigma",
+    "normalized": "square sigma",
+    "synonyms": []
+  },
+  {
+    "name": "SquareSlash",
+    "normalized": "square slash",
+    "synonyms": []
+  },
+  {
+    "name": "SquareSplitHorizontal",
+    "normalized": "square split horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "SquareSplitVertical",
+    "normalized": "square split vertical",
+    "synonyms": []
+  },
+  {
+    "name": "SquareSquare",
+    "normalized": "square square",
+    "synonyms": []
+  },
+  {
+    "name": "SquareStack",
+    "normalized": "square stack",
+    "synonyms": []
+  },
+  {
+    "name": "SquareTerminal",
+    "normalized": "square terminal",
+    "synonyms": []
+  },
+  {
+    "name": "SquareUser",
+    "normalized": "square user",
+    "synonyms": []
+  },
+  {
+    "name": "SquareUserRound",
+    "normalized": "square user round",
+    "synonyms": []
+  },
+  {
+    "name": "SquareX",
+    "normalized": "square x",
+    "synonyms": []
+  },
+  {
+    "name": "Squircle",
+    "normalized": "squircle",
+    "synonyms": []
+  },
+  {
+    "name": "Squirrel",
+    "normalized": "squirrel",
+    "synonyms": []
+  },
+  {
+    "name": "Stamp",
+    "normalized": "stamp",
+    "synonyms": []
+  },
+  {
+    "name": "Star",
+    "normalized": "star",
+    "synonyms": ["favorite", "important", "featured", "highlight", "priority"]
+  },
+  {
+    "name": "StarHalf",
+    "normalized": "star half",
+    "synonyms": []
+  },
+  {
+    "name": "StarOff",
+    "normalized": "star off",
+    "synonyms": []
+  },
+  {
+    "name": "StepBack",
+    "normalized": "step back",
+    "synonyms": []
+  },
+  {
+    "name": "StepForward",
+    "normalized": "step forward",
+    "synonyms": []
+  },
+  {
+    "name": "Stethoscope",
+    "normalized": "stethoscope",
+    "synonyms": []
+  },
+  {
+    "name": "Sticker",
+    "normalized": "sticker",
+    "synonyms": []
+  },
+  {
+    "name": "StickyNote",
+    "normalized": "sticky note",
+    "synonyms": []
+  },
+  {
+    "name": "Store",
+    "normalized": "store",
+    "synonyms": []
+  },
+  {
+    "name": "StretchHorizontal",
+    "normalized": "stretch horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "StretchVertical",
+    "normalized": "stretch vertical",
+    "synonyms": []
+  },
+  {
+    "name": "Strikethrough",
+    "normalized": "strikethrough",
+    "synonyms": []
+  },
+  {
+    "name": "Subscript",
+    "normalized": "subscript",
+    "synonyms": []
+  },
+  {
+    "name": "Sun",
+    "normalized": "sun",
+    "synonyms": []
+  },
+  {
+    "name": "SunDim",
+    "normalized": "sun dim",
+    "synonyms": []
+  },
+  {
+    "name": "SunMedium",
+    "normalized": "sun medium",
+    "synonyms": []
+  },
+  {
+    "name": "SunMoon",
+    "normalized": "sun moon",
+    "synonyms": []
+  },
+  {
+    "name": "SunSnow",
+    "normalized": "sun snow",
+    "synonyms": []
+  },
+  {
+    "name": "Sunrise",
+    "normalized": "sunrise",
+    "synonyms": []
+  },
+  {
+    "name": "Sunset",
+    "normalized": "sunset",
+    "synonyms": []
+  },
+  {
+    "name": "Superscript",
+    "normalized": "superscript",
+    "synonyms": []
+  },
+  {
+    "name": "SwatchBook",
+    "normalized": "swatch book",
+    "synonyms": []
+  },
+  {
+    "name": "SwissFranc",
+    "normalized": "swiss franc",
+    "synonyms": []
+  },
+  {
+    "name": "SwitchCamera",
+    "normalized": "switch camera",
+    "synonyms": []
+  },
+  {
+    "name": "Sword",
+    "normalized": "sword",
+    "synonyms": []
+  },
+  {
+    "name": "Swords",
+    "normalized": "sword",
+    "synonyms": []
+  },
+  {
+    "name": "Syringe",
+    "normalized": "syringe",
+    "synonyms": []
+  },
+  {
+    "name": "Table",
+    "normalized": "table",
+    "synonyms": ["data", "records", "spreadsheet", "grid", "database"]
+  },
+  {
+    "name": "Table2",
+    "normalized": "table2",
+    "synonyms": []
+  },
+  {
+    "name": "TableCellsMerge",
+    "normalized": "table cells merge",
+    "synonyms": []
+  },
+  {
+    "name": "TableCellsSplit",
+    "normalized": "table cells split",
+    "synonyms": []
+  },
+  {
+    "name": "TableColumnsSplit",
+    "normalized": "table columns split",
+    "synonyms": []
+  },
+  {
+    "name": "TableOfContents",
+    "normalized": "table of content",
+    "synonyms": []
+  },
+  {
+    "name": "TableProperties",
+    "normalized": "table property",
+    "synonyms": []
+  },
+  {
+    "name": "TableRowsSplit",
+    "normalized": "table rows split",
+    "synonyms": []
+  },
+  {
+    "name": "Tablet",
+    "normalized": "tablet",
+    "synonyms": []
+  },
+  {
+    "name": "TabletSmartphone",
+    "normalized": "tablet smartphone",
+    "synonyms": []
+  },
+  {
+    "name": "Tablets",
+    "normalized": "tablet",
+    "synonyms": []
+  },
+  {
+    "name": "Tag",
+    "normalized": "tag",
+    "synonyms": ["label", "category", "classification", "group", "mark"]
+  },
+  {
+    "name": "Tags",
+    "normalized": "tag",
+    "synonyms": ["label", "category", "classification", "group", "mark"]
+  },
+  {
+    "name": "Tally1",
+    "normalized": "tally1",
+    "synonyms": []
+  },
+  {
+    "name": "Tally2",
+    "normalized": "tally2",
+    "synonyms": []
+  },
+  {
+    "name": "Tally3",
+    "normalized": "tally3",
+    "synonyms": []
+  },
+  {
+    "name": "Tally4",
+    "normalized": "tally4",
+    "synonyms": []
+  },
+  {
+    "name": "Tally5",
+    "normalized": "tally5",
+    "synonyms": []
+  },
+  {
+    "name": "Tangent",
+    "normalized": "tangent",
+    "synonyms": []
+  },
+  {
+    "name": "Target",
+    "normalized": "target",
+    "synonyms": []
+  },
+  {
+    "name": "Telescope",
+    "normalized": "telescope",
+    "synonyms": []
+  },
+  {
+    "name": "Tent",
+    "normalized": "tent",
+    "synonyms": []
+  },
+  {
+    "name": "TentTree",
+    "normalized": "tent tree",
+    "synonyms": []
+  },
+  {
+    "name": "Terminal",
+    "normalized": "terminal",
+    "synonyms": []
+  },
+  {
+    "name": "TestTube",
+    "normalized": "test tube",
+    "synonyms": []
+  },
+  {
+    "name": "TestTubeDiagonal",
+    "normalized": "test tube diagonal",
+    "synonyms": []
+  },
+  {
+    "name": "TestTubes",
+    "normalized": "test tube",
+    "synonyms": []
+  },
+  {
+    "name": "Text",
+    "normalized": "text",
+    "synonyms": []
+  },
+  {
+    "name": "TextCursor",
+    "normalized": "text cursor",
+    "synonyms": []
+  },
+  {
+    "name": "TextCursorInput",
+    "normalized": "text cursor input",
+    "synonyms": []
+  },
+  {
+    "name": "TextQuote",
+    "normalized": "text quote",
+    "synonyms": []
+  },
+  {
+    "name": "TextSearch",
+    "normalized": "text search",
+    "synonyms": []
+  },
+  {
+    "name": "TextSelect",
+    "normalized": "text select",
+    "synonyms": []
+  },
+  {
+    "name": "Theater",
+    "normalized": "theater",
+    "synonyms": []
+  },
+  {
+    "name": "Thermometer",
+    "normalized": "thermometer",
+    "synonyms": []
+  },
+  {
+    "name": "ThermometerSnowflake",
+    "normalized": "thermometer snowflake",
+    "synonyms": []
+  },
+  {
+    "name": "ThermometerSun",
+    "normalized": "thermometer sun",
+    "synonyms": []
+  },
+  {
+    "name": "ThumbsDown",
+    "normalized": "thumbs down",
+    "synonyms": []
+  },
+  {
+    "name": "ThumbsUp",
+    "normalized": "thumbs up",
+    "synonyms": []
+  },
+  {
+    "name": "Ticket",
+    "normalized": "ticket",
+    "synonyms": []
+  },
+  {
+    "name": "TicketCheck",
+    "normalized": "ticket check",
+    "synonyms": []
+  },
+  {
+    "name": "TicketMinus",
+    "normalized": "ticket minus",
+    "synonyms": []
+  },
+  {
+    "name": "TicketPercent",
+    "normalized": "ticket percent",
+    "synonyms": []
+  },
+  {
+    "name": "TicketPlus",
+    "normalized": "ticket plus",
+    "synonyms": []
+  },
+  {
+    "name": "TicketSlash",
+    "normalized": "ticket slash",
+    "synonyms": []
+  },
+  {
+    "name": "TicketX",
+    "normalized": "ticket x",
+    "synonyms": []
+  },
+  {
+    "name": "Tickets",
+    "normalized": "ticket",
+    "synonyms": []
+  },
+  {
+    "name": "TicketsPlane",
+    "normalized": "tickets plane",
+    "synonyms": []
+  },
+  {
+    "name": "Timer",
+    "normalized": "timer",
+    "synonyms": []
+  },
+  {
+    "name": "TimerOff",
+    "normalized": "timer off",
+    "synonyms": []
+  },
+  {
+    "name": "TimerReset",
+    "normalized": "timer reset",
+    "synonyms": []
+  },
+  {
+    "name": "ToggleLeft",
+    "normalized": "toggle left",
+    "synonyms": []
+  },
+  {
+    "name": "ToggleRight",
+    "normalized": "toggle right",
+    "synonyms": []
+  },
+  {
+    "name": "Toilet",
+    "normalized": "toilet",
+    "synonyms": []
+  },
+  {
+    "name": "Tornado",
+    "normalized": "tornado",
+    "synonyms": []
+  },
+  {
+    "name": "Torus",
+    "normalized": "torus",
+    "synonyms": []
+  },
+  {
+    "name": "Touchpad",
+    "normalized": "touchpad",
+    "synonyms": []
+  },
+  {
+    "name": "TouchpadOff",
+    "normalized": "touchpad off",
+    "synonyms": []
+  },
+  {
+    "name": "TowerControl",
+    "normalized": "tower control",
+    "synonyms": []
+  },
+  {
+    "name": "ToyBrick",
+    "normalized": "toy brick",
+    "synonyms": []
+  },
+  {
+    "name": "Tractor",
+    "normalized": "tractor",
+    "synonyms": []
+  },
+  {
+    "name": "TrafficCone",
+    "normalized": "traffic cone",
+    "synonyms": []
+  },
+  {
+    "name": "TrainFront",
+    "normalized": "train front",
+    "synonyms": []
+  },
+  {
+    "name": "TrainFrontTunnel",
+    "normalized": "train front tunnel",
+    "synonyms": []
+  },
+  {
+    "name": "TrainTrack",
+    "normalized": "train track",
+    "synonyms": []
+  },
+  {
+    "name": "TramFront",
+    "normalized": "tram front",
+    "synonyms": []
+  },
+  {
+    "name": "Transgender",
+    "normalized": "transgender",
+    "synonyms": []
+  },
+  {
+    "name": "Trash",
+    "normalized": "trash",
+    "synonyms": ["delete", "remove", "archive", "discard", "clear"]
+  },
+  {
+    "name": "Trash2",
+    "normalized": "trash2",
+    "synonyms": []
+  },
+  {
+    "name": "TreeDeciduous",
+    "normalized": "tree deciduous",
+    "synonyms": []
+  },
+  {
+    "name": "TreePalm",
+    "normalized": "tree palm",
+    "synonyms": []
+  },
+  {
+    "name": "TreePine",
+    "normalized": "tree pine",
+    "synonyms": []
+  },
+  {
+    "name": "Trees",
+    "normalized": "tree",
+    "synonyms": []
+  },
+  {
+    "name": "Trello",
+    "normalized": "trello",
+    "synonyms": []
+  },
+  {
+    "name": "TrendingDown",
+    "normalized": "trending down",
+    "synonyms": []
+  },
+  {
+    "name": "TrendingUp",
+    "normalized": "trending up",
+    "synonyms": []
+  },
+  {
+    "name": "TrendingUpDown",
+    "normalized": "trending up down",
+    "synonyms": []
+  },
+  {
+    "name": "Triangle",
+    "normalized": "triangle",
+    "synonyms": []
+  },
+  {
+    "name": "TriangleAlert",
+    "normalized": "triangle alert",
+    "synonyms": []
+  },
+  {
+    "name": "TriangleDashed",
+    "normalized": "triangle dashed",
+    "synonyms": []
+  },
+  {
+    "name": "TriangleRight",
+    "normalized": "triangle right",
+    "synonyms": []
+  },
+  {
+    "name": "Trophy",
+    "normalized": "trophy",
+    "synonyms": []
+  },
+  {
+    "name": "Truck",
+    "normalized": "truck",
+    "synonyms": []
+  },
+  {
+    "name": "Turtle",
+    "normalized": "turtle",
+    "synonyms": []
+  },
+  {
+    "name": "Tv",
+    "normalized": "tv",
+    "synonyms": []
+  },
+  {
+    "name": "TvMinimal",
+    "normalized": "tv minimal",
+    "synonyms": []
+  },
+  {
+    "name": "TvMinimalPlay",
+    "normalized": "tv minimal play",
+    "synonyms": []
+  },
+  {
+    "name": "Twitch",
+    "normalized": "twitch",
+    "synonyms": []
+  },
+  {
+    "name": "Twitter",
+    "normalized": "twitter",
+    "synonyms": []
+  },
+  {
+    "name": "Type",
+    "normalized": "type",
+    "synonyms": []
+  },
+  {
+    "name": "TypeOutline",
+    "normalized": "type outline",
+    "synonyms": []
+  },
+  {
+    "name": "Umbrella",
+    "normalized": "umbrella",
+    "synonyms": []
+  },
+  {
+    "name": "UmbrellaOff",
+    "normalized": "umbrella off",
+    "synonyms": []
+  },
+  {
+    "name": "Underline",
+    "normalized": "underline",
+    "synonyms": []
+  },
+  {
+    "name": "Undo",
+    "normalized": "undo",
+    "synonyms": []
+  },
+  {
+    "name": "Undo2",
+    "normalized": "undo2",
+    "synonyms": []
+  },
+  {
+    "name": "UndoDot",
+    "normalized": "undo dot",
+    "synonyms": []
+  },
+  {
+    "name": "UnfoldHorizontal",
+    "normalized": "unfold horizontal",
+    "synonyms": []
+  },
+  {
+    "name": "UnfoldVertical",
+    "normalized": "unfold vertical",
+    "synonyms": []
+  },
+  {
+    "name": "Ungroup",
+    "normalized": "ungroup",
+    "synonyms": []
+  },
+  {
+    "name": "University",
+    "normalized": "university",
+    "synonyms": []
+  },
+  {
+    "name": "Unlink",
+    "normalized": "unlink",
+    "synonyms": []
+  },
+  {
+    "name": "Unlink2",
+    "normalized": "unlink2",
+    "synonyms": []
+  },
+  {
+    "name": "Unplug",
+    "normalized": "unplug",
+    "synonyms": []
+  },
+  {
+    "name": "Upload",
+    "normalized": "upload",
+    "synonyms": ["import", "add", "submit", "push", "send"]
+  },
+  {
+    "name": "Usb",
+    "normalized": "usb",
+    "synonyms": []
+  },
+  {
+    "name": "User",
+    "normalized": "user",
+    "synonyms": []
+  },
+  {
+    "name": "UserCheck",
+    "normalized": "user check",
+    "synonyms": []
+  },
+  {
+    "name": "UserCog",
+    "normalized": "user cog",
+    "synonyms": []
+  },
+  {
+    "name": "UserMinus",
+    "normalized": "user minus",
+    "synonyms": []
+  },
+  {
+    "name": "UserPen",
+    "normalized": "user pen",
+    "synonyms": []
+  },
+  {
+    "name": "UserPlus",
+    "normalized": "user plus",
+    "synonyms": []
+  },
+  {
+    "name": "UserRound",
+    "normalized": "user round",
+    "synonyms": []
+  },
+  {
+    "name": "UserRoundCheck",
+    "normalized": "user round check",
+    "synonyms": []
+  },
+  {
+    "name": "UserRoundCog",
+    "normalized": "user round cog",
+    "synonyms": []
+  },
+  {
+    "name": "UserRoundMinus",
+    "normalized": "user round minus",
+    "synonyms": []
+  },
+  {
+    "name": "UserRoundPen",
+    "normalized": "user round pen",
+    "synonyms": []
+  },
+  {
+    "name": "UserRoundPlus",
+    "normalized": "user round plus",
+    "synonyms": []
+  },
+  {
+    "name": "UserRoundSearch",
+    "normalized": "user round search",
+    "synonyms": []
+  },
+  {
+    "name": "UserRoundX",
+    "normalized": "user round x",
+    "synonyms": []
+  },
+  {
+    "name": "UserSearch",
+    "normalized": "user search",
+    "synonyms": []
+  },
+  {
+    "name": "UserX",
+    "normalized": "user x",
+    "synonyms": []
+  },
+  {
+    "name": "Users",
+    "normalized": "user",
+    "synonyms": []
+  },
+  {
+    "name": "UsersRound",
+    "normalized": "users round",
+    "synonyms": []
+  },
+  {
+    "name": "Utensils",
+    "normalized": "utensil",
+    "synonyms": []
+  },
+  {
+    "name": "UtensilsCrossed",
+    "normalized": "utensils crossed",
+    "synonyms": []
+  },
+  {
+    "name": "UtilityPole",
+    "normalized": "utility pole",
+    "synonyms": []
+  },
+  {
+    "name": "Variable",
+    "normalized": "variable",
+    "synonyms": []
+  },
+  {
+    "name": "Vault",
+    "normalized": "vault",
+    "synonyms": []
+  },
+  {
+    "name": "Vegan",
+    "normalized": "vegan",
+    "synonyms": []
+  },
+  {
+    "name": "VenetianMask",
+    "normalized": "venetian mask",
+    "synonyms": []
+  },
+  {
+    "name": "Venus",
+    "normalized": "venu",
+    "synonyms": []
+  },
+  {
+    "name": "VenusAndMars",
+    "normalized": "venus and mar",
+    "synonyms": []
+  },
+  {
+    "name": "Vibrate",
+    "normalized": "vibrate",
+    "synonyms": []
+  },
+  {
+    "name": "VibrateOff",
+    "normalized": "vibrate off",
+    "synonyms": []
+  },
+  {
+    "name": "Video",
+    "normalized": "video",
+    "synonyms": ["meeting", "conference", "presentation", "webinar", "stream"]
+  },
+  {
+    "name": "VideoOff",
+    "normalized": "video off",
+    "synonyms": []
+  },
+  {
+    "name": "Videotape",
+    "normalized": "videotape",
+    "synonyms": []
+  },
+  {
+    "name": "View",
+    "normalized": "view",
+    "synonyms": []
+  },
+  {
+    "name": "Voicemail",
+    "normalized": "voicemail",
+    "synonyms": []
+  },
+  {
+    "name": "Volleyball",
+    "normalized": "volleyball",
+    "synonyms": []
+  },
+  {
+    "name": "Volume",
+    "normalized": "volume",
+    "synonyms": []
+  },
+  {
+    "name": "Volume1",
+    "normalized": "volume1",
+    "synonyms": []
+  },
+  {
+    "name": "Volume2",
+    "normalized": "volume2",
+    "synonyms": []
+  },
+  {
+    "name": "VolumeOff",
+    "normalized": "volume off",
+    "synonyms": []
+  },
+  {
+    "name": "VolumeX",
+    "normalized": "volume x",
+    "synonyms": []
+  },
+  {
+    "name": "Vote",
+    "normalized": "vote",
+    "synonyms": []
+  },
+  {
+    "name": "Wallet",
+    "normalized": "wallet",
+    "synonyms": []
+  },
+  {
+    "name": "WalletCards",
+    "normalized": "wallet card",
+    "synonyms": []
+  },
+  {
+    "name": "WalletMinimal",
+    "normalized": "wallet minimal",
+    "synonyms": []
+  },
+  {
+    "name": "Wallpaper",
+    "normalized": "wallpaper",
+    "synonyms": []
+  },
+  {
+    "name": "Wand",
+    "normalized": "wand",
+    "synonyms": []
+  },
+  {
+    "name": "WandSparkles",
+    "normalized": "wand sparkle",
+    "synonyms": []
+  },
+  {
+    "name": "Warehouse",
+    "normalized": "warehouse",
+    "synonyms": []
+  },
+  {
+    "name": "WashingMachine",
+    "normalized": "washing machine",
+    "synonyms": []
+  },
+  {
+    "name": "Watch",
+    "normalized": "watch",
+    "synonyms": []
+  },
+  {
+    "name": "Waves",
+    "normalized": "wave",
+    "synonyms": []
+  },
+  {
+    "name": "WavesLadder",
+    "normalized": "waves ladder",
+    "synonyms": []
+  },
+  {
+    "name": "Waypoints",
+    "normalized": "waypoint",
+    "synonyms": []
+  },
+  {
+    "name": "Webcam",
+    "normalized": "webcam",
+    "synonyms": []
+  },
+  {
+    "name": "Webhook",
+    "normalized": "webhook",
+    "synonyms": []
+  },
+  {
+    "name": "WebhookOff",
+    "normalized": "webhook off",
+    "synonyms": []
+  },
+  {
+    "name": "Weight",
+    "normalized": "weight",
+    "synonyms": []
+  },
+  {
+    "name": "Wheat",
+    "normalized": "wheat",
+    "synonyms": []
+  },
+  {
+    "name": "WheatOff",
+    "normalized": "wheat off",
+    "synonyms": []
+  },
+  {
+    "name": "WholeWord",
+    "normalized": "whole word",
+    "synonyms": []
+  },
+  {
+    "name": "Wifi",
+    "normalized": "wifi",
+    "synonyms": []
+  },
+  {
+    "name": "WifiHigh",
+    "normalized": "wifi high",
+    "synonyms": []
+  },
+  {
+    "name": "WifiLow",
+    "normalized": "wifi low",
+    "synonyms": []
+  },
+  {
+    "name": "WifiOff",
+    "normalized": "wifi off",
+    "synonyms": []
+  },
+  {
+    "name": "WifiZero",
+    "normalized": "wifi zero",
+    "synonyms": []
+  },
+  {
+    "name": "Wind",
+    "normalized": "wind",
+    "synonyms": []
+  },
+  {
+    "name": "WindArrowDown",
+    "normalized": "wind arrow down",
+    "synonyms": []
+  },
+  {
+    "name": "Wine",
+    "normalized": "wine",
+    "synonyms": []
+  },
+  {
+    "name": "WineOff",
+    "normalized": "wine off",
+    "synonyms": []
+  },
+  {
+    "name": "Workflow",
+    "normalized": "workflow",
+    "synonyms": []
+  },
+  {
+    "name": "Worm",
+    "normalized": "worm",
+    "synonyms": []
+  },
+  {
+    "name": "WrapText",
+    "normalized": "wrap text",
+    "synonyms": []
+  },
+  {
+    "name": "Wrench",
+    "normalized": "wrench",
+    "synonyms": []
+  },
+  {
+    "name": "X",
+    "normalized": "x",
+    "synonyms": []
+  },
+  {
+    "name": "Youtube",
+    "normalized": "youtube",
+    "synonyms": []
+  },
+  {
+    "name": "Zap",
+    "normalized": "zap",
+    "synonyms": []
+  },
+  {
+    "name": "ZapOff",
+    "normalized": "zap off",
+    "synonyms": []
+  },
+  {
+    "name": "ZoomIn",
+    "normalized": "zoom in",
+    "synonyms": []
+  },
+  {
+    "name": "ZoomOut",
+    "normalized": "zoom out",
+    "synonyms": []
+  },
+  {
+    "name": "Unlock",
+    "normalized": "unlock",
+    "synonyms": ["accessible", "public", "open", "available", "shared"]
+  },
+  {
+    "name": "AlertCircle",
+    "normalized": "alert circle",
+    "synonyms": ["warning", "notice", "attention", "important", "alert"]
+  },
+  {
+    "name": "Info",
+    "normalized": "info",
+    "synonyms": ["details", "information", "help", "guide", "support"]
+  },
+  {
+    "name": "HelpCircle",
+    "normalized": "help circle",
+    "synonyms": ["support", "assistance", "guidance", "faq", "help"]
+  }
+]

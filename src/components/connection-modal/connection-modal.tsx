@@ -61,8 +61,8 @@ export function ConnectionModal({
 
             <hr className="border-neutral-200" />
 
-            <TabsList className="contents">
-              <div className="flex flex-col gap-3 w-full">
+            <TabsList className="contents flex-1">
+              <div className="flex flex-col gap-3 w-full h-full overflow-hidden">
                 {/* General */}
                 <p className="text-sm font-medium">General</p>
 
@@ -110,31 +110,33 @@ export function ConnectionModal({
                     </div>
 
                     {/* Tables */}
-                    {tablesQuery.data
-                      ?.filter((table) =>
-                        processedFilter.every((f) =>
-                          table.details.normalizedName.includes(f)
+                    <div className="flex flex-col gap-2 flex-1 overflow-y-auto">
+                      {tablesQuery.data
+                        ?.filter((table) =>
+                          processedFilter.every((f) =>
+                            table.details.normalizedName.includes(f)
+                          )
                         )
-                      )
-                      .map((table) => (
-                        <TabsTrigger
-                          key={table.name}
-                          value={table.name}
-                          className="contents group"
-                        >
-                          <ItemInlineView
-                            item={{
-                              name: table.details.pluralName,
-                              icon: table.details.icon,
-                            }}
-                            className={cn(
-                              'w-full cursor-pointer hover:bg-neutral-200 rounded-md',
-                              'flex flex-row gap-1 items-center',
-                              'group-data-[state=active]:bg-neutral-200'
-                            )}
-                          />
-                        </TabsTrigger>
-                      ))}
+                        .map((table) => (
+                          <TabsTrigger
+                            key={table.name}
+                            value={table.name}
+                            className="contents group"
+                          >
+                            <ItemInlineView
+                              item={{
+                                name: table.details.pluralName,
+                                icon: table.details.icon,
+                              }}
+                              className={cn(
+                                'w-full cursor-pointer hover:bg-neutral-200 rounded-md',
+                                'flex flex-row gap-1 items-center',
+                                'group-data-[state=active]:bg-neutral-200'
+                              )}
+                            />
+                          </TabsTrigger>
+                        ))}
+                    </div>
                   </>
                 )}
               </div>

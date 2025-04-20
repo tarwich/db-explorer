@@ -21,10 +21,12 @@ export function ConnectionModal({
   isOpen,
   onOpenChange,
   connectionId,
+  initialTableName,
 }: {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   connectionId?: string;
+  initialTableName?: string;
 }) {
   const tablesQuery = useQuery({
     queryKey: ['tables', connectionId],
@@ -46,7 +48,7 @@ export function ConnectionModal({
         Edit connection dialog
       </DialogDescription>
       <DialogOverlay />
-      <Tabs defaultValue="connection">
+      <Tabs defaultValue={initialTableName || 'connection'}>
         <DialogContent
           className={cn(
             'w-[90vw] h-[90vh] max-w-[800px] bg-slate-100 border border-neutral-200 p-0 overflow-hidden',

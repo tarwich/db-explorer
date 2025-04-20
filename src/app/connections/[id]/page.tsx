@@ -1,6 +1,7 @@
 'use client';
 
 import { getTableRecords, getTables } from '@/app/api/tables';
+import { ConnectionModal } from '@/components/connection-modal/connection-modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -36,6 +37,7 @@ export default function DataBrowserPage({
   const [sidebarWidth, setSidebarWidth] = useState(256);
   const pageSize = 10;
   const [viewType, setViewType] = useState<ViewType>('grid');
+  const [isConnectionModalOpen, setIsConnectionModalOpen] = useState(false);
 
   const handleResize = (e: MouseEvent) => {
     const newWidth = e.clientX;
@@ -268,6 +270,7 @@ export default function DataBrowserPage({
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0"
+                            onClick={() => setIsConnectionModalOpen(true)}
                           >
                             <MoreVertical className="w-4 h-4" />
                           </Button>
@@ -318,6 +321,7 @@ export default function DataBrowserPage({
                           variant="ghost"
                           size="sm"
                           className="h-8 w-8 p-0 flex-none"
+                          onClick={() => setIsConnectionModalOpen(true)}
                         >
                           <MoreVertical className="w-4 h-4" />
                         </Button>
@@ -360,6 +364,7 @@ export default function DataBrowserPage({
                                 variant="ghost"
                                 size="sm"
                                 className="h-8 w-8 p-0"
+                                onClick={() => setIsConnectionModalOpen(true)}
                               >
                                 <MoreVertical className="w-4 h-4" />
                               </Button>
@@ -414,6 +419,15 @@ export default function DataBrowserPage({
           </div>
         )}
       </div>
+
+      {isConnectionModalOpen && (
+        <ConnectionModal
+          isOpen={isConnectionModalOpen}
+          onOpenChange={setIsConnectionModalOpen}
+          connectionId={params.id}
+          initialTableName={selectedTable || undefined}
+        />
+      )}
     </div>
   );
 }

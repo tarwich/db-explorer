@@ -241,3 +241,41 @@ export async function updateTable(
 
   return updatedTable;
 }
+
+export async function getTableRecords(
+  connectionId: string,
+  tableName: string,
+  options: {
+    page?: number;
+    pageSize?: number;
+  } = {}
+) {
+  const { page = 1, pageSize = 10 } = options;
+  const db = await openConnection(connectionId);
+  const table = await getTable(connectionId, tableName);
+
+  // Get records with pagination
+  const offset = (page - 1) * pageSize;
+  const records = await db
+    .selectFrom(tableName)
+    .selectAll()
+    .limit(pageSize)
+    .offset(offset)
+    .execute();
+
+  // Get total count for pagination
+  const [{ count }] = await db
+    .selectFrom(tableName)
+    .select((eb) => eb.fn.countAll().as('count'))
+    .execute();
+
+  return {
+    records,
+    pagination: {
+      page,
+      pageSize,
+      total: Number(count),
+      totalPages: Math.ceil(Number(count) / pageSize),
+    },
+  };
+}

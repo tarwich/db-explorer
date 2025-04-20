@@ -9,10 +9,6 @@ export function ItemCardView({
 }: {
   item: {
     id: string;
-    /** @deprecated Use `columns` instead */
-    name?: string;
-    /** @deprecated Use `columns` instead */
-    subName?: string;
     icon: TIconName;
     columns: { name: string; value: string }[];
   };
@@ -24,10 +20,7 @@ export function ItemCardView({
         onMenuClick();
       }
     : undefined;
-  const allColumns = (item.name ? [{ name: 'name', value: item.name }] : [])
-    .concat(item.columns)
-    .filter(Boolean);
-  const [firstColumn, ...restColumns] = allColumns;
+  const [firstColumn, ...restColumns] = item.columns || [];
 
   return (
     <div

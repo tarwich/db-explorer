@@ -1,4 +1,6 @@
 import { Kysely } from 'kysely';
+import { SqliteParseResult } from '../parsers/sqlite/parser';
+import * as sqliteParser from '../parsers/sqlite/parser.mjs';
 import { IDatabasePlugin } from './plugin';
 
 export const SqlitePlugin: IDatabasePlugin = {
@@ -28,18 +30,49 @@ async function listTables(
 async function describeTable(db: Kysely<any>, table: string) {
   return db
     .selectFrom('sqlite_master')
-    .select(['name', 'type', 'sql'])
+    .select(['sql'])
     .where('name', '=', table)
+    .where('type', '=', 'table')
     .execute()
-    .then((rows) =>
-      rows.map((row) => ({
-        name: row.name,
-        type: row.type,
-        isNullable: row.sql.includes('NULL'),
-        default: row.sql.includes('DEFAULT'),
-        userDefined: row.sql.includes('USER-DEFINED'),
-      }))
-    );
+    .then((rows) => {
+      if (rows.length === 0) {
+        return [];
+      }
+
+      const createTableSQL = rows[0].sql as string;
+
+      const [, columnStanza] =
+        createTableSQL
+          .replace(/[\r\n]+/g, ' ')
+          .match(/CREATE\s+TABLE\s+"?\w+"?\s+\((.+)\)/i) ?? [];
+
+      if (!columnStanza) {
+        return [];
+      }
+
+      console.log({ createTableSQL });
+
+      const statements: SqliteParseResult = sqliteParser.parse(createTableSQL);
+
+      console.log(statements[0]);
+
+      // Extract column definitions from CREATE TABLE statement
+      const columnDefinitions =
+        statements
+          .find((s) => s.variant === 'createTable')
+          ?.columns.filter((c) => c.variant === 'columnDefinition')
+          .map((c) => {
+            return {
+              name: c.name,
+              type: c.type,
+              isNullable: !c.nullable,
+              default: c.default || undefined,
+              userDefined: false, // SQLite doesn't have user-defined types
+            };
+          }) ?? [];
+
+      return columnDefinitions;
+    });
 }
 
 async function describeEnum(db: Kysely<any>, enumName: string) {

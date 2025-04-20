@@ -41,6 +41,8 @@ export function TableTab({
     queryFn: () => getTable(connectionId, tableName),
   });
 
+  console.log(tableQuery.data);
+
   useEffect(() => {
     if (tableQuery.data) {
       form.reset({

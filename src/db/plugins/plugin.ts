@@ -16,7 +16,7 @@ export interface IDatabasePlugin {
       name: string;
       type: string;
       isNullable: boolean;
-      default: string;
+      default?: string;
       userDefined: boolean;
     }[]
   >;

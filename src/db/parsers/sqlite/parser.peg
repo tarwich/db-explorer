@@ -1,0 +1,79 @@
+// Sqlite parser
+
+{
+  const trim = (t) => String(t ?? '').trim();
+}
+
+Program = @Statement|..,';'| EOF
+
+Statement = _ @( CreateTable ) _
+
+CreateTable =
+  'CREATE'i __ 'TABLE'i __ tableName:Identifier _ '(' _ columns:ColumnList _ ')' _ {
+    return { variant: 'createTable', tableName, columns };
+  }
+
+ColumnList = @columns:ColumnDefinition|.., _ ',' _|
+
+ColumnDefinition = ConstraintColumn / RegularColumn
+
+RegularColumn "COLUMN DEFINITION" =
+  name:Identifier __ type:Type defaultValue:DefaultValue? notNull:NotNull? primaryKey:PrimaryKey? {
+  return {
+    variant: 'columnDefinition',
+    name,
+    type,
+    isPrimaryKey: !!primaryKey,
+    nullable: primaryKey ? false : (!notNull),
+    defaultValue
+  };
+}
+
+ConstraintColumn "CONSTRAINT" =
+  _ "CONSTRAINT"i _ name:Identifier _ pk:PrimaryKey? _ "(" columns:Identifier|.., _ ',' _| ")" {
+    return {
+      variant: 'constraint',
+      name,
+      primaryKey: !!pk,
+      columns
+    }
+  }
+
+Type =
+  @$('INTEGER'i / 'TEXT'i / 'REAL'i / 'BLOB'i / value:Keyword)
+
+DefaultValue "default value" =
+  _ 'DEFAULT'i _ '(' _ @Literal _ ')'
+
+NotNull "NOT NULL" = _ 'NOT'i _ 'NULL'i {
+  return true;
+}
+
+PrimaryKey "PRIMARY KEY" = _ 'PRIMARY'i __ 'KEY'i {
+  return true;
+}
+
+Identifier "Identifier" = '"'? @$(ALPHA ALPHANUM*) '"'?
+
+Literal = StringLiteral / NumberLiteral
+
+StringLiteral "string" = ('"' @$(!'"'.)* '"') / ("'" @$(!"'".)* "'")
+
+NumberLiteral "number" = @[0-9]+
+
+Keyword = @$(ALPHA ALPHANUM*)
+
+Comment =
+  '--' [^\r\n]*
+
+ALPHA = [A-Za-z]
+NUM = [0-9]
+ALPHANUM = ALPHA / NUM / "_"
+
+_ "whitespace"
+  = __*
+
+__ "whitespace"
+  = ([ \t\n\r] / Comment)+
+
+EOF = !.

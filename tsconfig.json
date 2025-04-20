@@ -28,7 +28,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "types/**/*.d.ts"
+    "types/**/*.d.ts",
+    "src/db/parsers/sqlite/parser.mjs"
   ],
   "exclude": ["node_modules"]
 }

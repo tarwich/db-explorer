@@ -50,11 +50,7 @@ async function describeTable(db: Kysely<any>, table: string) {
         return [];
       }
 
-      console.log({ createTableSQL });
-
       const statements: SqliteParseResult = sqliteParser.parse(createTableSQL);
-
-      console.log(statements[0]);
 
       // Extract column definitions from CREATE TABLE statement
       const columnDefinitions =

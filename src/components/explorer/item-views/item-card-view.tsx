@@ -9,9 +9,12 @@ export function ItemCardView({
 }: {
   item: {
     id: string;
-    name: string;
-    subName: string;
+    /** @deprecated Use `columns` instead */
+    name?: string;
+    /** @deprecated Use `columns` instead */
+    subName?: string;
     icon: TIconName;
+    columns: { name: string; value: string }[];
   };
   onMenuClick?: () => void;
 }) {
@@ -21,6 +24,10 @@ export function ItemCardView({
         onMenuClick();
       }
     : undefined;
+  const allColumns = (item.name ? [{ name: 'name', value: item.name }] : [])
+    .concat(item.columns)
+    .filter(Boolean);
+  const [firstColumn, ...restColumns] = allColumns;
 
   return (
     <div
@@ -34,7 +41,7 @@ export function ItemCardView({
         <ItemIcon item={item} />
 
         <h1 className="text-sm font-medium text-gray-900 text-ellipsis overflow-hidden flex-1">
-          {item.name}
+          {firstColumn?.value || `(No ${firstColumn?.name})`}
         </h1>
 
         {onMenuClick && (
@@ -43,9 +50,14 @@ export function ItemCardView({
           </Button>
         )}
       </div>
-      <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
-        {item.subName}
-      </p>
+      {restColumns.map((c) => (
+        <p
+          key={c.name}
+          className="text-xs text-gray-500 text-ellipsis overflow-hidden w-32 sm:w-48 md:w-64"
+        >
+          {c.value}
+        </p>
+      ))}
     </div>
   );
 }

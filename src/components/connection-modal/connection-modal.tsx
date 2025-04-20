@@ -70,8 +70,13 @@ export function ConnectionModal({
                 <TabsTrigger value="connection" className="contents group">
                   <ItemInlineView
                     item={{
-                      name: 'Connection Settings',
                       icon: 'Database',
+                      columns: [
+                        {
+                          name: 'Connection Settings',
+                          value: 'Connection Settings',
+                        },
+                      ],
                     }}
                     className={cn(
                       'w-full cursor-pointer hover:bg-neutral-200 rounded-md',
@@ -125,8 +130,13 @@ export function ConnectionModal({
                           >
                             <ItemInlineView
                               item={{
-                                name: table.details.pluralName,
                                 icon: table.details.icon,
+                                columns: [
+                                  {
+                                    name: 'Tables',
+                                    value: table.details.pluralName,
+                                  },
+                                ],
                               }}
                               className={cn(
                                 'w-full cursor-pointer hover:bg-neutral-200 rounded-md',
@@ -154,7 +164,7 @@ export function ConnectionModal({
             </TabsContent>
 
             {tablesQuery.data?.map((table) => (
-              <TabsContent key={table.name} value={table.name}>
+              <TabsContent key={table.name} value={table.name} asChild>
                 <TableTab connectionId={connectionId!} tableName={table.name} />
               </TabsContent>
             ))}

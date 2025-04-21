@@ -2,6 +2,7 @@
 
 import { getTableRecords, getTables } from '@/app/api/tables';
 import { ConnectionModal } from '@/components/connection-modal/connection-modal';
+import { RecordModal } from '@/components/record-modal/record-modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -18,6 +19,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { sort } from 'radash';
 import { useMemo, useState } from 'react';
 import { getConnections } from '../../api/connections';
 
@@ -38,6 +40,10 @@ export default function DataBrowserPage({
   const pageSize = 10;
   const [viewType, setViewType] = useState<ViewType>('grid');
   const [isConnectionModalOpen, setIsConnectionModalOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<Record<
+    string,
+    any
+  > | null>(null);
 
   const handleResize = (e: MouseEvent) => {
     const newWidth = e.clientX;
@@ -93,6 +99,14 @@ export default function DataBrowserPage({
     if (!tableFilter || !fuse) return tablesQuery.data;
     return fuse.search(tableFilter).map((result) => result.item);
   }, [tablesQuery.data, tableFilter, fuse]);
+
+  const displayColumns = useMemo(() => {
+    if (!currentTable) return [];
+    return sort(
+      Object.values(currentTable.details.columns),
+      (c) => c.order
+    ).filter((c) => !c.hidden);
+  }, [currentTable]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -259,7 +273,8 @@ export default function DataBrowserPage({
                     {recordsQuery.data?.records.map((record: any) => (
                       <div
                         key={record.id}
-                        className="bg-white rounded-lg border p-4"
+                        className="bg-white rounded-lg border p-4 cursor-pointer hover:border-gray-300 transition-colors"
+                        onClick={() => setSelectedRecord(record)}
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-sm">
@@ -276,15 +291,13 @@ export default function DataBrowserPage({
                           </Button>
                         </div>
                         <div className="space-y-1">
-                          {currentTable?.details.displayColumns.map(
-                            (column) => (
-                              <div key={column}>
-                                <div className="font-medium">
-                                  {String(record[column])}
-                                </div>
+                          {displayColumns.map((column) => (
+                            <div key={column.name}>
+                              <div className="font-medium">
+                                {String(record[column.name])}
                               </div>
-                            )
-                          )}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ))}
@@ -297,25 +310,24 @@ export default function DataBrowserPage({
                     {recordsQuery.data?.records.map((record: any) => (
                       <div
                         key={record.id}
-                        className="bg-white rounded-lg border p-4 flex items-center gap-4"
+                        className="bg-white rounded-lg border p-4 flex items-center gap-4 cursor-pointer hover:border-gray-300 transition-colors"
+                        onClick={() => setSelectedRecord(record)}
                       >
                         <div className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-sm">
                           <TableIcon className="w-3 h-3" />
                           {currentTable?.details.singularName}
                         </div>
                         <div className="flex-1 flex items-center gap-4">
-                          {currentTable?.details.displayColumns.map(
-                            (column) => (
-                              <div key={column} className="min-w-[120px]">
-                                <div className="text-sm text-gray-500">
-                                  {column}
-                                </div>
-                                <div className="font-medium truncate">
-                                  {String(record[column])}
-                                </div>
+                          {displayColumns.map((column) => (
+                            <div key={column.name} className="min-w-[120px]">
+                              <div className="text-sm text-gray-500">
+                                {column.displayName}
                               </div>
-                            )
-                          )}
+                              <div className="font-medium truncate">
+                                {String(record[column.name])}
+                              </div>
+                            </div>
+                          ))}
                         </div>
                         <Button
                           variant="ghost"
@@ -336,29 +348,32 @@ export default function DataBrowserPage({
                     <table className="w-full">
                       <thead className="bg-gray-50 border-b">
                         <tr>
-                          {currentTable?.details.displayColumns.map(
-                            (column) => (
-                              <th
-                                key={column}
-                                className="px-4 py-2 text-left text-sm font-medium text-gray-900"
-                              >
-                                {column}
-                              </th>
-                            )
-                          )}
+                          {displayColumns.map((column) => (
+                            <th
+                              key={column.name}
+                              className="px-4 py-2 text-left text-sm font-medium text-gray-900"
+                            >
+                              {column.displayName}
+                            </th>
+                          ))}
                           <th className="w-8"></th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y">
                         {recordsQuery.data?.records.map((record: any) => (
-                          <tr key={record.id}>
-                            {currentTable?.details.displayColumns.map(
-                              (column) => (
-                                <td key={column} className="px-4 py-2 text-sm">
-                                  {String(record[column])}
-                                </td>
-                              )
-                            )}
+                          <tr
+                            key={record.id}
+                            className="cursor-pointer hover:bg-gray-50"
+                            onClick={() => setSelectedRecord(record)}
+                          >
+                            {displayColumns.map((column) => (
+                              <td
+                                key={column.name}
+                                className="px-4 py-2 text-sm"
+                              >
+                                {String(record[column.name])}
+                              </td>
+                            ))}
                             <td className="px-2 py-2">
                               <Button
                                 variant="ghost"
@@ -419,6 +434,16 @@ export default function DataBrowserPage({
           </div>
         )}
       </div>
+
+      {/* Record Modal */}
+      {selectedRecord && currentTable && (
+        <RecordModal
+          isOpen={!!selectedRecord}
+          onOpenChange={(open) => !open && setSelectedRecord(null)}
+          record={selectedRecord}
+          table={currentTable}
+        />
+      )}
 
       {isConnectionModalOpen && (
         <ConnectionModal

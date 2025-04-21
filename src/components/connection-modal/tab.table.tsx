@@ -1,9 +1,11 @@
 'use client';
 
+import { getConnection } from '@/app/api/connections';
 import { getTable } from '@/app/api/tables';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { EyeIcon, EyeOffIcon, icons, PencilIcon } from 'lucide-react';
+import { sort } from 'radash';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ItemBadgeView } from '../explorer/item-views/item-badge-view';
@@ -11,6 +13,7 @@ import { ItemCardView } from '../explorer/item-views/item-card-view';
 import { TColorName } from '../explorer/item-views/item-colors';
 import { ItemIcon } from '../explorer/item-views/item-icon';
 import { ItemInlineView } from '../explorer/item-views/item-inline-view';
+import { ItemListView } from '../explorer/item-views/item-list-view';
 import { Button } from '../ui/button';
 import { ColorPicker } from '../ui/color-picker';
 import { IconPicker } from '../ui/icon-picker';
@@ -26,9 +29,9 @@ interface TableFormValues {
 }
 
 const createTableTabContext = () => {
-  const [page, setPage] = useState<'general' | 'inline-view' | 'card-view'>(
-    'general'
-  );
+  const [page, setPage] = useState<
+    'general' | 'inline-view' | 'card-view' | 'list-view'
+  >('general');
 
   return { page, setPage };
 };
@@ -48,11 +51,18 @@ const useTableTabContext = () => {
 export function TableTab({
   connectionId,
   tableName,
+  setTab,
 }: {
   connectionId: string;
   tableName: string;
+  setTab: (tab: 'connection') => void;
 }) {
   const { page, setPage } = createTableTabContext();
+
+  const connectionQuery = useQuery({
+    queryKey: ['connections', connectionId],
+    queryFn: () => getConnection(connectionId),
+  });
 
   const tableQuery = useQuery({
     queryKey: ['connections', connectionId, 'tables', tableName],
@@ -63,7 +73,9 @@ export function TableTab({
     <TableTabContext.Provider value={{ page, setPage }}>
       <div className="flex flex-col gap-3 h-full overflow-hidden">
         <Breadcrumbs>
-          <span>Tables</span>
+          <Button variant="link" size="sm" onClick={() => setTab('connection')}>
+            {connectionQuery.data?.name}
+          </Button>
           <ItemBadgeView
             item={{
               name: tableQuery.data?.details.pluralName || tableName,
@@ -71,9 +83,12 @@ export function TableTab({
               color: tableQuery.data?.details.color || 'green',
               type: 'collection',
             }}
+            className="cursor-pointer"
+            onClick={() => setPage('general')}
           />
           {page === 'inline-view' && <span>Inline View</span>}
           {page === 'card-view' && <span>Card View</span>}
+          {page === 'list-view' && <span>List View</span>}
         </Breadcrumbs>
 
         {page === 'general' && (
@@ -92,6 +107,13 @@ export function TableTab({
         {page === 'card-view' && (
           <ViewEditor
             type="card"
+            connectionId={connectionId}
+            tableName={tableName}
+          />
+        )}
+        {page === 'list-view' && (
+          <ViewEditor
+            type="list"
             connectionId={connectionId}
             tableName={tableName}
           />
@@ -131,7 +153,7 @@ export function TableTabGeneralPage({
         singularName: tableQuery.data.details.singularName,
         pluralName: tableQuery.data.details.pluralName,
       });
-      const columns = tableQuery.data.details.columns
+      const columns = Object.values(tableQuery.data.details.columns)
         .filter((c) => !c.hidden)
         .map((c) => ({
           name: c.displayName,
@@ -142,7 +164,7 @@ export function TableTabGeneralPage({
 
   const columns = useMemo(() => {
     return (
-      tableQuery.data?.details.columns
+      Object.values(tableQuery.data?.details.columns || {})
         .filter((c) => !c.hidden)
         .map((c) => ({
           name: c.displayName,
@@ -209,25 +231,27 @@ export function TableTabGeneralPage({
 
           {/* Columns */}
           <div className="flex flex-col gap-2">
-            {tableQuery.data?.details.columns.map((column) => (
-              <div
-                key={column.name}
-                className="flex flex-row gap-2 items-center"
-              >
-                <Button variant="ghost" size="icon">
-                  {column.hidden ? (
-                    <EyeOffIcon className="size-4" />
-                  ) : (
-                    <EyeIcon className="size-4" />
-                  )}
-                </Button>
-                <ItemIcon item={{ icon: column.icon }} />
-                <span>{column.displayName}</span>
-                <span className="font-mono text-xs text-neutral-700">
-                  {column.type}
-                </span>
-              </div>
-            ))}
+            {Object.values(tableQuery.data?.details.columns || {}).map(
+              (column) => (
+                <div
+                  key={column.name}
+                  className="flex flex-row gap-2 items-center"
+                >
+                  <Button variant="ghost" size="icon">
+                    {column.hidden ? (
+                      <EyeOffIcon className="size-4" />
+                    ) : (
+                      <EyeIcon className="size-4" />
+                    )}
+                  </Button>
+                  <ItemIcon item={{ icon: column.icon }} />
+                  <span>{column.displayName}</span>
+                  <span className="font-mono text-xs text-neutral-700">
+                    {column.type}
+                  </span>
+                </div>
+              )
+            )}
           </div>
 
           {/* Inline View */}
@@ -247,7 +271,19 @@ export function TableTabGeneralPage({
               <ItemInlineView
                 item={{
                   icon: 'Table',
-                  columns: columns,
+                  columns: sort(
+                    Object.entries(
+                      tableQuery.data?.details.inlineView.columns || {}
+                    ),
+                    (c) => c[1].order
+                  )
+                    .filter((c) => !c[1].hidden)
+                    .map(([name, column]) => ({
+                      name: name,
+                      value:
+                        tableQuery.data?.details.columns?.[name]?.displayName ||
+                        name,
+                    })),
                 }}
               />
             </div>
@@ -271,7 +307,55 @@ export function TableTabGeneralPage({
                 item={{
                   id: '1',
                   icon: 'Table',
-                  columns: columns,
+                  columns: sort(
+                    Object.entries(
+                      tableQuery.data?.details.cardView.columns || {}
+                    ),
+                    (c) => c[1].order
+                  )
+                    .filter((c) => !c[1].hidden)
+                    .map(([name, column]) => ({
+                      name: name,
+                      value:
+                        tableQuery.data?.details.columns?.[name]?.displayName ||
+                        name,
+                    })),
+                }}
+              />
+            </div>
+          </div>
+
+          {/* List View */}
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-row items-center justify-between">
+              <div className="text-sm font-medium">List View</div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setPage('list-view')}
+              >
+                <PencilIcon className="size-4" />
+              </Button>
+            </div>
+
+            <div className="flex flex-row gap-2">
+              <ItemListView
+                item={{
+                  id: '1',
+                  icon: 'Table',
+                  columns: sort(
+                    Object.entries(
+                      tableQuery.data?.details.listView.columns || {}
+                    ),
+                    (c) => c[1].order
+                  )
+                    .filter((c) => !c[1].hidden)
+                    .map(([name, column]) => ({
+                      name: name,
+                      value:
+                        tableQuery.data?.details.columns?.[name]?.displayName ||
+                        name,
+                    })),
                 }}
               />
             </div>

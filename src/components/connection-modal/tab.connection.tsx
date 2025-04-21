@@ -92,7 +92,16 @@ export const ConnectionTab = forwardRef<
   }, [connectionQuery.data, form, connectionId]);
 
   const onSubmit = form.handleSubmit((data) => {
-    saveConnectionMutation.mutate(data);
+    saveConnectionMutation.mutate({
+      ...data,
+      details: {
+        host: data.details.host ?? '',
+        port: data.details.port ?? 5432,
+        database: data.details.database ?? '',
+        username: data.details.username ?? '',
+        password: data.details.password ?? '',
+      },
+    });
   });
 
   const connectionType = form.watch('type');

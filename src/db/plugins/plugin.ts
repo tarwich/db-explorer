@@ -1,17 +1,11 @@
-import { Kysely } from 'kysely';
-
 export interface IDatabasePlugin {
   name: string;
 
-  listTables(
-    db: Kysely<any>,
-    options?: { schema?: string }
-  ): Promise<{ name: string; schema: string }[]>;
+  listTables(options?: {
+    schema?: string;
+  }): Promise<{ name: string; schema: string }[]>;
 
-  describeTable(
-    db: Kysely<any>,
-    table: string
-  ): Promise<
+  describeTable(table: string): Promise<
     {
       name: string;
       type: string;
@@ -21,5 +15,5 @@ export interface IDatabasePlugin {
     }[]
   >;
 
-  describeEnum(db: Kysely<any>, enumName: string): Promise<string[]>;
+  describeEnum(enumName: string): Promise<string[]>;
 }

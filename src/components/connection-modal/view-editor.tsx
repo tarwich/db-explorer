@@ -1,4 +1,5 @@
-import { getTable, updateTable } from '@/app/api/tables';
+import { getTable } from '@/app/api/tables';
+import { useToast } from '@/hooks/use-toast';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -8,44 +9,39 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { EyeIcon, EyeOffIcon, GripVertical } from 'lucide-react';
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { sort } from 'radash';
+import { useMemo } from 'react';
 import { ItemCardView } from '../explorer/item-views/item-card-view';
 import { ItemIcon } from '../explorer/item-views/item-icon';
 import { ItemInlineView } from '../explorer/item-views/item-inline-view';
+import { ItemListView } from '../explorer/item-views/item-list-view';
 import { Button } from '../ui/button';
+import { updateColumn } from './view-editor.actions';
 
 interface ViewEditorProps {
-  type: 'inline' | 'card';
+  type: 'inline' | 'card' | 'list';
   connectionId: string;
   tableName: string;
 }
 
-interface SortableColumnProps {
+interface Column {
   id: string;
   name: string;
-  value: string;
+  displayName: string;
   icon: string;
   type: string;
   hidden: boolean;
-  onNameChange: (value: string) => void;
-  onValueChange: (value: string) => void;
+  order: number;
+}
+
+interface SortableColumnProps {
+  column: Column;
   onVisibilityToggle: () => void;
 }
 
-function SortableColumn({
-  id,
-  name,
-  value,
-  icon,
-  type,
-  hidden,
-  onNameChange,
-  onValueChange,
-  onVisibilityToggle,
-}: SortableColumnProps) {
+function SortableColumn({ column, onVisibilityToggle }: SortableColumnProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id });
+    useSortable({ id: column.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -66,139 +62,116 @@ function SortableColumn({
         <GripVertical className="size-4 text-neutral-400" />
       </button>
       <Button variant="ghost" size="icon" onClick={onVisibilityToggle}>
-        {hidden ? (
+        {column.hidden ? (
           <EyeOffIcon className="size-4" />
         ) : (
           <EyeIcon className="size-4" />
         )}
       </Button>
-      <ItemIcon item={{ icon }} />
-      <span className="flex-1">{name}</span>
+      <ItemIcon item={{ icon: column.icon }} />
+      <span className="flex-1">{column.displayName}</span>
       <span className="font-mono text-xs text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded">
-        {type}
+        {column.type}
       </span>
     </div>
   );
 }
 
 export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const tableQuery = useQuery({
     queryKey: ['connections', connectionId, 'tables', tableName],
     queryFn: () => getTable(connectionId, tableName),
+    select: (data) => {
+      const view = (() => {
+        if (type === 'card') return data.details.cardView;
+        if (type === 'list') return data.details.listView;
+        if (type === 'inline') return data.details.inlineView;
+
+        throw new Error('Invalid view type');
+      })();
+
+      return { table: data, view };
+    },
   });
 
-  const updateTableMutation = useMutation({
-    mutationFn: (details: Parameters<typeof updateTable>[2]) =>
-      updateTable(connectionId, tableName, details),
+  const { table, view } = useMemo(
+    () => ({
+      table: tableQuery.data?.table,
+      view: tableQuery.data?.view,
+    }),
+    [tableQuery.data]
+  );
+
+  // Convert database columns to state
+  const columns = useMemo(() => {
+    return sort(
+      Object.values(table?.details.columns || {}),
+      (c) => view?.columns[c.name]?.order ?? 0
+    ).map((c, index) => ({
+      id: c.name,
+      name: c.name,
+      displayName: c.displayName,
+      icon: c.icon,
+      type: c.type,
+      hidden: view?.columns[c.name]?.hidden ?? c.hidden,
+      order: index,
+    }));
+  }, [table, view]);
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const newIndex = columns.findIndex((c) => c.id === over.id);
+
+    // Update the column's order using the mutation
+    updateColumnMutation.mutate({
+      name: active.id as string,
+      update: { order: newIndex },
+    });
+  };
+
+  const updateColumnMutation = useMutation({
+    mutationFn: ({ name, update }: { name: string; update: Partial<Column> }) =>
+      updateColumn({
+        connectionId,
+        tableName,
+        view: type,
+        columnName: name,
+        update,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['connections', connectionId, 'tables', tableName],
       });
     },
-  });
-
-  const form = useForm({
-    defaultValues: {
-      columns: [] as {
-        id: string;
-        name: string;
-        value: string;
-        icon: string;
-        type: string;
-        hidden: boolean;
-      }[],
+    onError: (error) => {
+      toast({
+        title: 'Error updating column',
+        variant: 'destructive',
+        description: error.message,
+      });
     },
   });
 
-  useEffect(() => {
-    if (tableQuery.data) {
-      const columns = tableQuery.data.details.columns.map((c) => ({
-        id: c.name,
-        name: c.displayName,
-        value: c.name,
-        icon: c.icon,
-        type: c.type,
-        hidden: c.hidden,
-      }));
-      form.reset({ columns });
-    }
-  }, [tableQuery.data]);
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = form
-      .getValues('columns')
-      .findIndex((c) => c.id === active.id);
-    const newIndex = form
-      .getValues('columns')
-      .findIndex((c) => c.id === over.id);
-
-    const columns = [...form.getValues('columns')];
-    const [movedItem] = columns.splice(oldIndex, 1);
-    columns.splice(newIndex, 0, movedItem);
-
-    form.setValue('columns', columns);
-    updateTableMutation.mutate({
-      displayColumns: columns.filter((c) => !c.hidden).map((c) => c.value),
-    });
-  };
-
-  const handleColumnChange = (
-    index: number,
-    field: 'name' | 'value' | 'hidden',
-    value: any
-  ) => {
-    const columns = [...form.getValues('columns')];
-    columns[index] = { ...columns[index], [field]: value };
-    form.setValue('columns', columns);
-
-    if (field === 'hidden') {
-      const updatedColumns =
-        tableQuery.data?.details.columns.map((c) => {
-          const formColumn = columns.find((fc) => fc.id === c.name);
-          if (formColumn) {
-            return {
-              ...c,
-              hidden: formColumn.hidden,
-            };
-          }
-          return c;
-        }) || [];
-
-      updateTableMutation.mutate({
-        columns: updatedColumns,
-      });
-    }
-  };
+  const visibleColumns = columns.filter((c) => !c.hidden);
 
   return (
     <div className="flex flex-col gap-4">
       <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext
-          items={form.watch('columns')}
-          strategy={verticalListSortingStrategy}
-        >
+        <SortableContext items={columns} strategy={verticalListSortingStrategy}>
           <div className="flex flex-col gap-2">
-            {form.watch('columns').map((column, index) => (
+            {columns.map((column, index) => (
               <SortableColumn
-                key={column.id}
-                id={column.id}
-                name={column.name}
-                value={column.value}
-                icon={column.icon}
-                type={column.type}
-                hidden={column.hidden}
-                onNameChange={(value) =>
-                  handleColumnChange(index, 'name', value)
-                }
-                onValueChange={(value) =>
-                  handleColumnChange(index, 'value', value)
-                }
+                key={column.name}
+                column={column}
                 onVisibilityToggle={() =>
-                  handleColumnChange(index, 'hidden', !column.hidden)
+                  updateColumnMutation.mutate({
+                    name: column.name,
+                    update: { hidden: !column.hidden },
+                  })
                 }
               />
             ))}
@@ -212,27 +185,32 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
           <ItemInlineView
             item={{
               icon: 'Table',
-              columns: form
-                .watch('columns')
-                .filter((c) => !c.hidden)
-                .map((c) => ({
-                  name: c.name,
-                  value: c.value,
-                })),
+              columns: visibleColumns.map((c) => ({
+                name: c.name,
+                value: c.name,
+              })),
             }}
           />
-        ) : (
+        ) : type === 'card' ? (
           <ItemCardView
             item={{
               id: '1',
               icon: 'Table',
-              columns: form
-                .watch('columns')
-                .filter((c) => !c.hidden)
-                .map((c) => ({
-                  name: c.name,
-                  value: c.value,
-                })),
+              columns: visibleColumns.map((c) => ({
+                name: c.name,
+                value: c.name,
+              })),
+            }}
+          />
+        ) : (
+          <ItemListView
+            item={{
+              id: '1',
+              icon: 'Table',
+              columns: visibleColumns.map((c) => ({
+                name: c.name,
+                value: c.name,
+              })),
             }}
           />
         )}

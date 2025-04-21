@@ -3,74 +3,71 @@ import { SqliteParseResult } from '../parsers/sqlite/parser';
 import * as sqliteParser from '../parsers/sqlite/parser.mjs';
 import { IDatabasePlugin } from './plugin';
 
-export const SqlitePlugin: IDatabasePlugin = {
-  name: 'sqlite',
-  listTables: listTables,
-  describeTable: describeTable,
-  describeEnum: describeEnum,
-};
+export class SqlitePlugin implements IDatabasePlugin {
+  name = 'sqlite';
 
-async function listTables(
-  db: Kysely<any>,
-  { schema = 'public' }: { schema?: string } = {}
-) {
-  return db
-    .selectFrom('sqlite_master')
-    .select(['name', 'type'])
-    .where('type', '=', 'table')
-    .execute()
-    .then((rows) =>
-      rows.map((row) => ({
-        name: row.name,
-        schema: 'main',
-      }))
-    );
-}
+  constructor(private readonly db: Kysely<any>) {}
 
-async function describeTable(db: Kysely<any>, table: string) {
-  return db
-    .selectFrom('sqlite_master')
-    .select(['sql'])
-    .where('name', '=', table)
-    .where('type', '=', 'table')
-    .execute()
-    .then((rows) => {
-      if (rows.length === 0) {
-        return [];
-      }
+  async listTables({ schema = 'main' }: { schema?: string } = {}) {
+    return this.db
+      .selectFrom('sqlite_master')
+      .select(['name', 'type'])
+      .where('type', '=', 'table')
+      .execute()
+      .then((rows) =>
+        rows.map((row) => ({
+          name: row.name,
+          schema: 'main',
+        }))
+      );
+  }
 
-      const createTableSQL = rows[0].sql as string;
+  async describeTable(table: string) {
+    return this.db
+      .selectFrom('sqlite_master')
+      .select(['sql'])
+      .where('name', '=', table)
+      .where('type', '=', 'table')
+      .execute()
+      .then((rows) => {
+        if (rows.length === 0) {
+          return [];
+        }
 
-      const [, columnStanza] =
-        createTableSQL
-          .replace(/[\r\n]+/g, ' ')
-          .match(/CREATE\s+TABLE\s+"?\w+"?\s+\((.+)\)/i) ?? [];
+        const createTableSQL = rows[0].sql as string;
 
-      if (!columnStanza) {
-        return [];
-      }
+        const [, columnStanza] =
+          createTableSQL
+            .replace(/[\r\n]+/g, ' ')
+            .match(/CREATE\s+TABLE\s+"?\w+"?\s+\((.+)\)/i) ?? [];
 
-      const statements: SqliteParseResult = sqliteParser.parse(createTableSQL);
+        if (!columnStanza) {
+          return [];
+        }
 
-      // Extract column definitions from CREATE TABLE statement
-      const columnDefinitions =
-        statements
-          .find((s) => s.variant === 'createTable')
-          ?.columns.filter((c) => c.variant === 'columnDefinition')
-          .map((c) => {
-            return {
-              name: c.name,
-              type: c.type,
-              isNullable: !c.nullable,
-              default: c.default || undefined,
-              userDefined: false, // SQLite doesn't have user-defined types
-            };
-          }) ?? [];
+        const statements: SqliteParseResult =
+          sqliteParser.parse(createTableSQL);
 
-      return columnDefinitions;
-    });
-}
+        // Extract column definitions from CREATE TABLE statement
+        const columnDefinitions =
+          statements
+            .find((s) => s.variant === 'createTable')
+            ?.columns.filter((c) => c.variant === 'columnDefinition')
+            .map((c) => {
+              return {
+                name: c.name,
+                type: c.type,
+                isNullable: !c.nullable,
+                default: c.default || undefined,
+                userDefined: false, // SQLite doesn't have user-defined types
+              };
+            }) ?? [];
 
-async function describeEnum(db: Kysely<any>, enumName: string) {
-  return [];
+        return columnDefinitions;
+      });
+  }
+
+  async describeEnum(enumName: string) {
+    return [];
+  }
 }

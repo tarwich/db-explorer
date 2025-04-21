@@ -1,3 +1,4 @@
+import { openConnection } from '@/app/api/connections';
 import { DatabaseConnection } from '@/types/connections';
 import { PostgresPlugin } from './plugin.postgres';
 import { SqlitePlugin } from './plugin.sqlite';
@@ -11,6 +12,12 @@ export const PLUGINS = {
   sqlite: SqlitePlugin,
 };
 
-export const getPlugin = (connection: DatabaseConnection) => {
-  return PLUGINS[connection.type];
+export const getPlugin = async (connection: DatabaseConnection) => {
+  if (!connection.id) {
+    throw new Error('Connection ID is required');
+  }
+
+  const db = await openConnection(connection.id);
+
+  return new PLUGINS[connection.type](db);
 };

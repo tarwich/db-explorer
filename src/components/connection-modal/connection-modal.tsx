@@ -34,6 +34,7 @@ export function ConnectionModal({
     enabled: !!connectionId,
   });
   const [filter, setFilter] = useState('');
+  const [tab, setTab] = useState(initialTableName || 'connection');
 
   const processedFilter = useMemo(() => {
     return filter.toLowerCase().split(/\W+/);
@@ -48,7 +49,7 @@ export function ConnectionModal({
         Edit connection dialog
       </DialogDescription>
       <DialogOverlay />
-      <Tabs defaultValue={initialTableName || 'connection'}>
+      <Tabs onValueChange={setTab} value={tab}>
         <DialogContent
           className={cn(
             'w-[90vw] h-[90vh] max-w-[800px] bg-slate-100 border border-neutral-200 p-0 overflow-hidden',
@@ -167,7 +168,11 @@ export function ConnectionModal({
 
             {tablesQuery.data?.map((table) => (
               <TabsContent key={table.name} value={table.name} asChild>
-                <TableTab connectionId={connectionId!} tableName={table.name} />
+                <TableTab
+                  connectionId={connectionId!}
+                  tableName={table.name}
+                  setTab={setTab}
+                />
               </TabsContent>
             ))}
           </div>

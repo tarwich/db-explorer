@@ -32,7 +32,7 @@ export async function saveConnection(
         id: randomUUID(),
         name: connection.name,
         type: connection.type,
-        details: JSON.stringify(connection.details),
+        details: JSON.stringify(connection.details) as any,
       })
       .execute();
   } else {
@@ -41,7 +41,7 @@ export async function saveConnection(
       .set({
         name: connection.name,
         type: connection.type,
-        details: JSON.stringify(connection.details),
+        details: JSON.stringify(connection.details) as any,
       })
       .where('id', '=', connectionId)
       .execute();

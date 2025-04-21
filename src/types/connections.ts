@@ -1,6 +1,5 @@
 import { TColorName } from '@/components/explorer/item-views/item-colors';
 import { TIconName } from '@/components/explorer/item-views/item-icon';
-import { JSONColumnType } from 'kysely';
 
 type ExcludeHiddenColumns<T> = Omit<
   T,
@@ -47,37 +46,54 @@ export interface DatabaseConnection {
   id?: string;
   name: string;
   type: 'postgres' | 'sqlite';
-  details: ExcludeHiddenColumns<
-    JSONColumnType<IPostgresConnectionDetails | ISqliteConnectionDetails>
-  >;
+  details: IPostgresConnectionDetails | ISqliteConnectionDetails;
 }
 
-export type DatabaseTable = {
+export type ColumnInformation = {
+  name: string;
+  normalizedName: string;
+  icon: TIconName;
+  displayName: string;
+  type: string;
+  nullable: boolean;
+  hidden: boolean;
+  order: number;
+  enumOptions?: string[];
+  foreignKey?: {
+    targetTable: string;
+    targetColumn: string;
+    isGuessed: boolean;
+  };
+};
+export type ColumnDictionary = Record<string, ColumnInformation>;
+
+export type LiteColumnInformation = { order: number; hidden: boolean };
+export type LiteColumnDictionary = Record<string, LiteColumnInformation>;
+
+export interface DatabaseTable {
   name: string;
   schema: string;
   connectionId: string;
-  details: ExcludeHiddenColumns<{
+  details: {
     normalizedName: string;
     singularName: string;
     pluralName: string;
     color: TColorName;
     icon: TIconName;
-    displayColumns: string[];
     pk: string[];
-    columns: {
-      name: string;
-      normalizedName: string;
-      icon: TIconName;
-      displayName: string;
-      type: string;
-      nullable: boolean;
-      hidden: boolean;
-      enumOptions?: string[];
-      foreignKey?: {
-        targetTable: string;
-        targetColumn: string;
-        isGuessed: boolean;
-      };
-    }[];
-  }>;
-};
+    columns: ColumnDictionary;
+    inlineView: {
+      columns: LiteColumnDictionary;
+    };
+    cardView: {
+      columns: LiteColumnDictionary;
+    };
+    listView: {
+      columns: LiteColumnDictionary;
+    };
+  };
+}
+
+export function storeJson<T>(value: T): T {
+  return JSON.stringify(value) as any;
+}

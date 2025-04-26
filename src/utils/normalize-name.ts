@@ -1,6 +1,6 @@
-import { noCase } from 'change-case';
-import pluralize from 'pluralize';
+import { singular } from 'pluralize';
+import { snake } from 'radash';
 
 export function normalizeName(name: string): string {
-  return pluralize.singular(noCase(name));
+  return singular(snake(name).replaceAll('_', ' '));
 }

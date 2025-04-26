@@ -2,10 +2,12 @@
 
 import { getTableRecords, getTables } from '@/app/api/tables';
 import { ConnectionModal } from '@/components/connection-modal/connection-modal';
-import { RecordModal } from '@/components/record-modal/record-modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useResizable } from '@/hooks/use-resizable';
 import { cn } from '@/lib/utils';
+import { DatabaseTable } from '@/types/connections';
+import { useDisclosure } from '@reactuses/core';
 import { useQuery } from '@tanstack/react-query';
 import Fuse from 'fuse.js';
 import {
@@ -36,33 +38,11 @@ export default function DataBrowserPage({
   const [searchQuery, setSearchQuery] = useState('');
   const [tableFilter, setTableFilter] = useState('');
   const [page, setPage] = useState(1);
-  const [sidebarWidth, setSidebarWidth] = useState(256);
   const pageSize = 10;
   const [viewType, setViewType] = useState<ViewType>('grid');
-  const [isConnectionModalOpen, setIsConnectionModalOpen] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<Record<
-    string,
-    any
-  > | null>(null);
-
-  const handleResize = (e: MouseEvent) => {
-    const newWidth = e.clientX;
-    if (newWidth >= 200 && newWidth <= 600) {
-      setSidebarWidth(newWidth);
-    }
-  };
-
-  const startResize = () => {
-    document.addEventListener('mousemove', handleResize);
-    document.addEventListener('mouseup', stopResize);
-    document.body.style.userSelect = 'none';
-  };
-
-  const stopResize = () => {
-    document.removeEventListener('mousemove', handleResize);
-    document.removeEventListener('mouseup', stopResize);
-    document.body.style.userSelect = '';
-  };
+  const { width, startResizing, isResizing, resizerProps } = useResizable({
+    initialWidth: 256,
+  });
 
   const connectionQuery = useQuery({
     queryKey: ['connections', params.id],
@@ -109,11 +89,11 @@ export default function DataBrowserPage({
   }, [currentTable]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex flex-row h-full overflow-hidden">
       {/* Sidebar */}
       <div
         className="bg-white border-r flex flex-col h-screen flex-none"
-        style={{ width: sidebarWidth }}
+        style={{ width }}
       >
         {/* Connection Info */}
         <div className="p-4 border-b flex-none">
@@ -175,13 +155,15 @@ export default function DataBrowserPage({
       </div>
 
       {/* Resize Handle */}
-      <div
-        className="w-1 bg-gray-200 cursor-col-resize hover:bg-gray-300 active:bg-gray-400 h-screen flex-none"
-        onMouseDown={startResize}
-      />
+      <div className="relative">
+        <div
+          {...resizerProps}
+          className={cn(resizerProps.className, 'w-2 hover:bg-gray-200')}
+        />
+      </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-4">
+      <div className="flex-1 p-4 flex flex-col overflow-y-hidden">
         {selectedTable ? (
           <>
             {/* Header */}
@@ -265,132 +247,35 @@ export default function DataBrowserPage({
             )}
 
             {/* Records Display */}
-            {!!recordsQuery.data?.records?.length && (
-              <>
+            {currentTable && !!recordsQuery.data?.records?.length && (
+              <div className="flex-1 overflow-y-auto">
                 {/* Grid View */}
                 {viewType === 'grid' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                    {recordsQuery.data?.records.map((record: any) => (
-                      <div
-                        key={record.id}
-                        className="bg-white rounded-lg border p-4 cursor-pointer hover:border-gray-300 transition-colors"
-                        onClick={() => setSelectedRecord(record)}
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-sm">
-                            <TableIcon className="w-3 h-3" />
-                            {currentTable?.details.singularName}
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={() => setIsConnectionModalOpen(true)}
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <div className="space-y-1">
-                          {displayColumns.map((column) => (
-                            <div key={column.name}>
-                              <div className="font-medium">
-                                {String(record[column.name])}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <ItemGridView
+                    table={currentTable}
+                    items={recordsQuery.data?.records}
+                    columns={displayColumns}
+                  />
                 )}
 
                 {/* List View */}
                 {viewType === 'list' && (
-                  <div className="space-y-2">
-                    {recordsQuery.data?.records.map((record: any) => (
-                      <div
-                        key={record.id}
-                        className="bg-white rounded-lg border p-4 flex items-center gap-4 cursor-pointer hover:border-gray-300 transition-colors"
-                        onClick={() => setSelectedRecord(record)}
-                      >
-                        <div className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-sm">
-                          <TableIcon className="w-3 h-3" />
-                          {currentTable?.details.singularName}
-                        </div>
-                        <div className="flex-1 flex items-center gap-4">
-                          {displayColumns.map((column) => (
-                            <div key={column.name} className="min-w-[120px]">
-                              <div className="text-sm text-gray-500">
-                                {column.displayName}
-                              </div>
-                              <div className="font-medium truncate">
-                                {String(record[column.name])}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 flex-none"
-                          onClick={() => setIsConnectionModalOpen(true)}
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+                  <ItemListView
+                    table={currentTable}
+                    items={recordsQuery.data?.records}
+                    columns={displayColumns}
+                  />
                 )}
 
                 {/* Table View */}
                 {viewType === 'table' && (
-                  <div className="border rounded-lg overflow-hidden">
-                    <table className="w-full">
-                      <thead className="bg-gray-50 border-b">
-                        <tr>
-                          {displayColumns.map((column) => (
-                            <th
-                              key={column.name}
-                              className="px-4 py-2 text-left text-sm font-medium text-gray-900"
-                            >
-                              {column.displayName}
-                            </th>
-                          ))}
-                          <th className="w-8"></th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y">
-                        {recordsQuery.data?.records.map((record: any) => (
-                          <tr
-                            key={record.id}
-                            className="cursor-pointer hover:bg-gray-50"
-                            onClick={() => setSelectedRecord(record)}
-                          >
-                            {displayColumns.map((column) => (
-                              <td
-                                key={column.name}
-                                className="px-4 py-2 text-sm"
-                              >
-                                {String(record[column.name])}
-                              </td>
-                            ))}
-                            <td className="px-2 py-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                                onClick={() => setIsConnectionModalOpen(true)}
-                              >
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <ItemTableView
+                    table={currentTable}
+                    items={recordsQuery.data?.records}
+                    columns={displayColumns}
+                  />
                 )}
-              </>
+              </div>
             )}
 
             {/* Pagination */}
@@ -434,23 +319,175 @@ export default function DataBrowserPage({
           </div>
         )}
       </div>
+    </div>
+  );
+}
 
-      {/* Record Modal */}
-      {selectedRecord && currentTable && (
-        <RecordModal
-          isOpen={!!selectedRecord}
-          onOpenChange={(open) => !open && setSelectedRecord(null)}
-          record={selectedRecord}
-          table={currentTable}
+function ItemGridView({
+  table,
+  items,
+  columns,
+}: {
+  table: DatabaseTable;
+  items: any[];
+  columns: any[];
+}) {
+  const connectionModal = useDisclosure();
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      {items.map((record: any) => (
+        <div
+          key={record.id}
+          className="bg-white rounded-lg border p-4 cursor-pointer hover:border-gray-300 transition-colors"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-sm">
+              <TableIcon className="w-3 h-3" />
+              {table.details.singularName}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={connectionModal.onOpen}
+            >
+              <MoreVertical className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="space-y-1">
+            {columns.map((column) => (
+              <div key={column.name}>
+                <div className="font-medium">{String(record[column.name])}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      {connectionModal.isOpen && (
+        <ConnectionModal
+          isOpen={connectionModal.isOpen}
+          onOpenChange={connectionModal.onOpenChange}
+          connectionId={table.connectionId}
+          initialTableName={table.name}
         />
       )}
+    </div>
+  );
+}
 
-      {isConnectionModalOpen && (
+function ItemListView({
+  table,
+  items,
+  columns,
+}: {
+  table: DatabaseTable;
+  items: any[];
+  columns: any[];
+}) {
+  const connectionModal = useDisclosure();
+
+  return (
+    <div className="space-y-2">
+      {items.map((record: any) => (
+        <div
+          key={record.id}
+          className="bg-white rounded-lg border p-4 flex items-center gap-4 cursor-pointer hover:border-gray-300 transition-colors"
+        >
+          <div className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-sm">
+            <TableIcon className="w-3 h-3" />
+            {table.details.singularName}
+          </div>
+          <div className="flex-1 flex items-center gap-4">
+            {columns.map((column) => (
+              <div key={column.name} className="min-w-[120px]">
+                <div className="text-sm text-gray-500">
+                  {column.displayName}
+                </div>
+                <div className="font-medium truncate">
+                  {String(record[column.name])}
+                </div>
+              </div>
+            ))}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 flex-none"
+            onClick={connectionModal.onOpen}
+          >
+            <MoreVertical className="w-4 h-4" />
+          </Button>
+        </div>
+      ))}
+      {connectionModal.isOpen && (
         <ConnectionModal
-          isOpen={isConnectionModalOpen}
-          onOpenChange={setIsConnectionModalOpen}
-          connectionId={params.id}
-          initialTableName={selectedTable || undefined}
+          isOpen={connectionModal.isOpen}
+          onOpenChange={connectionModal.onOpenChange}
+          connectionId={table.connectionId}
+        />
+      )}
+    </div>
+  );
+}
+
+function ItemTableView({
+  table,
+  items,
+  columns,
+}: {
+  table: DatabaseTable;
+  items: any[];
+  columns: any[];
+}) {
+  const connectionModal = useDisclosure();
+
+  return (
+    <div className="border rounded-lg overflow-hidden">
+      <table className="w-full">
+        <thead className="bg-gray-50 border-b">
+          <tr>
+            {columns.map((column) => (
+              <th
+                key={column.name}
+                className="px-4 py-2 text-left text-sm font-medium text-gray-900"
+              >
+                {column.displayName}
+              </th>
+            ))}
+            <th className="w-8"></th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y">
+          {items.map((record: any) => (
+            <tr
+              key={record.id}
+              className="cursor-pointer hover:bg-gray-50"
+              onClick={connectionModal.onOpen}
+            >
+              {columns.map((column) => (
+                <td key={column.name} className="px-4 py-2 text-sm">
+                  {String(record[column.name])}
+                </td>
+              ))}
+              <td className="px-2 py-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={connectionModal.onOpen}
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {connectionModal.isOpen && (
+        <ConnectionModal
+          isOpen={connectionModal.isOpen}
+          onOpenChange={connectionModal.onOpenChange}
+          connectionId={table.connectionId}
         />
       )}
     </div>

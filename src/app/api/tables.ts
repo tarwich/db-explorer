@@ -9,7 +9,7 @@ import { DatabaseTable, LiteColumnDictionary } from '@/types/connections';
 import { getBestIcon } from '@/utils/best-icon';
 import { normalizeName } from '@/utils/normalize-name';
 import { plural, singular } from 'pluralize';
-import { objectify, sort, title } from 'radash';
+import { alphabetical, objectify, sort, title } from 'radash';
 
 export async function getTables(connectionId: string) {
   const stateDb = await getStateDb();
@@ -29,7 +29,7 @@ export async function getTables(connectionId: string) {
     .selectAll()
     .execute();
 
-  return tables.map(
+  const formattedTables = tables.map(
     (t): (typeof knownTablesMap)[keyof typeof knownTablesMap] => {
       const knownTable = knownTablesMap[t.table_name];
       const pluralName =
@@ -56,6 +56,8 @@ export async function getTables(connectionId: string) {
       };
     }
   );
+
+  return alphabetical(formattedTables, (t) => t.details.normalizedName);
 }
 
 export async function getTable(
@@ -86,7 +88,7 @@ export async function getTable(
           name: c.name,
           normalizedName: normalizeName(c.name),
           icon: (await getBestIcon(c.name)) || 'Table',
-          displayName: c.name,
+          displayName: title(c.name),
           type: c.type,
           nullable: c.isNullable,
           hidden: false,

@@ -2,6 +2,8 @@
 
 import { getTableRecords, getTables } from '@/app/api/tables';
 import { ConnectionModal } from '@/components/connection-modal/connection-modal';
+import { ItemCardView } from '@/components/explorer/item-views/item-card-view';
+import { ItemListView } from '@/components/explorer/item-views/item-list-view';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useResizable } from '@/hooks/use-resizable';
@@ -51,12 +53,12 @@ export default function DataBrowserPage({
   });
 
   const tablesQuery = useQuery({
-    queryKey: ['tables', params.id],
+    queryKey: ['connections', params.id, 'tables'],
     queryFn: () => getTables(params.id),
   });
 
   const recordsQuery = useQuery({
-    queryKey: ['records', params.id, selectedTable, page],
+    queryKey: ['connections', params.id, 'records', selectedTable, page],
     queryFn: () =>
       selectedTable
         ? getTableRecords(params.id, selectedTable, { page, pageSize })
@@ -251,7 +253,7 @@ export default function DataBrowserPage({
               <div className="flex-1 overflow-y-auto">
                 {/* Grid View */}
                 {viewType === 'grid' && (
-                  <ItemGridView
+                  <GridView
                     table={currentTable}
                     items={recordsQuery.data?.records}
                   />
@@ -259,7 +261,7 @@ export default function DataBrowserPage({
 
                 {/* List View */}
                 {viewType === 'list' && (
-                  <ItemListView
+                  <ListView
                     table={currentTable}
                     items={recordsQuery.data?.records}
                   />
@@ -267,7 +269,7 @@ export default function DataBrowserPage({
 
                 {/* Table View */}
                 {viewType === 'table' && (
-                  <ItemTableView
+                  <TableView
                     table={currentTable}
                     items={recordsQuery.data?.records}
                   />
@@ -320,13 +322,7 @@ export default function DataBrowserPage({
   );
 }
 
-function ItemGridView({
-  table,
-  items,
-}: {
-  table: DatabaseTable;
-  items: any[];
-}) {
+function GridView({ table, items }: { table: DatabaseTable; items: any[] }) {
   const connectionModal = useDisclosure();
   const columns = useMemo(() => {
     return sort(
@@ -340,32 +336,18 @@ function ItemGridView({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
       {items.map((record: any) => (
-        <div
+        <ItemCardView
           key={record.id}
-          className="bg-white rounded-lg border p-4 cursor-pointer hover:border-gray-300 transition-colors"
-        >
-          <div className="flex items-start justify-between mb-3">
-            <div className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-sm">
-              <TableIcon className="w-3 h-3" />
-              {table.details.singularName}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={connectionModal.onOpen}
-            >
-              <MoreVertical className="w-4 h-4" />
-            </Button>
-          </div>
-          <div className="space-y-1">
-            {columns.map((column) => (
-              <div key={column.name}>
-                <div className="font-medium">{String(record[column.name])}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+          item={{
+            id: record.id,
+            icon: table.details.icon,
+            columns: columns.map((c) => ({
+              name: c.name,
+              value: String(record[c.name]),
+            })),
+          }}
+          onMenuClick={() => connectionModal.onOpen()}
+        />
       ))}
       {connectionModal.isOpen && (
         <ConnectionModal
@@ -373,19 +355,14 @@ function ItemGridView({
           onOpenChange={connectionModal.onOpenChange}
           connectionId={table.connectionId}
           initialTableName={table.name}
+          initialTablePage="card-view"
         />
       )}
     </div>
   );
 }
 
-function ItemListView({
-  table,
-  items,
-}: {
-  table: DatabaseTable;
-  items: any[];
-}) {
+function ListView({ table, items }: { table: DatabaseTable; items: any[] }) {
   const connectionModal = useDisclosure();
   const columns = useMemo(() => {
     return sort(
@@ -399,54 +376,33 @@ function ItemListView({
   return (
     <div className="space-y-2">
       {items.map((record: any) => (
-        <div
+        <ItemListView
           key={record.id}
-          className="bg-white rounded-lg border p-4 flex items-center gap-4 cursor-pointer hover:border-gray-300 transition-colors"
-        >
-          <div className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-sm">
-            <TableIcon className="w-3 h-3" />
-            {table.details.singularName}
-          </div>
-          <div className="flex-1 flex items-center gap-4">
-            {columns.map((column) => (
-              <div key={column.name} className="min-w-[120px]">
-                <div className="text-sm text-gray-500">
-                  {column.displayName}
-                </div>
-                <div className="font-medium truncate">
-                  {String(record[column.name])}
-                </div>
-              </div>
-            ))}
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 flex-none"
-            onClick={connectionModal.onOpen}
-          >
-            <MoreVertical className="w-4 h-4" />
-          </Button>
-        </div>
+          item={{
+            id: record.id,
+            icon: table.details.icon,
+            columns: columns.map((c) => ({
+              name: c.name,
+              value: String(record[c.name]),
+            })),
+          }}
+          onMenuClick={connectionModal.onOpen}
+        />
       ))}
       {connectionModal.isOpen && (
         <ConnectionModal
           isOpen={connectionModal.isOpen}
           onOpenChange={connectionModal.onOpenChange}
           connectionId={table.connectionId}
+          initialTableName={table.name}
+          initialTablePage="list-view"
         />
       )}
     </div>
   );
 }
 
-function ItemTableView({
-  table,
-  items,
-}: {
-  table: DatabaseTable;
-  items: any[];
-}) {
+function TableView({ table, items }: { table: DatabaseTable; items: any[] }) {
   const connectionModal = useDisclosure();
   const columns = useMemo(() => {
     return sort(Object.entries(table.details.columns), ([, c]) => c.order)

@@ -144,7 +144,7 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['connections', connectionId, 'tables', tableName],
+        queryKey: ['connections', connectionId, 'tables'],
       });
     },
     onError: (error) => {

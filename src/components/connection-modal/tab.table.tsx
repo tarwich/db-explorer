@@ -59,11 +59,14 @@ export interface TableTabProps {
   connectionId: string;
   tableName: string;
   setTab: (tab: 'connection') => void;
+  initialPage?: 'general' | 'inline-view' | 'card-view' | 'list-view';
 }
 
 export const TableTab = forwardRef<HTMLDivElement, TableTabProps>(
-  ({ connectionId, tableName, setTab }, ref) => {
-    const { page, setPage } = createTableTabContext();
+  ({ connectionId, tableName, setTab, initialPage = 'general' }, ref) => {
+    const [page, setPage] = useState<
+      'general' | 'inline-view' | 'card-view' | 'list-view'
+    >(initialPage);
 
     const connectionQuery = useQuery({
       queryKey: ['connections', connectionId],

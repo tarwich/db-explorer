@@ -22,11 +22,13 @@ export function ConnectionModal({
   onOpenChange,
   connectionId,
   initialTableName,
+  initialTablePage,
 }: {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   connectionId?: string;
   initialTableName?: string;
+  initialTablePage?: 'general' | 'inline-view' | 'card-view' | 'list-view';
 }) {
   const tablesQuery = useQuery({
     queryKey: ['tables', connectionId],
@@ -172,6 +174,7 @@ export function ConnectionModal({
                   connectionId={connectionId!}
                   tableName={table.name}
                   setTab={setTab}
+                  initialPage={initialTablePage}
                 />
               </TabsContent>
             ))}

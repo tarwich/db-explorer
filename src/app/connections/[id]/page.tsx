@@ -80,14 +80,6 @@ export default function DataBrowserPage({
     return fuse.search(tableFilter).map((result) => result.item);
   }, [tablesQuery.data, tableFilter, fuse]);
 
-  const displayColumns = useMemo(() => {
-    if (!currentTable) return [];
-    return sort(
-      Object.values(currentTable.details.columns),
-      (c) => c.order
-    ).filter((c) => !c.hidden);
-  }, [currentTable]);
-
   return (
     <div
       className={cn(
@@ -262,7 +254,6 @@ export default function DataBrowserPage({
                   <ItemGridView
                     table={currentTable}
                     items={recordsQuery.data?.records}
-                    columns={displayColumns}
                   />
                 )}
 
@@ -271,7 +262,6 @@ export default function DataBrowserPage({
                   <ItemListView
                     table={currentTable}
                     items={recordsQuery.data?.records}
-                    columns={displayColumns}
                   />
                 )}
 
@@ -280,7 +270,6 @@ export default function DataBrowserPage({
                   <ItemTableView
                     table={currentTable}
                     items={recordsQuery.data?.records}
-                    columns={displayColumns}
                   />
                 )}
               </div>
@@ -334,13 +323,20 @@ export default function DataBrowserPage({
 function ItemGridView({
   table,
   items,
-  columns,
 }: {
   table: DatabaseTable;
   items: any[];
-  columns: any[];
 }) {
   const connectionModal = useDisclosure();
+  const columns = useMemo(() => {
+    return sort(
+      Object.entries(table.details.cardView.columns),
+      ([, c]) => c.order
+    )
+      .filter(([, c]) => !c.hidden)
+      .map(([name]) => table.details.columns[name]);
+  }, [table]);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
       {items.map((record: any) => (
@@ -386,13 +382,19 @@ function ItemGridView({
 function ItemListView({
   table,
   items,
-  columns,
 }: {
   table: DatabaseTable;
   items: any[];
-  columns: any[];
 }) {
   const connectionModal = useDisclosure();
+  const columns = useMemo(() => {
+    return sort(
+      Object.entries(table.details.listView.columns),
+      ([, c]) => c.order
+    )
+      .filter(([, c]) => !c.hidden)
+      .map(([name]) => table.details.columns[name]);
+  }, [table]);
 
   return (
     <div className="space-y-2">
@@ -441,13 +443,16 @@ function ItemListView({
 function ItemTableView({
   table,
   items,
-  columns,
 }: {
   table: DatabaseTable;
   items: any[];
-  columns: any[];
 }) {
   const connectionModal = useDisclosure();
+  const columns = useMemo(() => {
+    return sort(Object.entries(table.details.columns), ([, c]) => c.order)
+      .filter(([, c]) => !c.hidden)
+      .map(([name]) => table.details.columns[name]);
+  }, [table]);
 
   return (
     <div className="border rounded-lg overflow-hidden">

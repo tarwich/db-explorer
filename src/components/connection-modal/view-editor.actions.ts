@@ -71,10 +71,28 @@ export async function updateColumn({
     },
   });
 
-  await db
-    .updateTable('tables')
-    .set({ details: storeJson(table.details) })
+  const stateDb = await getStateDb();
+  const existing = await stateDb
+    .selectFrom('tables')
+    .select('name')
     .where('connectionId', '=', connectionId)
     .where('name', '=', tableName)
-    .execute();
+    .executeTakeFirst();
+
+  if (existing) {
+    await stateDb
+      .updateTable('tables')
+      .set({ details: storeJson(table.details) })
+      .where('connectionId', '=', connectionId)
+      .where('name', '=', tableName)
+      .execute();
+  } else {
+    await stateDb
+      .insertInto('tables')
+      .values({
+        ...table,
+        details: storeJson(table.details),
+      })
+      .execute();
+  }
 }

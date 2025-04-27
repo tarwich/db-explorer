@@ -457,6 +457,7 @@ function TableView({ table, items }: { table: DatabaseTable; items: any[] }) {
           isOpen={connectionModal.isOpen}
           onOpenChange={connectionModal.onOpenChange}
           connectionId={table.connectionId}
+          initialTableName={table.name}
         />
       )}
     </div>

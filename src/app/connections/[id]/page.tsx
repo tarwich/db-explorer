@@ -89,7 +89,12 @@ export default function DataBrowserPage({
   }, [currentTable]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-row h-full overflow-hidden">
+    <div
+      className={cn(
+        'min-h-screen bg-gray-50 flex flex-row h-full overflow-hidden',
+        isResizing && 'select-none'
+      )}
+    >
       {/* Sidebar */}
       <div
         className="bg-white border-r flex flex-col h-screen flex-none"
@@ -158,7 +163,10 @@ export default function DataBrowserPage({
       <div className="relative">
         <div
           {...resizerProps}
-          className={cn(resizerProps.className, 'w-2 hover:bg-gray-200')}
+          className={cn(
+            resizerProps.className,
+            'w-2 cursor-col-resize hover:bg-gray-200'
+          )}
         />
       </div>
 

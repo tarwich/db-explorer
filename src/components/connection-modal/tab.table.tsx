@@ -6,7 +6,14 @@ import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { EyeIcon, EyeOffIcon, icons, PencilIcon } from 'lucide-react';
 import { sort } from 'radash';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  forwardRef,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useForm } from 'react-hook-form';
 import { ItemBadgeView } from '../explorer/item-views/item-badge-view';
 import { ItemCardView } from '../explorer/item-views/item-card-view';
@@ -48,80 +55,84 @@ const useTableTabContext = () => {
   return context;
 };
 
-export function TableTab({
-  connectionId,
-  tableName,
-  setTab,
-}: {
+export interface TableTabProps {
   connectionId: string;
   tableName: string;
   setTab: (tab: 'connection') => void;
-}) {
-  const { page, setPage } = createTableTabContext();
-
-  const connectionQuery = useQuery({
-    queryKey: ['connections', connectionId],
-    queryFn: () => getConnection(connectionId),
-  });
-
-  const tableQuery = useQuery({
-    queryKey: ['connections', connectionId, 'tables', tableName],
-    queryFn: () => getTable(connectionId, tableName),
-  });
-
-  return (
-    <TableTabContext.Provider value={{ page, setPage }}>
-      <div className="flex flex-col gap-3 h-full overflow-hidden">
-        <Breadcrumbs>
-          <Button variant="link" size="sm" onClick={() => setTab('connection')}>
-            {connectionQuery.data?.name}
-          </Button>
-          <ItemBadgeView
-            item={{
-              name: tableQuery.data?.details.pluralName || tableName,
-              icon: tableQuery.data?.details.icon || 'Table',
-              color: tableQuery.data?.details.color || 'green',
-              type: 'collection',
-            }}
-            className="cursor-pointer"
-            onClick={() => setPage('general')}
-          />
-          {page === 'inline-view' && <span>Inline View</span>}
-          {page === 'card-view' && <span>Card View</span>}
-          {page === 'list-view' && <span>List View</span>}
-        </Breadcrumbs>
-
-        {page === 'general' && (
-          <TableTabGeneralPage
-            connectionId={connectionId}
-            tableName={tableName}
-          />
-        )}
-        {page === 'inline-view' && (
-          <ViewEditor
-            type="inline"
-            connectionId={connectionId}
-            tableName={tableName}
-          />
-        )}
-        {page === 'card-view' && (
-          <ViewEditor
-            type="card"
-            connectionId={connectionId}
-            tableName={tableName}
-          />
-        )}
-        {page === 'list-view' && (
-          <ViewEditor
-            type="list"
-            connectionId={connectionId}
-            tableName={tableName}
-          />
-        )}
-      </div>
-    </TableTabContext.Provider>
-  );
 }
+
+export const TableTab = forwardRef<HTMLDivElement, TableTabProps>(
+  ({ connectionId, tableName, setTab }, ref) => {
+    const { page, setPage } = createTableTabContext();
+
+    const connectionQuery = useQuery({
+      queryKey: ['connections', connectionId],
+      queryFn: () => getConnection(connectionId),
+    });
+
+    const tableQuery = useQuery({
+      queryKey: ['connections', connectionId, 'tables', tableName],
+      queryFn: () => getTable(connectionId, tableName),
+    });
+
+    return (
+      <TableTabContext.Provider value={{ page, setPage }}>
+        <div ref={ref} className="flex flex-col gap-3 h-full overflow-hidden">
+          <Breadcrumbs>
+            <Button
+              variant="link"
+              size="sm"
+              onClick={() => setTab('connection')}
+            >
+              {connectionQuery.data?.name}
+            </Button>
+            <ItemBadgeView
+              item={{
+                name: tableQuery.data?.details.pluralName || tableName,
+                icon: tableQuery.data?.details.icon || 'Table',
+                color: tableQuery.data?.details.color || 'green',
+                type: 'collection',
+              }}
+              className="cursor-pointer"
+              onClick={() => setPage('general')}
+            />
+            {page === 'inline-view' && <span>Inline View</span>}
+            {page === 'card-view' && <span>Card View</span>}
+            {page === 'list-view' && <span>List View</span>}
+          </Breadcrumbs>
+
+          {page === 'general' && (
+            <TableTabGeneralPage
+              connectionId={connectionId}
+              tableName={tableName}
+            />
+          )}
+          {page === 'inline-view' && (
+            <ViewEditor
+              type="inline"
+              connectionId={connectionId}
+              tableName={tableName}
+            />
+          )}
+          {page === 'card-view' && (
+            <ViewEditor
+              type="card"
+              connectionId={connectionId}
+              tableName={tableName}
+            />
+          )}
+          {page === 'list-view' && (
+            <ViewEditor
+              type="list"
+              connectionId={connectionId}
+              tableName={tableName}
+            />
+          )}
+        </div>
+      </TableTabContext.Provider>
+    );
+  }
+);
 
 export function TableTabGeneralPage({
   connectionId,

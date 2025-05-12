@@ -330,7 +330,8 @@ function GridView({ table, items }: { table: DatabaseTable; items: any[] }) {
       ([, c]) => c.order
     )
       .filter(([, c]) => !c.hidden)
-      .map(([name]) => table.details.columns[name]);
+      .map(([name]) => table.details.columns[name])
+      .filter(Boolean);
   }, [table]);
 
   return (
@@ -370,7 +371,8 @@ function ListView({ table, items }: { table: DatabaseTable; items: any[] }) {
       ([, c]) => c.order
     )
       .filter(([, c]) => !c.hidden)
-      .map(([name]) => table.details.columns[name]);
+      .map(([name]) => table.details.columns[name])
+      .filter(Boolean);
   }, [table]);
 
   return (
@@ -407,7 +409,8 @@ function TableView({ table, items }: { table: DatabaseTable; items: any[] }) {
   const columns = useMemo(() => {
     return sort(Object.entries(table.details.columns), ([, c]) => c.order)
       .filter(([, c]) => !c.hidden)
-      .map(([name]) => table.details.columns[name]);
+      .map(([name]) => table.details.columns[name])
+      .filter(Boolean);
   }, [table]);
 
   return (

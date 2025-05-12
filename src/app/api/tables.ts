@@ -84,22 +84,17 @@ export async function getTable(
     dbColumns.map(
       async (c): Promise<DatabaseTable['details']['columns'][string]> => {
         const knownColumn = knownTable?.details.columns[c.name];
-        const formattedColumn = {
+        return {
           name: c.name,
           normalizedName: normalizeName(c.name),
-          icon: (await getBestIcon(c.name)) || 'Table',
-          displayName: title(c.name),
+          icon: knownColumn?.icon || (await getBestIcon(c.name)) || 'Table',
+          displayName: knownColumn?.displayName || title(c.name),
           type: c.type,
           nullable: c.isNullable,
-          hidden: false,
+          hidden: knownColumn?.hidden ?? false,
           order: knownColumn?.order ?? Infinity,
-        };
-        const hidden =
-          knownColumn?.hidden ?? shouldColumnBeHidden(formattedColumn);
-
-        return {
-          ...formattedColumn,
-          hidden,
+          enumOptions: knownColumn?.enumOptions,
+          foreignKey: knownColumn?.foreignKey,
         };
       }
     )

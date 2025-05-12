@@ -1,9 +1,10 @@
 'use client';
 
 import { getConnection } from '@/app/api/connections';
-import { getTable } from '@/app/api/tables';
+import { getTable, getTables, saveTable } from '@/app/api/tables';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { EyeIcon, EyeOffIcon, icons, PencilIcon } from 'lucide-react';
 import { sort } from 'radash';
 import {
@@ -37,7 +38,7 @@ interface TableFormValues {
 
 const createTableTabContext = () => {
   const [page, setPage] = useState<
-    'general' | 'inline-view' | 'card-view' | 'list-view'
+    'general' | 'inline-view' | 'card-view' | 'list-view' | 'column-edit'
   >('general');
 
   return { page, setPage };
@@ -59,14 +60,20 @@ export interface TableTabProps {
   connectionId: string;
   tableName: string;
   setTab: (tab: 'connection') => void;
-  initialPage?: 'general' | 'inline-view' | 'card-view' | 'list-view';
+  initialPage?:
+    | 'general'
+    | 'inline-view'
+    | 'card-view'
+    | 'list-view'
+    | 'column-edit';
 }
 
 export const TableTab = forwardRef<HTMLDivElement, TableTabProps>(
   ({ connectionId, tableName, setTab, initialPage = 'general' }, ref) => {
     const [page, setPage] = useState<
-      'general' | 'inline-view' | 'card-view' | 'list-view'
+      'general' | 'inline-view' | 'card-view' | 'list-view' | 'column-edit'
     >(initialPage);
+    const [editingColumn, setEditingColumn] = useState<string | null>(null);
 
     const connectionQuery = useQuery({
       queryKey: ['connections', connectionId],
@@ -102,12 +109,17 @@ export const TableTab = forwardRef<HTMLDivElement, TableTabProps>(
             {page === 'inline-view' && <span>Inline View</span>}
             {page === 'card-view' && <span>Card View</span>}
             {page === 'list-view' && <span>List View</span>}
+            {page === 'column-edit' && <span>Edit Column</span>}
           </Breadcrumbs>
 
           {page === 'general' && (
             <TableTabGeneralPage
               connectionId={connectionId}
               tableName={tableName}
+              onEditColumn={(colName) => {
+                setEditingColumn(colName);
+                setPage('column-edit');
+              }}
             />
           )}
           {page === 'inline-view' && (
@@ -131,6 +143,14 @@ export const TableTab = forwardRef<HTMLDivElement, TableTabProps>(
               tableName={tableName}
             />
           )}
+          {page === 'column-edit' && editingColumn && (
+            <TableTabColumnEditPage
+              connectionId={connectionId}
+              tableName={tableName}
+              columnName={editingColumn}
+              onBack={() => setPage('general')}
+            />
+          )}
         </div>
       </TableTabContext.Provider>
     );
@@ -140,9 +160,11 @@ export const TableTab = forwardRef<HTMLDivElement, TableTabProps>(
 export function TableTabGeneralPage({
   connectionId,
   tableName,
+  onEditColumn,
 }: {
   connectionId: string;
   tableName: string;
+  onEditColumn?: (colName: string) => void;
 }) {
   const { page, setPage } = useTableTabContext();
   const form = useForm<TableFormValues>({
@@ -263,6 +285,16 @@ export function TableTabGeneralPage({
                   <span className="font-mono text-xs text-neutral-700">
                     {column.type}
                   </span>
+                  {onEditColumn && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEditColumn(column.name)}
+                      type="button"
+                    >
+                      <PencilIcon className="size-4" />
+                    </Button>
+                  )}
                 </div>
               )
             )}
@@ -377,5 +409,171 @@ export function TableTabGeneralPage({
         </div>
       </form>
     </>
+  );
+}
+
+// --- Scaffold TableTabColumnEditPage ---
+
+function TableTabColumnEditPage({
+  connectionId,
+  tableName,
+  columnName,
+  onBack,
+}: {
+  connectionId: string;
+  tableName: string;
+  columnName: string;
+  onBack: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { data: tableData } = useQuery({
+    queryKey: ['connections', connectionId, 'tables', tableName],
+    queryFn: () => getTable(connectionId, tableName),
+  });
+  const { data: allTables } = useQuery({
+    queryKey: ['connections', connectionId, 'tables'],
+    queryFn: () => getTables(connectionId),
+  });
+
+  const column = tableData?.details.columns[columnName];
+  const [displayName, setDisplayName] = useState(column?.displayName || '');
+  const [icon, setIcon] = useState(column?.icon || 'Table');
+  const [isFK, setIsFK] = useState(!!column?.foreignKey);
+  const [fkTable, setFkTable] = useState(column?.foreignKey?.targetTable || '');
+  const [fkColumn, setFkColumn] = useState(
+    column?.foreignKey?.targetColumn || ''
+  );
+  const [saving, setSaving] = useState(false);
+
+  // Get columns for selected FK table
+  const fkTableColumns =
+    allTables?.find((t) => t.name === fkTable)?.details.columns || {};
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      if (!tableData) return;
+      const updatedTable = { ...tableData };
+      updatedTable.details.columns = { ...updatedTable.details.columns };
+      updatedTable.details.columns[columnName] = {
+        ...updatedTable.details.columns[columnName],
+        displayName,
+        icon,
+        foreignKey:
+          isFK && fkTable && fkColumn
+            ? { targetTable: fkTable, targetColumn: fkColumn, isGuessed: false }
+            : undefined,
+      };
+      await saveTable(updatedTable);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['connections', connectionId, 'tables'],
+      });
+      toast({ title: 'Column updated', variant: 'default' });
+      setSaving(false);
+      onBack();
+    },
+    onError: (err: any) => {
+      toast({
+        title: 'Failed to update column',
+        description: err.message,
+        variant: 'destructive',
+      });
+      setSaving(false);
+    },
+  });
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    mutation.mutate();
+  };
+
+  return (
+    <div className="flex flex-col gap-4 p-4 max-w-lg">
+      <div className="text-lg font-bold">Edit Column: {columnName}</div>
+      <form className="flex flex-col gap-4" onSubmit={handleSave}>
+        <div>
+          <label className="block text-sm font-medium mb-1">Display Name</label>
+          <Input
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Icon</label>
+          <IconPicker value={icon} onChange={setIcon} />
+        </div>
+        <div className="flex flex-col gap-1 border-t pt-4 mt-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={isFK}
+              onChange={(e) => setIsFK(e.target.checked)}
+              id="isFK"
+            />
+            <label htmlFor="isFK" className="text-sm font-medium">
+              Reference (Foreign Key)
+            </label>
+          </div>
+          <span className="text-xs text-muted-foreground">
+            This is for display purposes only. Mark this column as referencing
+            another table to show related records in the UI.
+          </span>
+          {isFK && (
+            <div className="flex flex-col gap-2 mt-2">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Reference Table
+                </label>
+                <select
+                  value={fkTable}
+                  onChange={(e) => {
+                    setFkTable(e.target.value);
+                    setFkColumn('');
+                  }}
+                  className="w-full border rounded px-2 py-1"
+                >
+                  <option value="">Select table...</option>
+                  {allTables?.map((t) => (
+                    <option key={t.name} value={t.name}>
+                      {t.details.pluralName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {fkTable && (
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Reference Column
+                  </label>
+                  <select
+                    value={fkColumn}
+                    onChange={(e) => setFkColumn(e.target.value)}
+                    className="w-full border rounded px-2 py-1"
+                  >
+                    <option value="">Select column...</option>
+                    {Object.values(fkTableColumns).map((col: any) => (
+                      <option key={col.name} value={col.name}>
+                        {col.displayName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <Button
+          type="submit"
+          variant="default"
+          className="mt-4"
+          disabled={saving}
+        >
+          {saving ? 'Saving...' : 'Save Changes'}
+        </Button>
+      </form>
+    </div>
   );
 }

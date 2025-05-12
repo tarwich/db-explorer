@@ -46,7 +46,7 @@ export function ItemCardView({
       {restColumns.map((c) => (
         <p
           key={c.name}
-          className="text-xs text-gray-500 text-ellipsis overflow-hidden w-32 sm:w-48 md:w-64"
+          className="text-xs text-gray-500 text-ellipsis overflow-hidden w-full truncate"
         >
           {c.value}
         </p>

@@ -1,7 +1,0 @@
-procs:
-  electron:
-    autostart: true
-    shell: npm rebuild && bunx electron .
-  dev:
-    autostart: true
-    shell: npm run dev

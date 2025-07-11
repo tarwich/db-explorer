@@ -24,27 +24,29 @@ export async function getTables(connectionId: string) {
 
   const knownTablesMap = objectify(knownTables, (k) => k.name);
 
-  const tables = await db
-    .selectFrom('information_schema.tables')
-    .where('table_schema', '=', 'public')
-    .selectAll()
-    .execute();
+  // Use plugin abstraction for table listing, pass DatabaseConnection
+  const connection = await loadConnection(connectionId);
+  if (!connection) {
+    throw new Error('Connection not found');
+  }
+  const dbPlugin = await getPlugin(connection);
+  const tables = await dbPlugin.listTables();
 
   const formattedTables = tables.map(
     (t): (typeof knownTablesMap)[keyof typeof knownTablesMap] => {
-      const knownTable = knownTablesMap[t.table_name];
+      const knownTable = knownTablesMap[t.name];
       const pluralName =
-        knownTable?.details.pluralName || title(plural(t.table_name));
+        knownTable?.details.pluralName || title(plural(t.name));
 
       return {
         connectionId,
-        name: t.table_name,
-        schema: t.table_schema,
+        name: t.name,
+        schema: t.schema,
         details: {
           normalizedName:
-            knownTable?.details.normalizedName || normalizeName(t.table_name),
+            knownTable?.details.normalizedName || normalizeName(t.name),
           singularName:
-            knownTable?.details.singularName || title(singular(t.table_name)),
+            knownTable?.details.singularName || title(singular(t.name)),
           pluralName,
           icon: knownTable?.details.icon || getBestIcon(pluralName) || 'Table',
           color: knownTable?.details.color || 'green',

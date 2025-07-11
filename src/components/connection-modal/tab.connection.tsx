@@ -34,8 +34,12 @@ type FormValues = {
 
 export const ConnectionTab = forwardRef<
   HTMLFormElement,
-  { connectionId?: string; onDelete?: () => void }
->(({ connectionId, onDelete }, ref) => {
+  { 
+    connectionId?: string; 
+    onDelete?: () => void;
+    onConnectionIdChange?: (connectionId: string) => void;
+  }
+>(({ connectionId, onDelete, onConnectionIdChange }, ref) => {
   const queryClient = useQueryClient();
   const connectionQuery = useQuery({
     queryKey: ['connection', connectionId],
@@ -61,11 +65,17 @@ export const ConnectionTab = forwardRef<
       // You could also trigger the global error handler manually if needed:
       browserLogger.error('Connection save failed:', {error});
     },
-    onSuccess: () => {
+    onSuccess: (savedConnectionId) => {
       toast({
         title: 'Success',
         description: 'Connection settings saved successfully',
       });
+      // Invalidate connections query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      // Update the connection ID if this was a new connection
+      if (!connectionId && savedConnectionId && onConnectionIdChange) {
+        onConnectionIdChange(savedConnectionId);
+      }
     },
   });
 

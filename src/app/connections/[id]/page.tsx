@@ -3,6 +3,7 @@
 import { getTableRecords, getTables } from '@/app/api/tables';
 import { ConnectionModal } from '@/components/connection-modal/connection-modal';
 import { ItemCardView } from '@/components/explorer/item-views/item-card-view';
+import { ItemIcon } from '@/components/explorer/item-views/item-icon';
 import { ItemListView } from '@/components/explorer/item-views/item-list-view';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -342,10 +343,25 @@ function GridView({ table, items }: { table: DatabaseTable; items: any[] }) {
           item={{
             id: record.id,
             icon: table.details.icon,
-            columns: columns.map((c) => ({
-              name: c.name,
-              value: String(record[c.name]),
-            })),
+            columns: columns.map((c) => {
+              const val = record[c.name];
+              if (
+                val &&
+                typeof val === 'object' &&
+                'value' in val &&
+                'icon' in val
+              ) {
+                return {
+                  name: c.name,
+                  value: val.value,
+                  icon: val.icon,
+                };
+              }
+              return {
+                name: c.name,
+                value: String(val),
+              };
+            }),
           }}
           onMenuClick={() => connectionModal.onOpen()}
         />
@@ -383,10 +399,25 @@ function ListView({ table, items }: { table: DatabaseTable; items: any[] }) {
           item={{
             id: record.id,
             icon: table.details.icon,
-            columns: columns.map((c) => ({
-              name: c.name,
-              value: String(record[c.name]),
-            })),
+            columns: columns.map((c) => {
+              const val = record[c.name];
+              if (
+                val &&
+                typeof val === 'object' &&
+                'value' in val &&
+                'icon' in val
+              ) {
+                return {
+                  name: c.name,
+                  value: val.value,
+                  icon: val.icon,
+                };
+              }
+              return {
+                name: c.name,
+                value: String(val),
+              };
+            }),
           }}
           onMenuClick={connectionModal.onOpen}
         />
@@ -436,11 +467,30 @@ function TableView({ table, items }: { table: DatabaseTable; items: any[] }) {
               className="cursor-pointer hover:bg-gray-50"
               onClick={connectionModal.onOpen}
             >
-              {columns.map((column) => (
-                <td key={column.name} className="px-4 py-2 text-sm">
-                  {String(record[column.name])}
-                </td>
-              ))}
+              {columns.map((column) => {
+                const val = record[column.name];
+                if (
+                  val &&
+                  typeof val === 'object' &&
+                  'value' in val &&
+                  'icon' in val
+                ) {
+                  return (
+                    <td
+                      key={column.name}
+                      className="px-4 py-2 text-sm flex items-center gap-1"
+                    >
+                      <ItemIcon item={{ icon: val.icon }} />
+                      {val.value}
+                    </td>
+                  );
+                }
+                return (
+                  <td key={column.name} className="px-4 py-2 text-sm">
+                    {String(val)}
+                  </td>
+                );
+              })}
               <td className="px-2 py-2">
                 <Button
                   variant="ghost"

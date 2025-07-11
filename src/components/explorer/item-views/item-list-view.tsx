@@ -10,7 +10,7 @@ export function ItemListView({
   item: {
     id: string;
     icon: TIconName;
-    columns: { name: string; value: string }[];
+    columns: { name: string; value: string; icon?: string }[];
   };
   onMenuClick?: () => void;
 }) {
@@ -45,7 +45,10 @@ export function ItemListView({
             )}
           >
             <div className="text-xs text-gray-500">{column.name}</div>
-            <div className="text-sm font-medium truncate">{column.value}</div>
+            <div className="text-sm font-medium truncate flex items-center gap-1">
+              {column.icon && <ItemIcon item={{ icon: column.icon }} />}
+              {column.value}
+            </div>
           </div>
         ))}
       </div>

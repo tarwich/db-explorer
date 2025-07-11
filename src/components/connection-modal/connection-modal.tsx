@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { useQuery } from '@tanstack/react-query';
 import { PlugIcon, SettingsIcon, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ItemInlineView } from '../explorer/item-views/item-inline-view';
 import { Button } from '../ui/button';
 import {
@@ -20,7 +20,7 @@ import { TableTab } from './tab.table';
 export function ConnectionModal({
   isOpen,
   onOpenChange,
-  connectionId,
+  connectionId: initialConnectionId,
   initialTableName,
   initialTablePage,
 }: {
@@ -30,6 +30,13 @@ export function ConnectionModal({
   initialTableName?: string;
   initialTablePage?: 'general' | 'inline-view' | 'card-view' | 'list-view';
 }) {
+  const [connectionId, setConnectionId] = useState(initialConnectionId);
+  
+  // Update connectionId when the prop changes
+  useEffect(() => {
+    setConnectionId(initialConnectionId);
+  }, [initialConnectionId]);
+
   const tablesQuery = useQuery({
     queryKey: ['tables', connectionId],
     queryFn: () => getTables(connectionId ?? ''),
@@ -168,6 +175,7 @@ export function ConnectionModal({
               <ConnectionTab
                 connectionId={connectionId}
                 onDelete={() => onOpenChange(false)}
+                onConnectionIdChange={setConnectionId}
               />
             </TabsContent>
 

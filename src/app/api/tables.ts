@@ -207,8 +207,64 @@ export async function getTableRecords(
     .select((eb) => eb.fn.countAll().as('count'))
     .execute();
 
+  // --- FK display value resolution ---
+  // 1. Find all columns with a foreignKey
+  const fkColumns = Object.values(table.details.columns).filter(
+    (col) => col.foreignKey
+  );
+
+  // 2. For each FK column, collect all unique FK values in this page
+  const fkValueMap: Record<string, Set<any>> = {};
+  for (const col of fkColumns) {
+    fkValueMap[col.name] = new Set(
+      records.map((r) => r[col.name]).filter((v) => v != null)
+    );
+  }
+
+  // 3. For each FK column, batch fetch related records
+  const fkDisplayMap: Record<string, Record<any, string>> = {};
+  for (const col of fkColumns) {
+    const fk = col.foreignKey!;
+    const targetTable = await getTable(connectionId, fk.targetTable);
+    const displayColumns =
+      require('@/utils/display-columns').determineDisplayColumns(targetTable);
+    const values = Array.from(fkValueMap[col.name]);
+    if (values.length === 0) {
+      fkDisplayMap[col.name] = {};
+      continue;
+    }
+    // Fetch related records
+    const relatedRecords = await db
+      .selectFrom(fk.targetTable)
+      .select([...displayColumns, fk.targetColumn])
+      .where(fk.targetColumn, 'in', values)
+      .execute();
+    // Map FK value to display value (join display columns with space)
+    fkDisplayMap[col.name] = Object.fromEntries(
+      relatedRecords.map((r: any) => [
+        r[fk.targetColumn],
+        displayColumns
+          .map((colName: string) => r[colName])
+          .filter(Boolean)
+          .join(' '),
+      ])
+    );
+  }
+
+  // 4. Replace FK values in records with display value
+  const recordsWithDisplay = records.map((record) => {
+    const newRecord = { ...record };
+    for (const col of fkColumns) {
+      const val = record[col.name];
+      if (val != null && fkDisplayMap[col.name][val] !== undefined) {
+        newRecord[col.name] = fkDisplayMap[col.name][val];
+      }
+    }
+    return newRecord;
+  });
+
   return {
-    records,
+    records: recordsWithDisplay,
     pagination: {
       page,
       pageSize,

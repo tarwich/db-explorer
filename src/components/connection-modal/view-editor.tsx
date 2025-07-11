@@ -1,5 +1,6 @@
 import { getTable } from '@/app/api/tables';
 import { useToast } from '@/hooks/use-toast';
+import browserLogger from '@/lib/browser-logger';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -148,6 +149,12 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
       });
     },
     onError: (error) => {
+      browserLogger.error('Failed to update column', {
+        connectionId,
+        tableName,
+        columnName: name,
+        error: error.message || error,
+      });
       toast({
         title: 'Error updating column',
         variant: 'destructive',

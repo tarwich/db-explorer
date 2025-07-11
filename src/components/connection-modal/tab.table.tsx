@@ -3,6 +3,7 @@
 import { getConnection } from '@/app/api/connections';
 import { getTable, getTables, saveTable } from '@/app/api/tables';
 import { useToast } from '@/hooks/use-toast';
+import browserLogger from '@/lib/browser-logger';
 import { cn } from '@/lib/utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { EyeIcon, EyeOffIcon, icons, PencilIcon } from 'lucide-react';
@@ -475,6 +476,12 @@ function TableTabColumnEditPage({
       onBack();
     },
     onError: (err: any) => {
+      browserLogger.error('Failed to update column', {
+        connectionId,
+        tableName,
+        columnName,
+        error: err.message || err,
+      });
       toast({
         title: 'Failed to update column',
         description: err.message,

@@ -1,5 +1,40 @@
-import { inspect } from "util";
-
+// Helper function to safely serialize objects for logging
+const safeSerialize = (obj: any): any => {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  
+  if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
+    return obj;
+  }
+  
+  if (obj instanceof Error) {
+    return {
+      name: obj.name,
+      message: obj.message,
+      stack: obj.stack,
+    };
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(item => safeSerialize(item));
+  }
+  
+  if (typeof obj === 'object') {
+    const serialized: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      try {
+        serialized[key] = safeSerialize(value);
+      } catch (error) {
+        serialized[key] = `[Serialization Error: ${error instanceof Error ? error.message : 'Unknown error'}]`;
+      }
+    }
+    return serialized;
+  }
+  
+  // For functions and other non-serializable types
+  return `[${typeof obj}]`;
+};
 
 // Simple browser logger that sends logs to the server
 const browserLogger = {
@@ -15,7 +50,7 @@ const browserLogger = {
         body: JSON.stringify({
           level: 'error',
           message,
-          meta: inspect(meta, { depth: 7, colors: false }),
+          meta: safeSerialize(meta),
           timestamp: new Date().toISOString(),
         }),
       });
@@ -36,7 +71,7 @@ const browserLogger = {
         body: JSON.stringify({
           level: 'warn',
           message,
-          meta,
+          meta: safeSerialize(meta),
           timestamp: new Date().toISOString(),
         }),
       });
@@ -57,7 +92,7 @@ const browserLogger = {
         body: JSON.stringify({
           level: 'info',
           message,
-          meta,
+          meta: safeSerialize(meta),
           timestamp: new Date().toISOString(),
         }),
       });

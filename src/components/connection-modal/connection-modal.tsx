@@ -2,7 +2,7 @@ import { getTables } from '@/app/api/tables';
 import { cn } from '@/lib/utils';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { useQuery } from '@tanstack/react-query';
-import { PlugIcon, SettingsIcon, X } from 'lucide-react';
+import { RotateCw, SettingsIcon, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { ItemInlineView } from '../explorer/item-views/item-inline-view';
 import { Button } from '../ui/button';
@@ -98,11 +98,16 @@ export function ConnectionModal({
                   />
                 </TabsTrigger>
 
+
                 {!!connectionId && (
                   <>
-                    <Button variant="outline" size="sm">
-                      <PlugIcon className="size-4" />
-                      Connect
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => tablesQuery.refetch()}
+                    >
+                      <RotateCw className="size-4" />
+                      Refresh
                     </Button>
 
                     {/* Tables */}

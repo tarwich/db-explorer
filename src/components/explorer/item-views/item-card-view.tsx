@@ -10,7 +10,7 @@ export function ItemCardView({
   item: {
     id: string;
     icon: TIconName;
-    columns: { name: string; value: string }[];
+    columns: { name: string; value: string; icon?: string }[];
   };
   onMenuClick?: () => void;
 }) {
@@ -46,8 +46,9 @@ export function ItemCardView({
       {restColumns.map((c) => (
         <p
           key={c.name}
-          className="text-xs text-gray-500 text-ellipsis overflow-hidden w-full truncate"
+          className="text-xs text-gray-500 text-ellipsis overflow-hidden w-full truncate flex items-center gap-1"
         >
+          {c.icon && <ItemIcon item={{ icon: c.icon }} />}
           {c.value}
         </p>
       ))}

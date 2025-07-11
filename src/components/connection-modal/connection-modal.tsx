@@ -165,7 +165,10 @@ export function ConnectionModal({
             )}
           >
             <TabsContent value="connection" asChild>
-              <ConnectionTab connectionId={connectionId} />
+              <ConnectionTab
+                connectionId={connectionId}
+                onDelete={() => onOpenChange(false)}
+              />
             </TabsContent>
 
             {tablesQuery.data?.map((table) => (

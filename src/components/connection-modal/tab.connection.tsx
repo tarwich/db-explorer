@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '../ui/select';
 import { loadConnection, saveConnection } from './connection-modal.actions';
+import { deleteConnection } from './delete-connection.action';
 
 type ConnectionType = 'postgres' | 'sqlite';
 
@@ -33,8 +34,8 @@ type FormValues = {
 
 export const ConnectionTab = forwardRef<
   HTMLFormElement,
-  { connectionId?: string }
->(({ connectionId }, ref) => {
+  { connectionId?: string; onDelete?: () => void }
+>(({ connectionId, onDelete }, ref) => {
   const connectionQuery = useQuery({
     queryKey: ['connection', connectionId],
     queryFn: () => loadConnection(connectionId ?? ''),
@@ -60,6 +61,24 @@ export const ConnectionTab = forwardRef<
         title: 'Success',
         description: 'Connection settings saved successfully',
       });
+    },
+  });
+
+  const deleteConnectionMutation = useMutation({
+    mutationFn: () => deleteConnection(connectionId ?? ''),
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete connection',
+        variant: 'destructive',
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Success',
+        description: 'Connection deleted successfully',
+      });
+      onDelete?.();
     },
   });
 
@@ -163,6 +182,16 @@ export const ConnectionTab = forwardRef<
 
         <div className="flex flex-row gap-4 justify-end">
           <Button type="submit">Save</Button>
+          {connectionId && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => deleteConnectionMutation.mutate()}
+              disabled={deleteConnectionMutation.status === 'pending'}
+            >
+              Delete
+            </Button>
+          )}
         </div>
       </form>
     </FormProvider>

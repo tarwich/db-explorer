@@ -66,6 +66,8 @@ export const ConnectionTab = forwardRef<
         title: 'Success',
         description: 'Connection settings saved successfully',
       });
+      // Invalidate connections query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['connections'] });
     },
   });
 

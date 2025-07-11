@@ -222,7 +222,10 @@ export async function getTableRecords(
   }
 
   // 3. For each FK column, batch fetch related records
-  const fkDisplayMap: Record<string, Record<any, string>> = {};
+  const fkDisplayMap: Record<
+    string,
+    Record<any, { displayValue: string; icon: string }>
+  > = {};
   for (const col of fkColumns) {
     const fk = col.foreignKey!;
     const targetTable = await getTable(connectionId, fk.targetTable);
@@ -245,25 +248,42 @@ export async function getTableRecords(
       .select([...displayColumns, fk.targetColumn])
       .where(fk.targetColumn, 'in', values)
       .execute();
-    // Map FK value to display value (join display columns with space)
+    // Map FK value to display value and icon
     fkDisplayMap[col.name] = Object.fromEntries(
       relatedRecords.map((r: any) => [
         r[fk.targetColumn],
-        displayColumns
-          .map((colName: string) => r[colName])
-          .filter(Boolean)
-          .join(' '),
+        {
+          displayValue: displayColumns
+            .map((colName: string) => r[colName])
+            .filter(Boolean)
+            .join(' '),
+          icon: targetTable.details.icon,
+        },
       ])
     );
   }
 
-  // 4. Replace FK values in records with display value
+  // 4. Replace FK values in records with display value and icon
   const recordsWithDisplay = records.map((record) => {
-    const newRecord = { ...record };
+    const newRecord: Record<string, any> = { ...record };
     for (const col of fkColumns) {
       const val = record[col.name];
       if (val != null && fkDisplayMap[col.name][val] !== undefined) {
-        newRecord[col.name] = fkDisplayMap[col.name][val];
+        // Get the related table's icon
+        const fk = col.foreignKey!;
+        const targetTable = fk.targetTable;
+        // Find the icon from the already-fetched table (from previous getTable call)
+        // (We could optimize by caching, but for now, fetch again)
+        newRecord[col.name] = {
+          value: fkDisplayMap[col.name][val].displayValue,
+          icon: fkDisplayMap[col.name][val].icon,
+        };
+      }
+    }
+    // For non-FK fields, keep as is
+    for (const colName in newRecord) {
+      if (!fkColumns.find((c) => c.name === colName)) {
+        newRecord[colName] = record[colName];
       }
     }
     return newRecord;

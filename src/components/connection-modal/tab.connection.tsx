@@ -107,13 +107,16 @@ export const ConnectionTab = forwardRef<
     defaultValues: {
       type: connectionQuery.data?.type ?? 'postgres',
       name: connectionQuery.data?.name ?? '',
-      details: {
-        host: 'localhost',
-        port: 5432,
-        database: '',
-        username: '',
-        password: '',
-      },
+      details:
+        connectionQuery.data?.type === 'sqlite'
+          ? { path: (connectionQuery.data as any)?.details?.path ?? '' }
+          : {
+              host: 'localhost',
+              port: 5432,
+              database: '',
+              username: '',
+              password: '',
+            },
     },
   });
 
@@ -132,21 +135,40 @@ export const ConnectionTab = forwardRef<
         },
       });
     } else if (connectionQuery.data && !form.formState.isDirty) {
-      form.reset(connectionQuery.data);
+      // Ensure sqlite connections always have a path field
+      if (connectionQuery.data.type === 'sqlite') {
+        form.reset({
+          ...connectionQuery.data,
+          details: {
+            path: (connectionQuery.data.details as any)?.path ?? '',
+          },
+        });
+      } else {
+        form.reset(connectionQuery.data);
+      }
     }
   }, [connectionQuery.data, form, connectionId]);
 
   const onSubmit = form.handleSubmit((data) => {
-    saveConnectionMutation.mutate({
-      ...data,
-      details: {
-        host: data.details.host ?? '',
-        port: data.details.port ?? 5432,
-        database: data.details.database ?? '',
-        username: data.details.username ?? '',
-        password: data.details.password ?? '',
-      },
-    });
+    if (data.type === 'sqlite') {
+      saveConnectionMutation.mutate({
+        ...data,
+        details: {
+          path: data.details.path ?? '',
+        },
+      });
+    } else {
+      saveConnectionMutation.mutate({
+        ...data,
+        details: {
+          host: data.details.host ?? '',
+          port: data.details.port ?? 5432,
+          database: data.details.database ?? '',
+          username: data.details.username ?? '',
+          password: data.details.password ?? '',
+        },
+      });
+    }
   });
 
   const connectionType = form.watch('type');

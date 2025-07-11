@@ -1,8 +1,8 @@
-'use server';
+"use server";
 
-import { getStateDb } from '@/db/state-db';
-import { StateDatabase } from '@/types/connections';
-import { randomUUID } from 'node:crypto';
+import { getStateDb } from "@/db/state-db";
+import { StateDatabase } from "@/types/connections";
+import { randomUUID } from "node:crypto";
 
 export async function loadConnection(connectionId: string) {
   if (!connectionId) {
@@ -11,8 +11,8 @@ export async function loadConnection(connectionId: string) {
 
   const stateDb = await getStateDb();
   const connection = await stateDb
-    .selectFrom('connections')
-    .where('id', '=', connectionId)
+    .selectFrom("connections")
+    .where("id", "=", connectionId)
     .selectAll()
     .executeTakeFirst();
 
@@ -21,7 +21,7 @@ export async function loadConnection(connectionId: string) {
 
 export async function saveConnection(
   connectionId: string | undefined,
-  connection: StateDatabase['connections']
+  connection: StateDatabase["connections"]
 ) {
   const stateDb = await getStateDb();
 

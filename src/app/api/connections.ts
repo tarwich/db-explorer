@@ -10,6 +10,7 @@ import SqliteDatabase from 'better-sqlite3';
 import { randomUUID } from 'crypto';
 import { Kysely, PostgresDialect, sql, SqliteDialect } from 'kysely';
 import { Pool } from 'pg';
+import logger from '../../lib/logger';
 
 export async function getConnections() {
   const db = await getStateDb();
@@ -55,7 +56,7 @@ export async function saveConnection(connection: Partial<DatabaseConnection>) {
         .execute();
     }
   } catch (error) {
-    console.error('Failed to save connection:', error);
+    logger.error('Failed to save connection:', error);
     throw error;
   }
 }
@@ -114,7 +115,7 @@ export async function testConnection(connection: DatabaseConnection) {
     await sql`SELECT 1`.execute(db);
     return true;
   } catch (error) {
-    console.error(error);
+    logger.error('Failed to test connection:', error);
     return false;
   }
 }
@@ -133,6 +134,7 @@ export async function openConnection(
   const connection = await getConnection(connectionId);
 
   if (!connection) {
+    logger.error('Connection not found', { connectionId });
     throw new Error('Connection not found');
   }
 
@@ -170,6 +172,7 @@ export async function openConnection(
       });
     }
 
+    logger.error('Invalid connection type', { connection });
     throw new Error('Invalid connection type');
   })();
 

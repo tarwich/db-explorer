@@ -5,6 +5,8 @@ import { inspect } from "util";
 const browserLogger = {
   error: async (message: string, meta?: any) => {
     try {
+      console.error(message, meta);
+      
       await fetch('/api/logs', {
         method: 'POST',
         headers: {
@@ -24,6 +26,8 @@ const browserLogger = {
   
   warn: async (message: string, meta?: any) => {
     try {
+      console.warn(message, meta);
+      
       await fetch('/api/logs', {
         method: 'POST',
         headers: {
@@ -41,7 +45,9 @@ const browserLogger = {
     }
   },
   
-  info: async (message: string, meta?: any) => {
+  info: async (message: string, meta?: any) => {  
+    console.info(message, meta);
+    
     try {
       await fetch('/api/logs', {
         method: 'POST',

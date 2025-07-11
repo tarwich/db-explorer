@@ -1,4 +1,5 @@
 import { toast } from '@/hooks/use-toast';
+import browserLogger from '@/lib/browser-logger';
 import { PopoverClose } from '@radix-ui/react-popover';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
@@ -91,6 +92,11 @@ export default function RecordEditorSidebar({
       onClose();
     },
     onError: () => {
+      browserLogger.error('Failed to delete record', {
+        connectionId,
+        tableName,
+        pk,
+      });
       toast({
         title: 'Failed to delete record',
         variant: 'destructive',

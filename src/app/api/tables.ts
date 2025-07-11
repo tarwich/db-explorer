@@ -38,6 +38,11 @@ export async function getTables(connectionId: string) {
       const pluralName =
         knownTable?.details.pluralName || title(plural(t.name));
 
+      // Always provide columns object for each view
+      const inlineView = knownTable?.details.inlineView || {};
+      const cardView = knownTable?.details.cardView || {};
+      const listView = knownTable?.details.listView || {};
+
       return {
         connectionId,
         name: t.name,
@@ -52,9 +57,18 @@ export async function getTables(connectionId: string) {
           color: knownTable?.details.color || 'green',
           pk: knownTable?.details.pk || [],
           columns: knownTable?.details.columns || [],
-          inlineView: knownTable?.details.inlineView || {},
-          cardView: knownTable?.details.cardView || {},
-          listView: knownTable?.details.listView || {},
+          inlineView: {
+            ...inlineView,
+            columns: inlineView.columns || {},
+          },
+          cardView: {
+            ...cardView,
+            columns: cardView.columns || {},
+          },
+          listView: {
+            ...listView,
+            columns: listView.columns || {},
+          },
         },
       };
     }

@@ -10,6 +10,7 @@ import { getBestIcon } from '@/utils/best-icon';
 import { normalizeName } from '@/utils/normalize-name';
 import { plural, singular } from 'pluralize';
 import { alphabetical, objectify, sort, title } from 'radash';
+import logger from '../../lib/logger';
 
 export async function getTables(connectionId: string) {
   const stateDb = await getStateDb();
@@ -64,96 +65,104 @@ export async function getTable(
   connectionId: string,
   name: string
 ): Promise<DatabaseTable> {
-  const db = await loadConnection(connectionId);
-  const stateDb = await getStateDb();
+  try {
+    const db = await loadConnection(connectionId);
+    const stateDb = await getStateDb();
 
-  if (!db) {
-    throw new Error('Connection not found');
-  }
-
-  const knownTable = await stateDb
-    .selectFrom('tables')
-    .selectAll()
-    .where('connectionId', '=', connectionId)
-    .where('name', '=', name)
-    .executeTakeFirst();
-
-  const dbPlugin = await getPlugin(db);
-  const dbColumns = await dbPlugin.describeTable(name);
-  const formattedColumns = await Promise.all(
-    dbColumns.map(
-      async (c): Promise<DatabaseTable['details']['columns'][string]> => {
-        const knownColumn = knownTable?.details.columns[c.name];
-        return {
-          name: c.name,
-          normalizedName: normalizeName(c.name),
-          icon: knownColumn?.icon || (await getBestIcon(c.name)) || 'Table',
-          displayName: knownColumn?.displayName || title(c.name),
-          type: c.type,
-          nullable: c.isNullable,
-          hidden: knownColumn?.hidden ?? false,
-          order: knownColumn?.order ?? Infinity,
-          enumOptions: knownColumn?.enumOptions,
-          foreignKey: knownColumn?.foreignKey,
-        };
-      }
-    )
-  );
-  sort(formattedColumns, (c) => c.order).forEach((c, i) => {
-    c.order = i;
-  });
-
-  const columns = objectify(formattedColumns, (c) => c.name);
-
-  const updateViewColumns = (columns?: LiteColumnDictionary) => {
-    const result: LiteColumnDictionary = {};
-
-    for (const formattedColumn of formattedColumns) {
-      const column = columns?.[formattedColumn.name];
-
-      result[formattedColumn.name] = {
-        ...column,
-        order: column?.order ?? formattedColumn.order ?? Infinity,
-        hidden: column?.hidden ?? formattedColumn.hidden ?? false,
-      };
+    if (!db) {
+      logger.error('Connection not found', { connectionId });
+      throw new Error('Connection not found');
     }
 
-    sort(Object.values(result), (c) => c.order).forEach((c, i) => {
+    const knownTable = await stateDb
+      .selectFrom('tables')
+      .selectAll()
+      .where('connectionId', '=', connectionId)
+      .where('name', '=', name)
+      .executeTakeFirst();
+
+    const dbPlugin = await getPlugin(db);
+    const dbColumns = await dbPlugin.describeTable(name);
+    const formattedColumns = await Promise.all(
+      dbColumns.map(
+        async (c): Promise<DatabaseTable['details']['columns'][string]> => {
+          const knownColumn = knownTable?.details.columns[c.name];
+          return {
+            name: c.name,
+            normalizedName: normalizeName(c.name),
+            icon: knownColumn?.icon || (await getBestIcon(c.name)) || 'Table',
+            displayName: knownColumn?.displayName || title(c.name),
+            type: c.type,
+            nullable: c.isNullable,
+            hidden: knownColumn?.hidden ?? false,
+            order: knownColumn?.order ?? Infinity,
+            enumOptions: knownColumn?.enumOptions,
+            foreignKey: knownColumn?.foreignKey,
+          };
+        }
+      )
+    );
+    sort(formattedColumns, (c) => c.order).forEach((c, i) => {
       c.order = i;
     });
 
-    return result;
-  };
+    const columns = objectify(formattedColumns, (c) => c.name);
 
-  const formattedTable: DatabaseTable = {
-    connectionId,
-    name,
-    schema: 'public',
-    details: {
-      normalizedName: normalizeName(name),
-      singularName: knownTable?.details.singularName || title(singular(name)),
-      pluralName: knownTable?.details.pluralName || title(plural(name)),
-      color: knownTable?.details.color || 'green',
-      icon:
-        (knownTable?.details.icon as TIconName) || getBestIcon(name) || 'Table',
-      pk: knownTable?.details.pk || [],
-      columns,
-      inlineView: {
-        ...knownTable?.details.inlineView,
-        columns: updateViewColumns(knownTable?.details.inlineView?.columns),
-      },
-      cardView: {
-        ...knownTable?.details.cardView,
-        columns: updateViewColumns(knownTable?.details.cardView?.columns),
-      },
-      listView: {
-        ...knownTable?.details.listView,
-        columns: updateViewColumns(knownTable?.details.listView?.columns),
-      },
-    },
-  };
+    const updateViewColumns = (columns?: LiteColumnDictionary) => {
+      const result: LiteColumnDictionary = {};
 
-  return formattedTable;
+      for (const formattedColumn of formattedColumns) {
+        const column = columns?.[formattedColumn.name];
+
+        result[formattedColumn.name] = {
+          ...column,
+          order: column?.order ?? formattedColumn.order ?? Infinity,
+          hidden: column?.hidden ?? formattedColumn.hidden ?? false,
+        };
+      }
+
+      sort(Object.values(result), (c) => c.order).forEach((c, i) => {
+        c.order = i;
+      });
+
+      return result;
+    };
+
+    const formattedTable: DatabaseTable = {
+      connectionId,
+      name,
+      schema: 'public',
+      details: {
+        normalizedName: normalizeName(name),
+        singularName: knownTable?.details.singularName || title(singular(name)),
+        pluralName: knownTable?.details.pluralName || title(plural(name)),
+        color: knownTable?.details.color || 'green',
+        icon:
+          (knownTable?.details.icon as TIconName) ||
+          getBestIcon(name) ||
+          'Table',
+        pk: knownTable?.details.pk || [],
+        columns,
+        inlineView: {
+          ...knownTable?.details.inlineView,
+          columns: updateViewColumns(knownTable?.details.inlineView?.columns),
+        },
+        cardView: {
+          ...knownTable?.details.cardView,
+          columns: updateViewColumns(knownTable?.details.cardView?.columns),
+        },
+        listView: {
+          ...knownTable?.details.listView,
+          columns: updateViewColumns(knownTable?.details.listView?.columns),
+        },
+      },
+    };
+
+    return formattedTable;
+  } catch (error) {
+    logger.error('Failed to get table:', error);
+    throw error;
+  }
 }
 
 function shouldColumnBeHidden(

@@ -64,6 +64,8 @@
     "tailwind-merge": "^3.1.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
+    "winston": "^3.17.0",
+    "winston-browser": "^1.0.0",
     "wordnet": "^2.0.0",
     "wordpos": "^2.1.0",
     "zod": "^3.24.2",

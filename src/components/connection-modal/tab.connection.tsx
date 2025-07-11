@@ -1,4 +1,5 @@
 import { toast } from '@/hooks/use-toast';
+import browserLogger from '@/lib/browser-logger';
 import { DatabaseConnection, SslMode } from '@/types/connections';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { forwardRef, useEffect } from 'react';
@@ -44,11 +45,15 @@ export const ConnectionTab = forwardRef<
     mutationFn: (connection: DatabaseConnection) =>
       saveConnection(connectionId ?? '', connection),
     onError: (error) => {
+      // Custom local error handling
       toast({
-        title: 'Error',
+        title: 'Error saving connection',
         description: error.message || 'Failed to save connection settings',
         variant: 'destructive',
       });
+      
+      // You could also trigger the global error handler manually if needed:
+      browserLogger.error('Connection save failed:', {error});
     },
     onSuccess: () => {
       toast({

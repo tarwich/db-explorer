@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { useQuery } from '@tanstack/react-query';
 import { PlugIcon, SettingsIcon, X } from 'lucide-react';
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ItemInlineView } from '../explorer/item-views/item-inline-view';
 import { Button } from '../ui/button';
 import {

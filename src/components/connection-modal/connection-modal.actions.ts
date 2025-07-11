@@ -22,19 +22,21 @@ export async function loadConnection(connectionId: string) {
 export async function saveConnection(
   connectionId: string | undefined,
   connection: StateDatabase["connections"]
-) {
+): Promise<string> {
   const stateDb = await getStateDb();
 
   if (!connectionId) {
+    const newId = randomUUID();
     await stateDb
       .insertInto('connections')
       .values({
-        id: randomUUID(),
+        id: newId,
         name: connection.name,
         type: connection.type,
         details: JSON.stringify(connection.details) as any,
       })
       .execute();
+    return newId;
   } else {
     await stateDb
       .updateTable('connections')
@@ -45,5 +47,6 @@ export async function saveConnection(
       })
       .where('id', '=', connectionId)
       .execute();
+    return connectionId;
   }
 }

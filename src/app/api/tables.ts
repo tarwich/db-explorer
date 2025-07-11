@@ -227,7 +227,13 @@ export async function getTableRecords(
     const fk = col.foreignKey!;
     const targetTable = await getTable(connectionId, fk.targetTable);
     const displayColumns =
-      require('@/utils/display-columns').determineDisplayColumns(targetTable);
+      require('@/utils/display-columns').determineDisplayColumns({
+        ...targetTable,
+        details: {
+          ...targetTable.details,
+          columns: Object.values(targetTable.details.columns),
+        },
+      });
     const values = Array.from(fkValueMap[col.name]);
     if (values.length === 0) {
       fkDisplayMap[col.name] = {};

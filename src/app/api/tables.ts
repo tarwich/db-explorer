@@ -32,13 +32,38 @@ export async function getTables(connectionId: string) {
   const dbPlugin = await getPlugin(connection);
   const tables = await dbPlugin.listTables();
 
-  const formattedTables = tables.map(
-    (t): (typeof knownTablesMap)[keyof typeof knownTablesMap] => {
+  const formattedTables = await Promise.all(
+    tables.map(async (t) => {
       const knownTable = knownTablesMap[t.name];
       const pluralName =
         knownTable?.details.pluralName || title(plural(t.name));
 
-      // Always provide columns object for each view
+      // Always provide columns as a dictionary, not an array
+      let columns: Record<string, any> = {};
+      if (
+        knownTable?.details.columns &&
+        !Array.isArray(knownTable.details.columns)
+      ) {
+        columns = knownTable.details.columns;
+      } else {
+        // Introspect columns if missing
+        const dbColumns = await dbPlugin.describeTable(t.name);
+        // Resolve icons for all columns in parallel
+        const columnsArr = await Promise.all(
+          dbColumns.map(async (c: any, i: number) => ({
+            name: c.name,
+            normalizedName: normalizeName(c.name),
+            icon: (await getBestIcon(c.name)) || 'Table',
+            displayName: title(c.name),
+            type: c.type,
+            nullable: c.isNullable,
+            hidden: false,
+            order: i,
+          }))
+        );
+        columns = objectify(columnsArr, (c) => c.name);
+      }
+
       const inlineView = knownTable?.details.inlineView || {};
       const cardView = knownTable?.details.cardView || {};
       const listView = knownTable?.details.listView || {};
@@ -56,7 +81,7 @@ export async function getTables(connectionId: string) {
           icon: knownTable?.details.icon || getBestIcon(pluralName) || 'Table',
           color: knownTable?.details.color || 'green',
           pk: knownTable?.details.pk || [],
-          columns: knownTable?.details.columns || [],
+          columns,
           inlineView: {
             ...inlineView,
             columns: inlineView.columns || {},
@@ -71,7 +96,7 @@ export async function getTables(connectionId: string) {
           },
         },
       };
-    }
+    })
   );
 
   return alphabetical(formattedTables, (t) => t.details.normalizedName);

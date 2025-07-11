@@ -1,3 +1,5 @@
+'use server';
+
 import { getStateDb } from '@/db/state-db';
 
 export async function deleteConnection(connectionId: string) {

@@ -1,7 +1,7 @@
 import { toast } from '@/hooks/use-toast';
 import browserLogger from '@/lib/browser-logger';
 import { DatabaseConnection, SslMode } from '@/types/connections';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { forwardRef, useEffect } from 'react';
 import { FormProvider, useForm, useFormContext } from 'react-hook-form';
 import { Button } from '../ui/button';
@@ -36,6 +36,7 @@ export const ConnectionTab = forwardRef<
   HTMLFormElement,
   { connectionId?: string; onDelete?: () => void }
 >(({ connectionId, onDelete }, ref) => {
+  const queryClient = useQueryClient();
   const connectionQuery = useQuery({
     queryKey: ['connection', connectionId],
     queryFn: () => loadConnection(connectionId ?? ''),
@@ -46,6 +47,10 @@ export const ConnectionTab = forwardRef<
     mutationFn: (connection: DatabaseConnection) =>
       saveConnection(connectionId ?? '', connection),
     onError: (error) => {
+      browserLogger.error('Failed to save connection', {
+        connectionId,
+        error: error.message || error,
+      });
       // Custom local error handling
       toast({
         title: 'Error saving connection',
@@ -67,6 +72,10 @@ export const ConnectionTab = forwardRef<
   const deleteConnectionMutation = useMutation({
     mutationFn: () => deleteConnection(connectionId ?? ''),
     onError: (error) => {
+      browserLogger.error('Failed to delete connection', {
+        connectionId,
+        error: error.message || error,
+      });
       toast({
         title: 'Error',
         description: error.message || 'Failed to delete connection',
@@ -78,6 +87,8 @@ export const ConnectionTab = forwardRef<
         title: 'Success',
         description: 'Connection deleted successfully',
       });
+      // Invalidate connections query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['connections'] });
       onDelete?.();
     },
   });

@@ -143,7 +143,7 @@ export default function DataBrowserPage({
                       : 'text-gray-600 hover:bg-gray-50'
                   )}
                 >
-                  <TableIcon className="w-4 h-4 flex-0" />
+                  <ItemIcon item={{ icon: table.details.icon }} />
                   <span className="truncate flex-1 text-left">
                     {table.details.pluralName}
                   </span>

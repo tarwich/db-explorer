@@ -16,6 +16,10 @@ export async function loadConnection(connectionId: string) {
     .selectAll()
     .executeTakeFirst();
 
+  if (connection && typeof connection.details === 'string') {
+    connection.details = JSON.parse(connection.details);
+  }
+
   return connection;
 }
 

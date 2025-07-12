@@ -34,8 +34,8 @@ type FormValues = {
 
 export const ConnectionTab = forwardRef<
   HTMLFormElement,
-  { 
-    connectionId?: string; 
+  {
+    connectionId?: string;
     onDelete?: () => void;
     onConnectionIdChange?: (connectionId: string) => void;
   }
@@ -61,9 +61,9 @@ export const ConnectionTab = forwardRef<
         description: error.message || 'Failed to save connection settings',
         variant: 'destructive',
       });
-      
+
       // You could also trigger the global error handler manually if needed:
-      browserLogger.error('Connection save failed:', {error});
+      browserLogger.error('Connection save failed:', { error });
     },
     onSuccess: (savedConnectionId) => {
       toast({
@@ -166,6 +166,7 @@ export const ConnectionTab = forwardRef<
           database: data.details.database ?? '',
           username: data.details.username ?? '',
           password: data.details.password ?? '',
+          sslMode: data.details.sslMode ?? undefined,
         },
       });
     }
@@ -304,6 +305,7 @@ function PostgresConnectionSettings() {
             SSL Mode
           </label>
           <Select
+            value={form.watch('details.sslMode') || ''}
             onValueChange={(value: SslMode) => {
               form.setValue('details.sslMode', value);
             }}

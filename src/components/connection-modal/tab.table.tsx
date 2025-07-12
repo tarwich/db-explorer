@@ -9,12 +9,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { EyeIcon, EyeOffIcon, icons, PencilIcon } from 'lucide-react';
 import { sort } from 'radash';
 import {
-  createContext,
-  forwardRef,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
+    createContext,
+    forwardRef,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
 } from 'react';
 import { useForm } from 'react-hook-form';
 import { ItemBadgeView } from '../explorer/item-views/item-badge-view';
@@ -27,6 +27,7 @@ import { Button } from '../ui/button';
 import { ColorPicker } from '../ui/color-picker';
 import { IconPicker } from '../ui/icon-picker';
 import { Input } from '../ui/input';
+import { autoAssignTableSettings } from './auto-assign.actions';
 import { Breadcrumbs } from './breadcrumbs';
 import { ViewEditor } from './view-editor';
 
@@ -168,6 +169,8 @@ export function TableTabGeneralPage({
   onEditColumn?: (colName: string) => void;
 }) {
   const { page, setPage } = useTableTabContext();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const form = useForm<TableFormValues>({
     defaultValues: {
       icon: 'Table',
@@ -180,6 +183,35 @@ export function TableTabGeneralPage({
   const tableQuery = useQuery({
     queryKey: ['connections', connectionId, 'tables', tableName],
     queryFn: () => getTable(connectionId, tableName),
+  });
+
+  const autoAssignMutation = useMutation({
+    mutationFn: () => autoAssignTableSettings({ connectionId, tableName }),
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({
+          queryKey: ['connections', connectionId, 'tables'],
+        });
+        toast({
+          title: 'Auto-assignment completed',
+          description: result.message,
+          variant: 'default',
+        });
+      } else {
+        toast({
+          title: 'Auto-assignment failed',
+          description: result.message,
+          variant: 'destructive',
+        });
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: 'Auto-assignment failed',
+        description: error.message || 'An unexpected error occurred',
+        variant: 'destructive',
+      });
+    },
   });
 
   useEffect(() => {
@@ -214,7 +246,41 @@ export function TableTabGeneralPage({
     <>
       <form className="flex flex-col gap-3 h-full overflow-hidden">
         <div className={cn('flex flex-col gap-4', 'flex-1 overflow-y-auto')}>
-          <div className="text-sm font-medium">Table Information</div>
+          <div className="flex flex-row items-center justify-between">
+            <div className="text-sm font-medium">Table Information</div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => autoAssignMutation.mutate()}
+              disabled={autoAssignMutation.isPending}
+              className="flex items-center gap-2"
+            >
+              {autoAssignMutation.isPending ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  Auto-assigning...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  Auto-assign
+                </>
+              )}
+            </Button>
+          </div>
 
           {/* Database name */}
           <div className="flex flex-row gap-2 text-xs text-neutral-800">

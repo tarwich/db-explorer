@@ -1,6 +1,6 @@
-import { DatabaseTable } from '@/types/connections';
+import { ColumnInformation, DatabaseTable } from '@/types/connections';
 
-type DatabaseTableColumn = DatabaseTable['details']['columns'][number];
+type DatabaseTableColumn = ColumnInformation;
 
 interface ForeignKeyGuess {
   sourceColumn: string;
@@ -63,7 +63,7 @@ export function guessForeignKeys(
       const originalTable = matches[0];
 
       const idColumn =
-        originalTable.details.columns?.find(isIdColumn)?.name ||
+        Object.values(originalTable.details.columns || {}).find(isIdColumn)?.name ||
         originalTable.details.pk[0];
 
       if (!idColumn) {

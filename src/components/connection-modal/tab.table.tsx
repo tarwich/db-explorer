@@ -76,6 +76,14 @@ export const TableTab = forwardRef<HTMLDivElement, TableTabProps>(
       'general' | 'inline-view' | 'card-view' | 'list-view' | 'column-edit'
     >(initialPage);
     const [editingColumn, setEditingColumn] = useState<string | null>(null);
+    const form = useForm<TableFormValues>({
+      defaultValues: {
+        icon: 'Table',
+        color: 'green',
+        singularName: '',
+        pluralName: '',
+      },
+    });
 
     const connectionQuery = useQuery({
       queryKey: ['connections', connectionId],
@@ -86,6 +94,53 @@ export const TableTab = forwardRef<HTMLDivElement, TableTabProps>(
       queryKey: ['connections', connectionId, 'tables', tableName],
       queryFn: () => getTable(connectionId, tableName),
     });
+
+    const { toast } = useToast();
+    const queryClient = useQueryClient();
+
+    const saveTableMutation = useMutation({
+      mutationFn: async (updatedValues: Partial<TableFormValues>) => {
+        if (!tableQuery.data) return;
+        const updatedTable = { ...tableQuery.data };
+        updatedTable.details = {
+          ...updatedTable.details,
+          ...updatedValues,
+        };
+        await saveTable(updatedTable);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['connections', connectionId, 'tables'],
+        });
+        // Also invalidate the sidebar's tables query
+        queryClient.invalidateQueries({
+          queryKey: ['tables', connectionId],
+        });
+      },
+      onError: (error) => {
+        browserLogger.error('Failed to save table', {
+          connectionId,
+          tableName,
+          error: error.message || error,
+        });
+        toast({
+          title: 'Failed to save table',
+          description: error.message || 'An unexpected error occurred',
+          variant: 'destructive',
+        });
+      },
+    });
+
+    useEffect(() => {
+      if (tableQuery.data) {
+        form.reset({
+          icon: tableQuery.data.details.icon,
+          color: tableQuery.data.details.color,
+          singularName: tableQuery.data.details.singularName,
+          pluralName: tableQuery.data.details.pluralName,
+        });
+      }
+    }, [tableQuery.data, form]);
 
     return (
       <TableTabContext.Provider value={{ page, setPage }}>
@@ -100,9 +155,9 @@ export const TableTab = forwardRef<HTMLDivElement, TableTabProps>(
             </Button>
             <ItemBadgeView
               item={{
-                name: tableQuery.data?.details.pluralName || tableName,
-                icon: tableQuery.data?.details.icon || 'Table',
-                color: tableQuery.data?.details.color || 'green',
+                name: form.watch('pluralName') || tableName,
+                icon: form.watch('icon'),
+                color: form.watch('color'),
                 type: 'collection',
               }}
               className="cursor-pointer"
@@ -118,6 +173,8 @@ export const TableTab = forwardRef<HTMLDivElement, TableTabProps>(
             <TableTabGeneralPage
               connectionId={connectionId}
               tableName={tableName}
+              form={form}
+              saveTableMutation={saveTableMutation}
               onEditColumn={(colName) => {
                 setEditingColumn(colName);
                 setPage('column-edit');
@@ -162,23 +219,19 @@ export const TableTab = forwardRef<HTMLDivElement, TableTabProps>(
 export function TableTabGeneralPage({
   connectionId,
   tableName,
+  form,
+  saveTableMutation,
   onEditColumn,
 }: {
   connectionId: string;
   tableName: string;
+  form: any;
+  saveTableMutation: any;
   onEditColumn?: (colName: string) => void;
 }) {
-  const { page, setPage } = useTableTabContext();
+  const { setPage } = useTableTabContext();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const form = useForm<TableFormValues>({
-    defaultValues: {
-      icon: 'Table',
-      color: 'green',
-      singularName: '',
-      pluralName: '',
-    },
-  });
 
   const tableQuery = useQuery({
     queryKey: ['connections', connectionId, 'tables', tableName],
@@ -191,6 +244,10 @@ export function TableTabGeneralPage({
       if (result.success) {
         queryClient.invalidateQueries({
           queryKey: ['connections', connectionId, 'tables'],
+        });
+        // Also invalidate the sidebar's tables query
+        queryClient.invalidateQueries({
+          queryKey: ['tables', connectionId],
         });
         toast({
           title: 'Auto-assignment completed',
@@ -214,33 +271,8 @@ export function TableTabGeneralPage({
     },
   });
 
-  useEffect(() => {
-    if (tableQuery.data) {
-      form.reset({
-        icon: tableQuery.data.details.icon,
-        color: tableQuery.data.details.color,
-        singularName: tableQuery.data.details.singularName,
-        pluralName: tableQuery.data.details.pluralName,
-      });
-      const columns = Object.values(tableQuery.data.details.columns)
-        .filter((c) => !c.hidden)
-        .map((c) => ({
-          name: c.displayName,
-          value: c.name,
-        }));
-    }
-  }, [tableQuery.data]);
 
-  const columns = useMemo(() => {
-    return (
-      Object.values(tableQuery.data?.details.columns || {})
-        .filter((c) => !c.hidden)
-        .map((c) => ({
-          name: c.displayName,
-          value: c.name,
-        })) ?? []
-    );
-  }, [tableQuery.data]);
+
 
   return (
     <>
@@ -294,7 +326,10 @@ export function TableTabGeneralPage({
               <div className="text-sm font-medium">Icon</div>
               <IconPicker
                 value={form.watch('icon')}
-                onChange={(value) => form.setValue('icon', value)}
+                onChange={(value) => {
+                  form.setValue('icon', value);
+                  saveTableMutation.mutate({ icon: value });
+                }}
                 className="size-8"
               />
             </div>
@@ -304,7 +339,10 @@ export function TableTabGeneralPage({
               <div className="text-sm font-medium">Color</div>
               <ColorPicker
                 value={form.watch('color')}
-                onChange={(value) => form.setValue('color', value)}
+                onChange={(value) => {
+                  form.setValue('color', value);
+                  saveTableMutation.mutate({ color: value });
+                }}
                 className="size-8"
               />
             </div>
@@ -313,7 +351,9 @@ export function TableTabGeneralPage({
             <div className="flex flex-col gap-1 flex-1">
               <div className="text-sm font-medium">Singular Name</div>
               <Input
-                {...form.register('singularName')}
+                value={form.watch('singularName')}
+                onChange={(e) => form.setValue('singularName', e.target.value)}
+                onBlur={(e) => saveTableMutation.mutate({ singularName: e.target.value })}
                 className="w-full"
                 placeholder="Table"
               />
@@ -323,7 +363,9 @@ export function TableTabGeneralPage({
             <div className="flex flex-col gap-1 flex-1">
               <div className="text-sm font-medium">Plural Name</div>
               <Input
-                {...form.register('pluralName')}
+                value={form.watch('pluralName')}
+                onChange={(e) => form.setValue('pluralName', e.target.value)}
+                onBlur={(e) => saveTableMutation.mutate({ pluralName: e.target.value })}
                 className="w-full"
                 placeholder="Tables"
               />
@@ -383,7 +425,7 @@ export function TableTabGeneralPage({
             <div className="flex flex-row gap-2">
               <ItemInlineView
                 item={{
-                  icon: 'Table',
+                  icon: form.watch('icon'),
                   columns: sort(
                     Object.entries(
                       tableQuery.data?.details.inlineView.columns || {}
@@ -391,7 +433,7 @@ export function TableTabGeneralPage({
                     (c) => c[1].order
                   )
                     .filter((c) => !c[1].hidden)
-                    .map(([name, column]) => ({
+                    .map(([name]) => ({
                       name: name,
                       value:
                         tableQuery.data?.details.columns?.[name]?.displayName ||
@@ -419,7 +461,7 @@ export function TableTabGeneralPage({
               <ItemCardView
                 item={{
                   id: '1',
-                  icon: 'Table',
+                  icon: form.watch('icon'),
                   columns: sort(
                     Object.entries(
                       tableQuery.data?.details.cardView.columns || {}
@@ -427,7 +469,7 @@ export function TableTabGeneralPage({
                     (c) => c[1].order
                   )
                     .filter((c) => !c[1].hidden)
-                    .map(([name, column]) => ({
+                    .map(([name]) => ({
                       name: name,
                       value:
                         tableQuery.data?.details.columns?.[name]?.displayName ||
@@ -455,7 +497,7 @@ export function TableTabGeneralPage({
               <ItemListView
                 item={{
                   id: '1',
-                  icon: 'Table',
+                  icon: form.watch('icon'),
                   columns: sort(
                     Object.entries(
                       tableQuery.data?.details.listView.columns || {}
@@ -463,7 +505,7 @@ export function TableTabGeneralPage({
                     (c) => c[1].order
                   )
                     .filter((c) => !c[1].hidden)
-                    .map(([name, column]) => ({
+                    .map(([name]) => ({
                       name: name,
                       value:
                         tableQuery.data?.details.columns?.[name]?.displayName ||

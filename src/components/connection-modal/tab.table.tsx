@@ -4,9 +4,8 @@ import { getConnection } from '@/app/api/connections';
 import { getTable, getTables, saveTable } from '@/app/api/tables';
 import { useToast } from '@/hooks/use-toast';
 import browserLogger from '@/lib/browser-logger';
-import { cn } from '@/lib/utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { EyeIcon, EyeOffIcon, icons, PencilIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, Filter, icons, PencilIcon } from 'lucide-react';
 import { sort } from 'radash';
 import {
   createContext,
@@ -234,9 +233,10 @@ export function TableTabGeneralPage({
   saveTableMutation: any;
   onEditColumn?: (colName: string) => void;
 }) {
-  const { setPage } = useTableTabContext();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { setPage } = useTableTabContext();
+  const [showOnlyEnabled, setShowOnlyEnabled] = useState(false);
 
   const tableQuery = useQuery({
     queryKey: ['connections', connectionId, 'tables', tableName],
@@ -246,91 +246,66 @@ export function TableTabGeneralPage({
   const autoAssignMutation = useMutation({
     mutationFn: () =>
       autoAssignTableSettingsOptimized({ connectionId, tableName }),
-    onSuccess: (result: { success: boolean; message: string }) => {
-      if (result.success) {
-        queryClient.invalidateQueries({
-          queryKey: ['connections', connectionId, 'tables'],
-        });
-        // Also invalidate the sidebar's tables query
-        queryClient.invalidateQueries({
-          queryKey: ['tables', connectionId],
-        });
-        toast({
-          title: 'Auto-assignment completed',
-          description: result.message,
-          variant: 'default',
-        });
-      } else {
-        toast({
-          title: 'Auto-assignment failed',
-          description: result.message,
-          variant: 'destructive',
-        });
-      }
-    },
-    onError: (error: any) => {
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['connections', connectionId, 'tables'],
+      });
       toast({
-        title: 'Auto-assignment failed',
-        description: error.message || 'An unexpected error occurred',
+        title: 'Table settings auto-assigned',
+        description:
+          'Icons and display names have been automatically assigned.',
+      });
+    },
+    onError: (error) => {
+      browserLogger.error('Failed to auto-assign table settings', {
+        connectionId,
+        tableName,
+        error: error.message || error,
+      });
+      toast({
+        title: 'Error auto-assigning table settings',
         variant: 'destructive',
+        description: error.message,
       });
     },
   });
 
+  const allColumns = Object.values(tableQuery.data?.details.columns || {});
+  const displayedColumns = showOnlyEnabled
+    ? allColumns.filter((c) => !c.hidden)
+    : allColumns;
+  const visibleColumns = allColumns.filter((c) => !c.hidden);
+
   return (
-    <>
-      <form className="flex flex-col gap-3 h-full overflow-hidden">
-        <div
-          className={cn(
-            'flex flex-col gap-4',
-            'flex-1 min-h-0 overflow-y-auto'
-          )}
+    <div className="flex flex-col gap-4 h-full overflow-hidden">
+      {/* Header */}
+      <div className="flex flex-row items-center gap-4">
+        <ItemIcon item={{ icon: form.watch('icon') }} />
+        <div className="flex flex-col">
+          <div className="text-lg font-semibold">
+            {form.watch('pluralName')}
+          </div>
+          <div className="text-sm text-neutral-500">
+            {form.watch('singularName')}
+          </div>
+        </div>
+        <div className="flex-1" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => autoAssignMutation.mutate()}
+          disabled={autoAssignMutation.isPending}
         >
-          <div className="flex flex-row items-center justify-between">
-            <div className="text-sm font-medium">Table Information</div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => autoAssignMutation.mutate()}
-              disabled={autoAssignMutation.isPending}
-              className="flex items-center gap-2"
-            >
-              {autoAssignMutation.isPending ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  Auto-assigning...
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                  Auto-assign
-                </>
-              )}
-            </Button>
-          </div>
+          {autoAssignMutation.isPending ? 'Auto-assigning...' : 'Auto-assign'}
+        </Button>
+      </div>
 
-          {/* Database name */}
-          <div className="flex flex-row gap-2 text-xs text-neutral-800">
-            <span>Database Name: </span>
-            <span>{tableName}</span>
-          </div>
-
-          <div className="flex flex-row gap-2">
-            {/* Icon */}
-            <div className="flex flex-col gap-1 justify-center items-center">
+      {/* Scrollable content */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="flex flex-col gap-4">
+          {/* Icon and color */}
+          <div className="flex flex-row gap-4">
+            <div className="flex flex-col gap-1">
               <div className="text-sm font-medium">Icon</div>
               <IconPicker
                 value={form.watch('icon')}
@@ -338,12 +313,9 @@ export function TableTabGeneralPage({
                   form.setValue('icon', value);
                   saveTableMutation.mutate({ icon: value });
                 }}
-                className="size-8"
               />
             </div>
-
-            {/* Color */}
-            <div className="flex flex-col gap-1 justify-center items-center">
+            <div className="flex flex-col gap-1">
               <div className="text-sm font-medium">Color</div>
               <ColorPicker
                 value={form.watch('color')}
@@ -351,10 +323,12 @@ export function TableTabGeneralPage({
                   form.setValue('color', value);
                   saveTableMutation.mutate({ color: value });
                 }}
-                className="size-8"
               />
             </div>
+          </div>
 
+          {/* Singular and plural names */}
+          <div className="flex flex-row gap-4">
             {/* Singular name */}
             <div className="flex flex-col gap-1 flex-1">
               <div className="text-sm font-medium">Singular Name</div>
@@ -384,41 +358,57 @@ export function TableTabGeneralPage({
             </div>
           </div>
 
-          <div className="text-sm font-medium">Columns</div>
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-medium">Columns</div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={showOnlyEnabled ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowOnlyEnabled(!showOnlyEnabled)}
+                className="text-xs"
+              >
+                <Filter className="size-3 mr-1" />
+                {showOnlyEnabled ? 'Show All' : 'Show Only Enabled'}
+              </Button>
+              <span className="text-xs text-neutral-500">
+                {showOnlyEnabled
+                  ? `${displayedColumns.length} enabled`
+                  : `${displayedColumns.length} total (${visibleColumns.length} enabled)`}
+              </span>
+            </div>
+          </div>
 
           {/* Columns */}
           <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
-            {Object.values(tableQuery.data?.details.columns || {}).map(
-              (column) => (
-                <div
-                  key={column.name}
-                  className="flex flex-row gap-2 items-center"
-                >
-                  <Button variant="ghost" size="icon">
-                    {column.hidden ? (
-                      <EyeOffIcon className="size-4" />
-                    ) : (
-                      <EyeIcon className="size-4" />
-                    )}
-                  </Button>
-                  <ItemIcon item={{ icon: column.icon }} />
-                  <span>{column.displayName}</span>
-                  <span className="font-mono text-xs text-neutral-700">
-                    {column.type}
-                  </span>
-                  {onEditColumn && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onEditColumn(column.name)}
-                      type="button"
-                    >
-                      <PencilIcon className="size-4" />
-                    </Button>
+            {displayedColumns.map((column) => (
+              <div
+                key={column.name}
+                className="flex flex-row gap-2 items-center"
+              >
+                <Button variant="ghost" size="icon">
+                  {column.hidden ? (
+                    <EyeOffIcon className="size-4" />
+                  ) : (
+                    <EyeIcon className="size-4" />
                   )}
-                </div>
-              )
-            )}
+                </Button>
+                <ItemIcon item={{ icon: column.icon }} />
+                <span>{column.displayName}</span>
+                <span className="font-mono text-xs text-neutral-700">
+                  {column.type}
+                </span>
+                {onEditColumn && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onEditColumn(column.name)}
+                    type="button"
+                  >
+                    <PencilIcon className="size-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
           </div>
 
           {/* Inline View */}
@@ -528,8 +518,8 @@ export function TableTabGeneralPage({
             </div>
           </div>
         </div>
-      </form>
-    </>
+      </div>
+    </div>
   );
 }
 

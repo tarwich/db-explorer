@@ -9,9 +9,9 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { EyeIcon, EyeOffIcon, GripVertical } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, Filter, GripVertical } from 'lucide-react';
 import { sort } from 'radash';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ItemCardView } from '../explorer/item-views/item-card-view';
 import { ItemIcon } from '../explorer/item-views/item-icon';
 import { ItemInlineView } from '../explorer/item-views/item-inline-view';
@@ -81,6 +81,8 @@ function SortableColumn({ column, onVisibilityToggle }: SortableColumnProps) {
 export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showOnlyEnabled, setShowOnlyEnabled] = useState(false);
+
   const tableQuery = useQuery({
     queryKey: ['connections', connectionId, 'tables', tableName],
     queryFn: () => getTable(connectionId, tableName),
@@ -121,11 +123,16 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
     }));
   }, [table, view]);
 
+  // Filter columns based on toggle state
+  const displayedColumns = useMemo(() => {
+    return showOnlyEnabled ? columns.filter((c) => !c.hidden) : columns;
+  }, [columns, showOnlyEnabled]);
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const newIndex = columns.findIndex((c) => c.id === over.id);
+    const newIndex = displayedColumns.findIndex((c) => c.id === over.id);
 
     // Update the column's order using the mutation
     updateColumnMutation.mutate({
@@ -167,12 +174,36 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
 
   return (
     <div className="flex flex-col gap-4 h-full overflow-hidden">
+      {/* Filter toggle */}
+      <div className="flex items-center gap-2 px-1">
+        <Button
+          variant={showOnlyEnabled ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setShowOnlyEnabled(!showOnlyEnabled)}
+          className="text-xs"
+        >
+          <Filter className="size-3 mr-1" />
+          {showOnlyEnabled ? 'Show All' : 'Show Only Enabled'}
+        </Button>
+        <span className="text-xs text-neutral-500">
+          {showOnlyEnabled
+            ? `${displayedColumns.length} enabled columns`
+            : `${displayedColumns.length} total columns (${visibleColumns.length} enabled)`}
+        </span>
+      </div>
+
       {/* Scrollable columns section */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={columns} strategy={verticalListSortingStrategy}>
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={displayedColumns}
+            strategy={verticalListSortingStrategy}
+          >
             <div className="flex flex-col gap-2">
-              {columns.map((column) => (
+              {displayedColumns.map((column) => (
                 <SortableColumn
                   key={column.name}
                   column={column}

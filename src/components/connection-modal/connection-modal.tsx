@@ -31,7 +31,7 @@ export function ConnectionModal({
   initialTablePage?: 'general' | 'inline-view' | 'card-view' | 'list-view';
 }) {
   const [connectionId, setConnectionId] = useState(initialConnectionId);
-  
+
   // Update connectionId when the prop changes
   useEffect(() => {
     setConnectionId(initialConnectionId);
@@ -97,7 +97,6 @@ export function ConnectionModal({
                     )}
                   />
                 </TabsTrigger>
-
 
                 {!!connectionId && (
                   <>
@@ -173,7 +172,7 @@ export function ConnectionModal({
           <div
             className={cn(
               'flex-1 bg-white border border-neutral-200 rounded-lg p-3',
-              'flex flex-col gap-2'
+              'flex flex-col gap-2 min-h-0 overflow-y-auto'
             )}
           >
             <TabsContent value="connection" asChild>

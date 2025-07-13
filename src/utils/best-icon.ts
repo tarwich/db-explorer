@@ -2,7 +2,6 @@
 
 import { TIconName } from '@/components/explorer/item-views/item-icon';
 import Fuse from 'fuse.js';
-import { sort } from 'radash';
 import typeIconDictionary from './data-type-icons.json';
 import iconDictionary from './icon-database.json';
 
@@ -16,36 +15,43 @@ export async function getBestIcon(sentence: string): Promise<TIconName> {
   if (!generalIconFuse) {
     generalIconFuse = new Fuse(iconDictionary, {
       includeScore: true,
-      threshold: 0.2,
-      keys: ['name', 'normalized', 'synonyms'],
+      threshold: 0.3, // Slightly stricter threshold for better matches
+      keys: [
+        { name: 'synonyms', weight: 0.6 }, // Prioritize synonyms for exact concept matches
+        { name: 'normalized', weight: 0.3 }, // Then normalized names
+        { name: 'name', weight: 0.1 }, // Finally icon names (least priority)
+      ],
     });
   }
 
-  const results = sort(
-    generalIconFuse.search(sentence, { limit: 3 }),
-    (r) => r.score || 0
-  );
+  const results = generalIconFuse.search(sentence, { limit: 5 });
+  
+  // Sort by score (lower is better in Fuse.js)
+  const sortedResults = results.sort((a, b) => (a.score || 0) - (b.score || 0));
 
-  if (!results.length) return 'Box';
+  if (!sortedResults.length) return 'Box';
 
-  return results[0].item.name as TIconName;
+  return sortedResults[0].item.name as TIconName;
 }
 
 export async function getBestIconForType(type: string): Promise<TIconName> {
   if (!typeIconFuse) {
     typeIconFuse = new Fuse(typeIconDictionary, {
       includeScore: true,
-      threshold: 0.2,
-      keys: ['name', 'icon', 'synonyms'],
+      threshold: 0.3, // Slightly stricter threshold
+      keys: [
+        { name: 'synonyms', weight: 0.6 }, // Prioritize synonyms
+        { name: 'name', weight: 0.4 }, // Then exact type names
+      ],
     });
   }
 
-  const results = sort(
-    typeIconFuse.search(type, { limit: 3 }),
-    (r) => r.score || 0
-  );
+  const results = typeIconFuse.search(type, { limit: 5 });
+  
+  // Sort by score (lower is better in Fuse.js)
+  const sortedResults = results.sort((a, b) => (a.score || 0) - (b.score || 0));
 
-  if (!results.length) return 'FileQuestion';
+  if (!sortedResults.length) return 'FileQuestion';
 
-  return results[0].item.icon as TIconName;
+  return sortedResults[0].item.icon as TIconName;
 }

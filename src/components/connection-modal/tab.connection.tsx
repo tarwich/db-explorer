@@ -1,6 +1,6 @@
 import { toast } from '@/hooks/use-toast';
 import browserLogger from '@/lib/browser-logger';
-import { DatabaseConnection, SslMode } from '@/types/connections';
+import { DatabaseConnection } from '@/types/connections';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { forwardRef, useEffect } from 'react';
 import { FormProvider, useForm, useFormContext } from 'react-hook-form';
@@ -28,7 +28,6 @@ type FormValues = {
     username?: string;
     password?: string;
     path?: string;
-    sslMode?: SslMode;
   };
 };
 
@@ -166,7 +165,6 @@ export const ConnectionTab = forwardRef<
           database: data.details.database ?? '',
           username: data.details.username ?? '',
           password: data.details.password ?? '',
-          sslMode: data.details.sslMode ?? undefined,
         },
       });
     }
@@ -290,37 +288,12 @@ function PostgresConnectionSettings() {
         </div>
       </div>
 
-      <div className="flex flex-row gap-4">
-        {/* Database */}
-        <div className="space-y-1 flex-1">
-          <label className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Database
-          </label>
-          <Input {...form.register('details.database')} />
-        </div>
-
-        {/* SSL Mode */}
-        <div className="space-y-1 flex-1">
-          <label className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            SSL Mode
-          </label>
-          <Select
-            value={form.watch('details.sslMode') || ''}
-            onValueChange={(value: SslMode) => {
-              form.setValue('details.sslMode', value);
-            }}
-          >
-            <SelectTrigger {...form.register('details.sslMode')}>
-              <SelectValue placeholder="Select SSL mode" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="disable">Disable SSL</SelectItem>
-              <SelectItem value="require">Require SSL</SelectItem>
-              <SelectItem value="verify-ca">Verify CA</SelectItem>
-              <SelectItem value="verify-full">Verify Full</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Database */}
+      <div className="space-y-1">
+        <label className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          Database
+        </label>
+        <Input {...form.register('details.database')} />
       </div>
     </div>
   );

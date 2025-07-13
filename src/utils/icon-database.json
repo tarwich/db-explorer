@@ -794,7 +794,7 @@
   {
     "name": "Bell",
     "normalized": "bell",
-    "synonyms": []
+    "synonyms": ["notifications", "alerts", "reminders", "messages", "notices"]
   },
   {
     "name": "BellDot",
@@ -2242,7 +2242,7 @@
   {
     "name": "Contact",
     "normalized": "contact",
-    "synonyms": []
+    "synonyms": ["customers", "clients", "contacts", "people", "individuals"]
   },
   {
     "name": "ContactRound",
@@ -7477,7 +7477,7 @@
   {
     "name": "UserCheck",
     "normalized": "user check",
-    "synonyms": []
+    "synonyms": ["verified users", "approved customers", "validated", "confirmed"]
   },
   {
     "name": "UserCog",

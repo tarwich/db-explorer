@@ -166,7 +166,7 @@ export default function DataBrowserPage({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-4 flex flex-col overflow-y-hidden">
+      <div className="flex-1 p-4 flex flex-col min-h-0 overflow-y-auto">
         {selectedTable ? (
           <>
             {/* Header */}
@@ -251,29 +251,35 @@ export default function DataBrowserPage({
 
             {/* Records Display */}
             {currentTable && !!recordsQuery.data?.records?.length && (
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 min-h-0 overflow-y-auto">
                 {/* Grid View */}
                 {viewType === 'grid' && (
-                  <GridView
-                    table={currentTable}
-                    items={recordsQuery.data?.records}
-                  />
+                  <div className="h-full min-h-0">
+                    <GridView
+                      table={currentTable}
+                      items={recordsQuery.data?.records}
+                    />
+                  </div>
                 )}
 
                 {/* List View */}
                 {viewType === 'list' && (
-                  <ListView
-                    table={currentTable}
-                    items={recordsQuery.data?.records}
-                  />
+                  <div className="h-full min-h-0">
+                    <ListView
+                      table={currentTable}
+                      items={recordsQuery.data?.records}
+                    />
+                  </div>
                 )}
 
                 {/* Table View */}
                 {viewType === 'table' && (
-                  <TableView
-                    table={currentTable}
-                    items={recordsQuery.data?.records}
-                  />
+                  <div className="h-full min-h-0">
+                    <TableView
+                      table={currentTable}
+                      items={recordsQuery.data?.records}
+                    />
+                  </div>
                 )}
               </div>
             )}

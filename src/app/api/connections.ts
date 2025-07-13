@@ -81,43 +81,66 @@ export async function getConnection(id: string) {
   return connection;
 }
 
+async function createPostgresConnection(connection: any, sslConfig: any) {
+  return new Kysely({
+    dialect: new PostgresDialect({
+      pool: new Pool({
+        host: connection.details.host,
+        port: connection.details.port,
+        database: connection.details.database,
+        user: connection.details.username,
+        password: connection.details.password,
+        ssl: sslConfig,
+      }),
+    }),
+  });
+}
+
 export async function testConnection(connection: DatabaseConnection) {
   try {
-    const db = isPostgresConnection(connection)
-      ? new Kysely({
-          dialect: new PostgresDialect({
-            pool: new Pool({
-              host: connection.details.host,
-              port: connection.details.port,
-              database: connection.details.database,
-              user: connection.details.username,
-              password: connection.details.password,
-              ssl:
-                connection.details.sslMode === 'disable'
-                  ? false
-                  : {
-                      rejectUnauthorized:
-                        connection.details.sslMode === 'verify-full'
-                          ? true
-                          : false,
-                    },
-            }),
-          }),
-        })
-      : isSqliteConnection(connection)
-      ? new Kysely({
-          dialect: new SqliteDialect({
-            database: async () => new SqliteDatabase(connection.details.path),
-          }),
-        })
-      : null;
-
-    if (!db) {
+    if (isPostgresConnection(connection)) {
+      // Try SSL first unless explicitly disabled
+      if (connection.details.sslMode !== 'disable') {
+        try {
+          const sslConfig = connection.details.sslMode === 'verify-full' 
+            ? { rejectUnauthorized: true }
+            : { rejectUnauthorized: false };
+          
+          const db = await createPostgresConnection(connection, sslConfig);
+          await sql`SELECT 1`.execute(db);
+          return true;
+        } catch (error: any) {
+          // Check if error is SSL-related
+          const errorMessage = error.message || '';
+          if (errorMessage.includes('server does not support SSL connections') ||
+              errorMessage.includes('SSL connection has been closed unexpectedly') ||
+              errorMessage.includes('SSL is not enabled on the server')) {
+            logger.info('SSL connection failed, falling back to non-SSL:', errorMessage);
+            
+            // Try without SSL
+            const db = await createPostgresConnection(connection, false);
+            await sql`SELECT 1`.execute(db);
+            return true;
+          }
+          throw error;
+        }
+      } else {
+        // SSL explicitly disabled
+        const db = await createPostgresConnection(connection, false);
+        await sql`SELECT 1`.execute(db);
+        return true;
+      }
+    } else if (isSqliteConnection(connection)) {
+      const db = new Kysely({
+        dialect: new SqliteDialect({
+          database: async () => new SqliteDatabase(connection.details.path),
+        }),
+      });
+      await sql`SELECT 1`.execute(db);
+      return true;
+    } else {
       throw new Error('Invalid connection type');
     }
-
-    await sql`SELECT 1`.execute(db);
-    return true;
   } catch (error) {
     logger.error('Failed to test connection:', error);
     return false;
@@ -142,31 +165,41 @@ export async function openConnection(
     throw new Error('Connection not found');
   }
 
-  const db = (() => {
+  const db = await (async () => {
     if (isPostgresConnection(connection)) {
       console.log(
         'Opening new connection',
         `${connection.details.username}@${connection.details.host}:${connection.details.port}/${connection.details.database}`
       );
-      const ssl =
-        connection.details.sslMode === 'disable'
-          ? false
-          : {
-              rejectUnauthorized:
-                connection.details.sslMode === 'verify-full' ? true : false,
-            };
-      return new Kysely({
-        dialect: new PostgresDialect({
-          pool: new Pool({
-            host: connection.details.host,
-            port: connection.details.port,
-            database: connection.details.database,
-            user: connection.details.username,
-            password: connection.details.password,
-            ssl,
-          }),
-        }),
-      });
+      
+      // Try SSL first unless explicitly disabled
+      if (connection.details.sslMode !== 'disable') {
+        try {
+          const sslConfig = connection.details.sslMode === 'verify-full' 
+            ? { rejectUnauthorized: true }
+            : { rejectUnauthorized: false };
+          
+          const db = await createPostgresConnection(connection, sslConfig);
+          // Test the connection
+          await sql`SELECT 1`.execute(db);
+          return db;
+        } catch (error: any) {
+          // Check if error is SSL-related
+          const errorMessage = error.message || '';
+          if (errorMessage.includes('server does not support SSL connections') ||
+              errorMessage.includes('SSL connection has been closed unexpectedly') ||
+              errorMessage.includes('SSL is not enabled on the server')) {
+            logger.info('SSL connection failed during openConnection, falling back to non-SSL:', errorMessage);
+            
+            // Try without SSL
+            return await createPostgresConnection(connection, false);
+          }
+          throw error;
+        }
+      } else {
+        // SSL explicitly disabled
+        return await createPostgresConnection(connection, false);
+      }
     } else if (isSqliteConnection(connection)) {
       console.log('Opening new connection', connection.details.path);
       return new Kysely({

@@ -38,7 +38,7 @@ export function ItemCardView({
         </h1>
 
         {onMenuClick && (
-          <Button variant="ghost" size="icon" onClick={handleMenuClick}>
+          <Button variant="ghost" size="icon" onClick={handleMenuClick} aria-label="Menu">
             <Ellipsis className="w-4 h-4" />
           </Button>
         )}

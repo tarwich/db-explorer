@@ -1,5 +1,3 @@
-'use server';
-
 import { getTable, getTables, saveTable } from '@/app/api/tables';
 import { getTablesList } from '@/app/api/tables-list';
 import { TIconName } from '@/components/explorer/item-views/item-icon';
@@ -186,15 +184,16 @@ export async function autoAssignAllTables({
       error?: string;
     }> = [];
 
+    // Start with all tables in processing state (show loading spinners for all)
+    const allTableNames = tablesList.map((t) => t.name);
+    const remainingTables = new Set(allTableNames);
+    onProgress?.(0, totalTables, '', allTableNames);
+
     // Process tables in batches to avoid overwhelming the system
     const BATCH_SIZE = 3; // Process 3 tables concurrently
 
     for (let i = 0; i < tablesList.length; i += BATCH_SIZE) {
       const batch = tablesList.slice(i, i + BATCH_SIZE);
-
-      // Report which tables are starting to be processed
-      const currentBatchNames = batch.map((t) => t.name);
-      onProgress?.(completedTables, totalTables, '', currentBatchNames);
 
       // Process current batch in parallel
       const batchPromises = batch.map(async (tableInfo) => {
@@ -205,12 +204,13 @@ export async function autoAssignAllTables({
           });
 
           completedTables++;
-          // Report progress for this specific table
+          // Remove this table from remaining (show final icon)
+          remainingTables.delete(tableInfo.name);
           onProgress?.(
             completedTables,
             totalTables,
             tableInfo.name,
-            currentBatchNames
+            Array.from(remainingTables)
           );
 
           return {
@@ -220,12 +220,13 @@ export async function autoAssignAllTables({
           };
         } catch (error) {
           completedTables++;
-          // Report progress for this specific table
+          // Remove this table from remaining (show final icon)
+          remainingTables.delete(tableInfo.name);
           onProgress?.(
             completedTables,
             totalTables,
             tableInfo.name,
-            currentBatchNames
+            Array.from(remainingTables)
           );
 
           return {
@@ -245,7 +246,7 @@ export async function autoAssignAllTables({
       }
     }
 
-    // Clear processing state at the end
+    // Clear processing state at the end (should already be empty)
     onProgress?.(completedTables, totalTables, '', []);
 
     const successfulTables = results.filter((r) => r.success).length;

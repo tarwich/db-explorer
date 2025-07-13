@@ -181,25 +181,31 @@ export const TableTab = forwardRef<HTMLDivElement, TableTabProps>(
             />
           )}
           {page === 'inline-view' && (
-            <ViewEditor
-              type="inline"
-              connectionId={connectionId}
-              tableName={tableName}
-            />
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <ViewEditor
+                type="inline"
+                connectionId={connectionId}
+                tableName={tableName}
+              />
+            </div>
           )}
           {page === 'card-view' && (
-            <ViewEditor
-              type="card"
-              connectionId={connectionId}
-              tableName={tableName}
-            />
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <ViewEditor
+                type="card"
+                connectionId={connectionId}
+                tableName={tableName}
+              />
+            </div>
           )}
           {page === 'list-view' && (
-            <ViewEditor
-              type="list"
-              connectionId={connectionId}
-              tableName={tableName}
-            />
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <ViewEditor
+                type="list"
+                connectionId={connectionId}
+                tableName={tableName}
+              />
+            </div>
           )}
           {page === 'column-edit' && editingColumn && (
             <TableTabColumnEditPage

@@ -166,27 +166,31 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
   const visibleColumns = columns.filter((c) => !c.hidden);
 
   return (
-    <div className="flex flex-col gap-4">
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={columns} strategy={verticalListSortingStrategy}>
-          <div className="flex flex-col gap-2">
-            {columns.map((column, index) => (
-              <SortableColumn
-                key={column.name}
-                column={column}
-                onVisibilityToggle={() =>
-                  updateColumnMutation.mutate({
-                    name: column.name,
-                    update: { hidden: !column.hidden },
-                  })
-                }
-              />
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+    <div className="flex flex-col gap-4 h-full overflow-hidden">
+      {/* Scrollable columns section */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={columns} strategy={verticalListSortingStrategy}>
+            <div className="flex flex-col gap-2">
+              {columns.map((column) => (
+                <SortableColumn
+                  key={column.name}
+                  column={column}
+                  onVisibilityToggle={() =>
+                    updateColumnMutation.mutate({
+                      name: column.name,
+                      update: { hidden: !column.hidden },
+                    })
+                  }
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      </div>
 
-      <div className="flex flex-col gap-2">
+      {/* Fixed preview section - always visible */}
+      <div className="flex flex-col gap-2 border-t border-neutral-200 pt-4">
         <div className="text-sm font-medium">Preview</div>
         {type === 'inline' ? (
           <ItemInlineView

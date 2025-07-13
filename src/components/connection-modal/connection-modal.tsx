@@ -1,4 +1,4 @@
-import { getTables } from '@/app/api/tables';
+import { getTablesList } from '@/app/api/tables-list';
 import { cn } from '@/lib/utils';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { useQuery } from '@tanstack/react-query';
@@ -38,8 +38,8 @@ export function ConnectionModal({
   }, [initialConnectionId]);
 
   const tablesQuery = useQuery({
-    queryKey: ['tables', connectionId],
-    queryFn: () => getTables(connectionId ?? ''),
+    queryKey: ['tables-list', connectionId],
+    queryFn: () => getTablesList(connectionId ?? ''),
     enabled: !!connectionId,
   });
   const [filter, setFilter] = useState('');
@@ -135,7 +135,7 @@ export function ConnectionModal({
                       {tablesQuery.data
                         ?.filter((table) =>
                           processedFilter.every((f) =>
-                            table.details.normalizedName.includes(f)
+                            table.displayName.toLowerCase().includes(f)
                           )
                         )
                         .map((table) => (
@@ -146,11 +146,11 @@ export function ConnectionModal({
                           >
                             <ItemInlineView
                               item={{
-                                icon: table.details.icon,
+                                icon: table.icon as any,
                                 columns: [
                                   {
                                     name: 'Tables',
-                                    value: table.details.pluralName,
+                                    value: table.displayName,
                                   },
                                 ],
                               }}

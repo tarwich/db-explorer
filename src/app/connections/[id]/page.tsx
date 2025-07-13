@@ -1,6 +1,7 @@
 'use client';
 
 import { getTableRecords, getTables } from '@/app/api/tables';
+import { getTablesList, analyzeTable } from '@/app/api/tables-list';
 import { ConnectionModal } from '@/components/connection-modal/connection-modal';
 import { ItemCardView } from '@/components/explorer/item-views/item-card-view';
 import { ItemIcon } from '@/components/explorer/item-views/item-icon';
@@ -11,7 +12,7 @@ import { useResizable } from '@/hooks/use-resizable';
 import { cn } from '@/lib/utils';
 import { DatabaseTable } from '@/types/connections';
 import { useDisclosure } from '@reactuses/core';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Fuse from 'fuse.js';
 import {
   ArrowLeft,
@@ -25,7 +26,7 @@ import {
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { sort } from 'radash';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { getConnections } from '../../api/connections';
 
 type ViewType = 'grid' | 'list' | 'table';
@@ -53,9 +54,19 @@ export default function DataBrowserPage({
     select: (data) => data.find((conn) => conn.id === params.id),
   });
 
-  const tablesQuery = useQuery({
-    queryKey: ['connections', params.id, 'tables'],
-    queryFn: () => getTables(params.id),
+  // Fast initial table list (just names and basic info)
+  const tablesListQuery = useQuery({
+    queryKey: ['connections', params.id, 'tables-list'],
+    queryFn: () => getTablesList(params.id),
+  });
+
+  // Full table details - only load when a table is selected
+  const selectedTableQuery = useQuery({
+    queryKey: ['connections', params.id, 'table-details', selectedTable],
+    queryFn: () => selectedTable ? getTables(params.id).then(tables => 
+      tables.find(t => t.name === selectedTable)
+    ) : null,
+    enabled: !!selectedTable,
   });
 
   const recordsQuery = useQuery({
@@ -67,21 +78,61 @@ export default function DataBrowserPage({
     enabled: !!selectedTable,
   });
 
-  const currentTable = tablesQuery.data?.find((t) => t.name === selectedTable);
+  const currentTable = selectedTableQuery.data;
 
   const fuse = useMemo(() => {
-    if (!tablesQuery.data) return null;
-    return new Fuse(tablesQuery.data, {
-      keys: ['name', 'details.pluralName', 'details.singularName'],
+    if (!tablesListQuery.data) return null;
+    return new Fuse(tablesListQuery.data, {
+      keys: ['name', 'displayName'],
       threshold: 0.3,
     });
-  }, [tablesQuery.data]);
+  }, [tablesListQuery.data]);
 
   const filteredTables = useMemo(() => {
-    if (!tablesQuery.data) return [];
-    if (!tableFilter || !fuse) return tablesQuery.data;
+    if (!tablesListQuery.data) return [];
+    if (!tableFilter || !fuse) return tablesListQuery.data;
     return fuse.search(tableFilter).map((result) => result.item);
-  }, [tablesQuery.data, tableFilter, fuse]);
+  }, [tablesListQuery.data, tableFilter, fuse]);
+
+  // Background analysis of tables
+  const queryClient = useQueryClient();
+  
+  useEffect(() => {
+    if (!tablesListQuery.data) return;
+    
+    // Find tables that haven't been analyzed yet
+    const unanalyzedTables = tablesListQuery.data.filter(table => !table.isAnalyzed);
+    
+    if (unanalyzedTables.length === 0) return;
+    
+    // Analyze tables in background, one by one to avoid overwhelming the system
+    const analyzeTablesSequentially = async () => {
+      for (const table of unanalyzedTables) {
+        try {
+          await analyzeTable(params.id, table.name);
+          
+          // Update the table list cache to show this table as analyzed
+          queryClient.setQueryData(
+            ['connections', params.id, 'tables-list'],
+            (oldData: any) => {
+              if (!oldData) return oldData;
+              return oldData.map((t: any) => 
+                t.name === table.name ? { ...t, isAnalyzed: true } : t
+              );
+            }
+          );
+          
+          // Small delay to avoid overwhelming the system
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (error) {
+          console.error(`Failed to analyze table ${table.name}:`, error);
+        }
+      }
+    };
+    
+    // Start background analysis
+    analyzeTablesSequentially();
+  }, [tablesListQuery.data, params.id, queryClient]);
 
   return (
     <div
@@ -112,7 +163,7 @@ export default function DataBrowserPage({
         {/* Tables List */}
         <div className="flex-1 p-4 overflow-y-auto">
           <div className="text-sm font-medium mb-2">Tables</div>
-          {tablesQuery.data && tablesQuery.data.length > 10 && (
+          {tablesListQuery.data && tablesListQuery.data.length > 10 && (
             <div className="relative mb-3">
               <Search className="w-4 h-4 absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <Input
@@ -124,7 +175,7 @@ export default function DataBrowserPage({
             </div>
           )}
           <div className="space-y-1">
-            {tablesQuery.isLoading ? (
+            {tablesListQuery.isLoading ? (
               <div className="text-sm text-gray-500">Loading tables...</div>
             ) : (
               filteredTables.map((table) => (
@@ -143,10 +194,13 @@ export default function DataBrowserPage({
                       : 'text-gray-600 hover:bg-gray-50'
                   )}
                 >
-                  <ItemIcon item={{ icon: table.details.icon }} />
+                  <ItemIcon item={{ icon: table.icon }} />
                   <span className="truncate flex-1 text-left">
-                    {table.details.pluralName}
+                    {table.displayName}
                   </span>
+                  {!table.isAnalyzed && (
+                    <div className="w-2 h-2 bg-blue-400 rounded-full" title="Analyzing..." />
+                  )}
                 </button>
               ))
             )}

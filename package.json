@@ -72,7 +72,6 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@playwright/test": "^1.54.1",
     "@reactuses/core": "^6.0.1",
     "@shadcn/ui": "^0.0.4",
     "@tailwindcss/forms": "^0.5.10",

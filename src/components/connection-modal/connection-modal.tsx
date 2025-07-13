@@ -2,7 +2,7 @@ import { getTablesList } from '@/app/api/tables-list';
 import { cn } from '@/lib/utils';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { useQuery } from '@tanstack/react-query';
-import { RotateCw, SettingsIcon, X } from 'lucide-react';
+import { Loader2, RotateCw, SettingsIcon, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { ItemInlineView } from '../explorer/item-views/item-inline-view';
 import { Button } from '../ui/button';
@@ -31,6 +31,9 @@ export function ConnectionModal({
   initialTablePage?: 'general' | 'inline-view' | 'card-view' | 'list-view';
 }) {
   const [connectionId, setConnectionId] = useState(initialConnectionId);
+  const [processingTables, setProcessingTables] = useState<Set<string>>(
+    new Set()
+  );
 
   // Update connectionId when the prop changes
   useEffect(() => {
@@ -138,30 +141,42 @@ export function ConnectionModal({
                             table.displayName.toLowerCase().includes(f)
                           )
                         )
-                        .map((table) => (
-                          <TabsTrigger
-                            key={table.name}
-                            value={table.name}
-                            className="contents group"
-                          >
-                            <ItemInlineView
-                              item={{
-                                icon: table.icon as any,
-                                columns: [
-                                  {
-                                    name: 'Tables',
-                                    value: table.displayName,
-                                  },
-                                ],
-                              }}
-                              className={cn(
-                                'w-full cursor-pointer hover:bg-neutral-200 rounded-md',
-                                'flex flex-row gap-1 items-center',
-                                'group-data-[state=active]:bg-neutral-200'
-                              )}
-                            />
-                          </TabsTrigger>
-                        ))}
+                        .map((table) => {
+                          const isProcessing = processingTables.has(table.name);
+                          return (
+                            <TabsTrigger
+                              key={table.name}
+                              value={table.name}
+                              className="contents group"
+                              disabled={isProcessing}
+                            >
+                              <ItemInlineView
+                                item={{
+                                  icon: isProcessing
+                                    ? undefined
+                                    : (table.icon as any),
+                                  columns: [
+                                    {
+                                      name: 'Tables',
+                                      value: table.displayName,
+                                    },
+                                  ],
+                                }}
+                                className={cn(
+                                  'w-full cursor-pointer hover:bg-neutral-200 rounded-md',
+                                  'flex flex-row gap-1 items-center',
+                                  'group-data-[state=active]:bg-neutral-200',
+                                  isProcessing && 'opacity-70'
+                                )}
+                                leftElement={
+                                  isProcessing ? (
+                                    <Loader2 className="size-4 animate-spin text-blue-500" />
+                                  ) : undefined
+                                }
+                              />
+                            </TabsTrigger>
+                          );
+                        })}
                     </div>
                   </>
                 )}
@@ -180,6 +195,7 @@ export function ConnectionModal({
                 connectionId={connectionId}
                 onDelete={() => onOpenChange(false)}
                 onConnectionIdChange={setConnectionId}
+                onProcessingTablesChange={setProcessingTables}
               />
             </TabsContent>
 

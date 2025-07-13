@@ -167,7 +167,12 @@ export async function autoAssignAllTables({
   onProgress,
 }: {
   connectionId: string;
-  onProgress?: (completed: number, total: number, tableName: string) => void;
+  onProgress?: (
+    completed: number,
+    total: number,
+    tableName: string,
+    processingTables: string[]
+  ) => void;
 }) {
   try {
     // Get list of all tables (fast operation)
@@ -187,6 +192,10 @@ export async function autoAssignAllTables({
     for (let i = 0; i < tablesList.length; i += BATCH_SIZE) {
       const batch = tablesList.slice(i, i + BATCH_SIZE);
 
+      // Report which tables are starting to be processed
+      const currentBatchNames = batch.map((t) => t.name);
+      onProgress?.(completedTables, totalTables, '', currentBatchNames);
+
       // Process current batch in parallel
       const batchPromises = batch.map(async (tableInfo) => {
         try {
@@ -196,7 +205,13 @@ export async function autoAssignAllTables({
           });
 
           completedTables++;
-          onProgress?.(completedTables, totalTables, tableInfo.name);
+          // Report progress for this specific table
+          onProgress?.(
+            completedTables,
+            totalTables,
+            tableInfo.name,
+            currentBatchNames
+          );
 
           return {
             tableName: tableInfo.name,
@@ -205,7 +220,13 @@ export async function autoAssignAllTables({
           };
         } catch (error) {
           completedTables++;
-          onProgress?.(completedTables, totalTables, tableInfo.name);
+          // Report progress for this specific table
+          onProgress?.(
+            completedTables,
+            totalTables,
+            tableInfo.name,
+            currentBatchNames
+          );
 
           return {
             tableName: tableInfo.name,
@@ -223,6 +244,9 @@ export async function autoAssignAllTables({
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
+
+    // Clear processing state at the end
+    onProgress?.(completedTables, totalTables, '', []);
 
     const successfulTables = results.filter((r) => r.success).length;
     const failedTables = results.filter((r) => !r.success);
@@ -255,7 +279,7 @@ export async function autoAssignAllTables({
 /**
  * Clear the icon cache - useful for development or when icon database is updated
  */
-export function clearIconCache() {
+export async function clearIconCache() {
   iconCache.clear();
   typeIconCache.clear();
 }

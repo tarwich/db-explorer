@@ -727,6 +727,9 @@ function CalculatedColumnsSection({
   const [newColumnName, setNewColumnName] = useState('');
   const [newColumnTemplate, setNewColumnTemplate] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const [editingColumn, setEditingColumn] = useState<CalculatedColumn | null>(null);
+  const [editColumnName, setEditColumnName] = useState('');
+  const [editColumnTemplate, setEditColumnTemplate] = useState('');
 
   const calculatedColumns = table?.details.calculatedColumns || [];
 
@@ -829,6 +832,45 @@ function CalculatedColumnsSection({
     },
   });
 
+  const updateCalculatedColumnMutation = useMutation({
+    mutationFn: async (updatedColumn: CalculatedColumn) => {
+      if (!table) throw new Error('Table not found');
+
+      const updatedTable = { ...table };
+      updatedTable.details.calculatedColumns = (
+        updatedTable.details.calculatedColumns || []
+      ).map((col: CalculatedColumn) => 
+        col.id === updatedColumn.id ? updatedColumn : col
+      );
+
+      await saveTable(updatedTable);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['connections', connectionId, 'tables'],
+      });
+      setEditingColumn(null);
+      setEditColumnName('');
+      setEditColumnTemplate('');
+      toast({
+        title: 'Calculated column updated',
+        description: 'The calculated column has been updated successfully.',
+      });
+    },
+    onError: (error) => {
+      browserLogger.error('Failed to update calculated column', {
+        connectionId,
+        tableName,
+        error: error.message || error,
+      });
+      toast({
+        title: 'Error updating calculated column',
+        variant: 'destructive',
+        description: error.message,
+      });
+    },
+  });
+
   const handleAddColumn = () => {
     if (!newColumnName.trim() || !newColumnTemplate.trim()) {
       toast({
@@ -850,6 +892,38 @@ function CalculatedColumnsSection({
     });
   };
 
+  const handleEditColumn = (column: CalculatedColumn) => {
+    setEditingColumn(column);
+    setEditColumnName(column.displayName);
+    setEditColumnTemplate(column.template);
+    setIsAdding(false); // Close add form if open
+  };
+
+  const handleUpdateColumn = () => {
+    if (!editingColumn || !editColumnName.trim() || !editColumnTemplate.trim()) {
+      toast({
+        title: 'Missing information',
+        description:
+          'Please provide both a name and template for the calculated column.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    updateCalculatedColumnMutation.mutate({
+      ...editingColumn,
+      name: editColumnName.trim(),
+      displayName: editColumnName.trim(),
+      template: editColumnTemplate.trim(),
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingColumn(null);
+    setEditColumnName('');
+    setEditColumnTemplate('');
+  };
+
   const availableColumns = Object.keys(table?.details.columns || {});
 
   return (
@@ -859,7 +933,12 @@ function CalculatedColumnsSection({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setIsAdding(!isAdding)}
+          onClick={() => {
+            setIsAdding(!isAdding);
+            setEditingColumn(null); // Close edit form if open
+            setEditColumnName('');
+            setEditColumnTemplate('');
+          }}
           type="button"
         >
           <Plus className="size-4" />
@@ -889,6 +968,15 @@ function CalculatedColumnsSection({
                 {column.template}
               </div>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleEditColumn(column)}
+              type="button"
+              className="text-blue-600 hover:text-blue-700"
+            >
+              <PencilIcon className="size-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -939,6 +1027,50 @@ function CalculatedColumnsSection({
                 setNewColumnName('');
                 setNewColumnTemplate('');
               }}
+              type="button"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit calculated column form */}
+      {editingColumn && (
+        <div className="flex flex-col gap-2 p-3 bg-blue-50 rounded border">
+          <div className="text-sm font-medium text-blue-800">
+            Edit: {editingColumn.displayName}
+          </div>
+          <Input
+            placeholder="Column name (e.g., Full Name)"
+            value={editColumnName}
+            onChange={(e) => setEditColumnName(e.target.value)}
+            className="text-sm"
+          />
+          <Input
+            placeholder={`Template (e.g., {${
+              availableColumns[0] || 'column1'
+            }} {${availableColumns[1] || 'column2'}})`}
+            value={editColumnTemplate}
+            onChange={(e) => setEditColumnTemplate(e.target.value)}
+            className="text-sm font-mono"
+          />
+          <div className="text-xs text-gray-500">
+            Available columns: {availableColumns.join(', ')}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={handleUpdateColumn}
+              disabled={updateCalculatedColumnMutation.isPending}
+              type="button"
+            >
+              {updateCalculatedColumnMutation.isPending ? 'Updating...' : 'Update'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCancelEdit}
               type="button"
             >
               Cancel

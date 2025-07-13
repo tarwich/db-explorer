@@ -9,12 +9,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { EyeIcon, EyeOffIcon, icons, PencilIcon } from 'lucide-react';
 import { sort } from 'radash';
 import {
-    createContext,
-    forwardRef,
-    useContext,
-    useEffect,
-    useMemo,
-    useState,
+  createContext,
+  forwardRef,
+  useContext,
+  useEffect,
+  useState,
 } from 'react';
 import { useForm } from 'react-hook-form';
 import { ItemBadgeView } from '../explorer/item-views/item-badge-view';
@@ -277,7 +276,12 @@ export function TableTabGeneralPage({
   return (
     <>
       <form className="flex flex-col gap-3 h-full overflow-hidden">
-        <div className={cn('flex flex-col gap-4', 'flex-1 overflow-y-auto')}>
+        <div
+          className={cn(
+            'flex flex-col gap-4',
+            'flex-1 min-h-0 overflow-y-auto'
+          )}
+        >
           <div className="flex flex-row items-center justify-between">
             <div className="text-sm font-medium">Table Information</div>
             <Button
@@ -353,7 +357,9 @@ export function TableTabGeneralPage({
               <Input
                 value={form.watch('singularName')}
                 onChange={(e) => form.setValue('singularName', e.target.value)}
-                onBlur={(e) => saveTableMutation.mutate({ singularName: e.target.value })}
+                onBlur={(e) =>
+                  saveTableMutation.mutate({ singularName: e.target.value })
+                }
                 className="w-full"
                 placeholder="Table"
               />
@@ -365,7 +371,9 @@ export function TableTabGeneralPage({
               <Input
                 value={form.watch('pluralName')}
                 onChange={(e) => form.setValue('pluralName', e.target.value)}
-                onBlur={(e) => saveTableMutation.mutate({ pluralName: e.target.value })}
+                onBlur={(e) =>
+                  saveTableMutation.mutate({ pluralName: e.target.value })
+                }
                 className="w-full"
                 placeholder="Tables"
               />
@@ -375,7 +383,7 @@ export function TableTabGeneralPage({
           <div className="text-sm font-medium">Columns</div>
 
           {/* Columns */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
             {Object.values(tableQuery.data?.details.columns || {}).map(
               (column) => (
                 <div

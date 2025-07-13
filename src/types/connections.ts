@@ -67,6 +67,16 @@ export type ColumnInformation = {
 };
 export type ColumnDictionary = Record<string, ColumnInformation>;
 
+export type CalculatedColumn = {
+  id: string;
+  name: string;
+  displayName: string;
+  template: string; // e.g., "{First} {Last}" or "{first_name} {last_name}"
+  icon: TIconName;
+  order: number;
+  hidden: boolean;
+};
+
 export type LiteColumnInformation = { order: number; hidden: boolean };
 export type LiteColumnDictionary = Record<string, LiteColumnInformation>;
 
@@ -82,6 +92,7 @@ export interface DatabaseTable {
     icon: TIconName;
     pk: string[];
     columns: ColumnDictionary;
+    calculatedColumns?: CalculatedColumn[];
     inlineView: {
       columns: LiteColumnDictionary;
     };

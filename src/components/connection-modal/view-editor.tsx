@@ -33,6 +33,7 @@ interface Column {
   type: string;
   hidden: boolean;
   order: number;
+  calculated?: boolean; // Add this to distinguish calculated columns
 }
 
 interface SortableColumnProps {
@@ -72,7 +73,7 @@ function SortableColumn({ column, onVisibilityToggle }: SortableColumnProps) {
       <ItemIcon item={{ icon: column.icon }} />
       <span className="flex-1">{column.displayName}</span>
       <span className="font-mono text-xs text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded">
-        {column.type}
+        {column.calculated ? 'calculated' : column.type}
       </span>
     </div>
   );
@@ -107,20 +108,36 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
     [tableQuery.data]
   );
 
-  // Convert database columns to state
+  // Convert database columns to state - include both regular and calculated columns
   const columns = useMemo(() => {
-    return sort(
-      Object.values(table?.details.columns || {}),
-      (c) => view?.columns[c.name]?.order ?? 0
-    ).map((c, index) => ({
-      id: c.name,
-      name: c.name,
-      displayName: c.displayName,
-      icon: c.icon,
-      type: c.type,
-      hidden: view?.columns[c.name]?.hidden ?? c.hidden,
-      order: index,
-    }));
+    const regularColumns = Object.values(table?.details.columns || {}).map(
+      (c) => ({
+        id: c.name,
+        name: c.name,
+        displayName: c.displayName,
+        icon: c.icon,
+        type: c.type,
+        hidden: view?.columns[c.name]?.hidden ?? c.hidden,
+        order: view?.columns[c.name]?.order ?? 0,
+        calculated: false,
+      })
+    );
+
+    const calculatedColumns = (table?.details.calculatedColumns || []).map(
+      (c) => ({
+        id: `calc_${c.id}`,
+        name: `calc_${c.id}`, // Use consistent naming format
+        displayName: c.displayName,
+        icon: c.icon,
+        type: 'calculated',
+        hidden: view?.columns[`calc_${c.id}`]?.hidden ?? c.hidden,
+        order: view?.columns[`calc_${c.id}`]?.order ?? c.order,
+        calculated: true,
+      })
+    );
+
+    // Combine and sort all columns
+    return sort([...regularColumns, ...calculatedColumns], (c) => c.order);
   }, [table, view]);
 
   // Filter columns based on toggle state
@@ -136,18 +153,24 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
 
     // Update the column's order using the mutation
     updateColumnMutation.mutate({
-      name: active.id as string,
+      columnId: active.id as string,
       update: { order: newIndex },
     });
   };
 
   const updateColumnMutation = useMutation({
-    mutationFn: ({ name, update }: { name: string; update: Partial<Column> }) =>
+    mutationFn: ({
+      columnId,
+      update,
+    }: {
+      columnId: string;
+      update: Partial<Column>;
+    }) =>
       updateColumn({
         connectionId,
         tableName,
         view: type,
-        columnName: name,
+        columnId,
         update,
       }),
     onSuccess: () => {
@@ -159,7 +182,7 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
       browserLogger.error('Failed to update column', {
         connectionId,
         tableName,
-        columnName: name,
+        columnId: 'unknown',
         error: error.message || error,
       });
       toast({
@@ -209,7 +232,7 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
                   column={column}
                   onVisibilityToggle={() =>
                     updateColumnMutation.mutate({
-                      name: column.name,
+                      columnId: column.id,
                       update: { hidden: !column.hidden },
                     })
                   }
@@ -227,10 +250,22 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
           <ItemInlineView
             item={{
               icon: 'Table',
-              columns: visibleColumns.map((c) => ({
-                name: c.name,
-                value: c.name,
-              })),
+              columns: visibleColumns.map((c) => {
+                if (c.calculated) {
+                  // For calculated columns, show template preview
+                  const calcColumn = table?.details.calculatedColumns?.find(
+                    (calc) => `calc_${calc.id}` === c.name
+                  );
+                  return {
+                    name: c.displayName,
+                    value: calcColumn?.template || c.displayName,
+                  };
+                }
+                return {
+                  name: c.displayName,
+                  value: c.displayName,
+                };
+              }),
             }}
           />
         ) : type === 'card' ? (
@@ -238,10 +273,22 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
             item={{
               id: '1',
               icon: 'Table',
-              columns: visibleColumns.map((c) => ({
-                name: c.name,
-                value: c.name,
-              })),
+              columns: visibleColumns.map((c) => {
+                if (c.calculated) {
+                  // For calculated columns, show template preview
+                  const calcColumn = table?.details.calculatedColumns?.find(
+                    (calc) => `calc_${calc.id}` === c.name
+                  );
+                  return {
+                    name: c.displayName,
+                    value: calcColumn?.template || c.displayName,
+                  };
+                }
+                return {
+                  name: c.displayName,
+                  value: c.displayName,
+                };
+              }),
             }}
           />
         ) : (
@@ -249,10 +296,22 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
             item={{
               id: '1',
               icon: 'Table',
-              columns: visibleColumns.map((c) => ({
-                name: c.name,
-                value: c.name,
-              })),
+              columns: visibleColumns.map((c) => {
+                if (c.calculated) {
+                  // For calculated columns, show template preview
+                  const calcColumn = table?.details.calculatedColumns?.find(
+                    (calc) => `calc_${calc.id}` === c.name
+                  );
+                  return {
+                    name: c.displayName,
+                    value: calcColumn?.template || c.displayName,
+                  };
+                }
+                return {
+                  name: c.displayName,
+                  value: c.displayName,
+                };
+              }),
             }}
           />
         )}

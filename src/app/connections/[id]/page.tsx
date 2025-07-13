@@ -1,7 +1,7 @@
 'use client';
 
-import { getTableRecords, getTables } from '@/app/api/tables';
-import { getTablesList, analyzeTable } from '@/app/api/tables-list';
+import { getTable, getTableRecords, getTables } from '@/app/api/tables';
+import { analyzeTable, getTablesList } from '@/app/api/tables-list';
 import { ConnectionModal } from '@/components/connection-modal/connection-modal';
 import { ItemCardView } from '@/components/explorer/item-views/item-card-view';
 import { ItemIcon } from '@/components/explorer/item-views/item-icon';
@@ -26,7 +26,7 @@ import {
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { sort } from 'radash';
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getConnections } from '../../api/connections';
 
 type ViewType = 'grid' | 'list' | 'table';
@@ -44,6 +44,7 @@ export default function DataBrowserPage({
   const [page, setPage] = useState(1);
   const pageSize = 10;
   const [viewType, setViewType] = useState<ViewType>('grid');
+  const tableConfigModal = useDisclosure();
   const { width, startResizing, isResizing, resizerProps } = useResizable({
     initialWidth: 256,
   });
@@ -63,9 +64,8 @@ export default function DataBrowserPage({
   // Full table details - only load when a table is selected
   const selectedTableQuery = useQuery({
     queryKey: ['connections', params.id, 'table-details', selectedTable],
-    queryFn: () => selectedTable ? getTables(params.id).then(tables => 
-      tables.find(t => t.name === selectedTable)
-    ) : null,
+    queryFn: () =>
+      selectedTable ? getTable(params.id, selectedTable) : null,
     enabled: !!selectedTable,
   });
 
@@ -96,40 +96,42 @@ export default function DataBrowserPage({
 
   // Background analysis of tables
   const queryClient = useQueryClient();
-  
+
   useEffect(() => {
     if (!tablesListQuery.data) return;
-    
+
     // Find tables that haven't been analyzed yet
-    const unanalyzedTables = tablesListQuery.data.filter(table => !table.isAnalyzed);
-    
+    const unanalyzedTables = tablesListQuery.data.filter(
+      (table) => !table.isAnalyzed
+    );
+
     if (unanalyzedTables.length === 0) return;
-    
+
     // Analyze tables in background, one by one to avoid overwhelming the system
     const analyzeTablesSequentially = async () => {
       for (const table of unanalyzedTables) {
         try {
           await analyzeTable(params.id, table.name);
-          
+
           // Update the table list cache to show this table as analyzed
           queryClient.setQueryData(
             ['connections', params.id, 'tables-list'],
             (oldData: any) => {
               if (!oldData) return oldData;
-              return oldData.map((t: any) => 
+              return oldData.map((t: any) =>
                 t.name === table.name ? { ...t, isAnalyzed: true } : t
               );
             }
           );
-          
+
           // Small delay to avoid overwhelming the system
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         } catch (error) {
           console.error(`Failed to analyze table ${table.name}:`, error);
         }
       }
     };
-    
+
     // Start background analysis
     analyzeTablesSequentially();
   }, [tablesListQuery.data, params.id, queryClient]);
@@ -199,7 +201,10 @@ export default function DataBrowserPage({
                     {table.displayName}
                   </span>
                   {!table.isAnalyzed && (
-                    <div className="w-2 h-2 bg-blue-400 rounded-full" title="Analyzing..." />
+                    <div
+                      className="w-2 h-2 bg-blue-400 rounded-full"
+                      title="Analyzing..."
+                    />
                   )}
                 </button>
               ))
@@ -226,7 +231,10 @@ export default function DataBrowserPage({
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <TableIcon className="w-5 h-5 text-emerald-500" />
+                <TableIcon
+                  className="w-5 h-5 text-emerald-500 cursor-pointer hover:text-emerald-600"
+                  onClick={() => tableConfigModal.onOpen()}
+                />
                 <h1 className="text-xl font-semibold">
                   {currentTable?.details.pluralName}
                 </h1>
@@ -379,6 +387,17 @@ export default function DataBrowserPage({
           </div>
         )}
       </div>
+
+      {/* Table Configuration Modal */}
+      {tableConfigModal.isOpen && selectedTable && (
+        <ConnectionModal
+          isOpen={tableConfigModal.isOpen}
+          onOpenChange={tableConfigModal.onOpenChange}
+          connectionId={params.id}
+          initialTableName={selectedTable}
+          initialTablePage="general"
+        />
+      )}
     </div>
   );
 }
@@ -386,13 +405,36 @@ export default function DataBrowserPage({
 function GridView({ table, items }: { table: DatabaseTable; items: any[] }) {
   const connectionModal = useDisclosure();
   const columns = useMemo(() => {
-    return sort(
-      Object.entries(table.details.cardView.columns),
-      ([, c]) => c.order
-    )
-      .filter(([, c]) => !c.hidden)
-      .map(([name]) => table.details.columns[name])
-      .filter(Boolean);
+    // Get regular columns from view configuration
+    const regularColumns = Object.values(table.details.columns).map((c) => ({
+      id: c.name,
+      name: c.name,
+      displayName: c.displayName,
+      icon: c.icon,
+      type: c.type,
+      hidden: table.details.cardView.columns[c.name]?.hidden ?? c.hidden,
+      order: table.details.cardView.columns[c.name]?.order ?? 0,
+      calculated: false,
+    }));
+
+    // Get calculated columns from view configuration
+    const calculatedColumns = (table.details.calculatedColumns || []).map(
+      (c: any) => ({
+        id: `calc_${c.id}`,
+        name: c.name,
+        displayName: c.displayName,
+        icon: c.icon,
+        type: 'calculated',
+        hidden:
+          table.details.cardView.columns[`calc_${c.id}`]?.hidden ?? c.hidden,
+        order: table.details.cardView.columns[`calc_${c.id}`]?.order ?? c.order,
+        calculated: true,
+      })
+    );
+
+    // Combine and sort all columns
+    const allColumns = [...regularColumns, ...calculatedColumns];
+    return sort(allColumns, (c: any) => c.order).filter((c: any) => !c.hidden);
   }, [table]);
 
   return (
@@ -404,7 +446,7 @@ function GridView({ table, items }: { table: DatabaseTable; items: any[] }) {
             id: record.id,
             icon: table.details.icon,
             columns: columns.map((c) => {
-              const val = record[c.name];
+              const val = record[c.id];
               if (
                 val &&
                 typeof val === 'object' &&
@@ -412,18 +454,17 @@ function GridView({ table, items }: { table: DatabaseTable; items: any[] }) {
                 'icon' in val
               ) {
                 return {
-                  name: c.name,
+                  name: c.displayName,
                   value: val.value,
                   icon: val.icon,
                 };
               }
               return {
-                name: c.name,
+                name: c.displayName,
                 value: String(val),
               };
             }),
           }}
-          onEdit={() => connectionModal.onOpen()}
         />
       ))}
       {connectionModal.isOpen && (
@@ -442,13 +483,36 @@ function GridView({ table, items }: { table: DatabaseTable; items: any[] }) {
 function ListView({ table, items }: { table: DatabaseTable; items: any[] }) {
   const connectionModal = useDisclosure();
   const columns = useMemo(() => {
-    return sort(
-      Object.entries(table.details.listView.columns),
-      ([, c]) => c.order
-    )
-      .filter(([, c]) => !c.hidden)
-      .map(([name]) => table.details.columns[name])
-      .filter(Boolean);
+    // Get regular columns from view configuration
+    const regularColumns = Object.values(table.details.columns).map((c) => ({
+      id: c.name,
+      name: c.name,
+      displayName: c.displayName,
+      icon: c.icon,
+      type: c.type,
+      hidden: table.details.listView.columns[c.name]?.hidden ?? c.hidden,
+      order: table.details.listView.columns[c.name]?.order ?? 0,
+      calculated: false,
+    }));
+
+    // Get calculated columns from view configuration
+    const calculatedColumns = (table.details.calculatedColumns || []).map(
+      (c: any) => ({
+        id: `calc_${c.id}`,
+        name: c.name,
+        displayName: c.displayName,
+        icon: c.icon,
+        type: 'calculated',
+        hidden:
+          table.details.listView.columns[`calc_${c.id}`]?.hidden ?? c.hidden,
+        order: table.details.listView.columns[`calc_${c.id}`]?.order ?? c.order,
+        calculated: true,
+      })
+    );
+
+    // Combine and sort all columns
+    const allColumns = [...regularColumns, ...calculatedColumns];
+    return sort(allColumns, (c: any) => c.order).filter((c: any) => !c.hidden);
   }, [table]);
 
   return (
@@ -460,7 +524,7 @@ function ListView({ table, items }: { table: DatabaseTable; items: any[] }) {
             id: record.id,
             icon: table.details.icon,
             columns: columns.map((c) => {
-              const val = record[c.name];
+              const val = record[c.id];
               if (
                 val &&
                 typeof val === 'object' &&
@@ -468,18 +532,17 @@ function ListView({ table, items }: { table: DatabaseTable; items: any[] }) {
                 'icon' in val
               ) {
                 return {
-                  name: c.name,
+                  name: c.displayName,
                   value: val.value,
                   icon: val.icon,
                 };
               }
               return {
-                name: c.name,
+                name: c.displayName,
                 value: String(val),
               };
             }),
           }}
-          onEdit={connectionModal.onOpen}
         />
       ))}
       {connectionModal.isOpen && (
@@ -498,10 +561,24 @@ function ListView({ table, items }: { table: DatabaseTable; items: any[] }) {
 function TableView({ table, items }: { table: DatabaseTable; items: any[] }) {
   const connectionModal = useDisclosure();
   const columns = useMemo(() => {
-    return sort(Object.entries(table.details.columns), ([, c]) => c.order)
-      .filter(([, c]) => !c.hidden)
+    const { mergeColumnsForDisplay } = require('@/utils/calculated-columns');
+
+    // Get regular columns
+    const regularColumns = sort(
+      Object.entries(table.details.columns),
+      ([, c]: any) => c.order
+    )
+      .filter(([, c]: any) => !c.hidden)
       .map(([name]) => table.details.columns[name])
       .filter(Boolean);
+
+    // Merge with calculated columns
+    const allColumns = mergeColumnsForDisplay(
+      regularColumns,
+      table.details.calculatedColumns || []
+    );
+
+    return allColumns.filter((col: any) => !col.hidden);
   }, [table]);
 
   return (
@@ -509,7 +586,7 @@ function TableView({ table, items }: { table: DatabaseTable; items: any[] }) {
       <table className="w-full">
         <thead className="bg-gray-50 border-b">
           <tr>
-            {columns.map((column) => (
+            {columns.map((column: any) => (
               <th
                 key={column.name}
                 className="px-4 py-2 text-left text-sm font-medium text-gray-900"
@@ -527,7 +604,7 @@ function TableView({ table, items }: { table: DatabaseTable; items: any[] }) {
               className="cursor-pointer hover:bg-gray-50"
               onClick={connectionModal.onOpen}
             >
-              {columns.map((column) => {
+              {columns.map((column: any) => {
                 const val = record[column.name];
                 if (
                   val &&

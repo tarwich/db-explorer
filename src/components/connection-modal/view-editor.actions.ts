@@ -11,13 +11,13 @@ export async function updateColumn({
   connectionId,
   tableName,
   view,
-  columnName,
+  columnId,
   update,
 }: {
   connectionId: string;
   tableName: string;
   view: ViewType;
-  columnName: string;
+  columnId: string;
   update: Partial<LiteColumnInformation>;
 }) {
   const db = await getStateDb();
@@ -37,16 +37,18 @@ export async function updateColumn({
     throw new Error('Invalid view type');
   })();
 
+  const isCalculatedColumn = columnId.startsWith('calc_');
+
   // Handle column reordering
   if (update.order !== undefined) {
-    const itemToUpdate = actualView.columns[columnName];
-    delete actualView.columns[columnName];
+    const itemToUpdate = actualView.columns[columnId];
+    delete actualView.columns[columnId];
     const oldList = sort(Object.entries(actualView.columns), (c) => c[1].order);
 
     const newList = Array.from({ length: oldList.length + 1 })
       .map((_, i): (typeof oldList)[number] => {
         if (i === update.order) {
-          return [columnName, itemToUpdate];
+          return [columnId, itemToUpdate];
         } else {
           const item = oldList.shift();
           if (item) return item;
@@ -60,12 +62,24 @@ export async function updateColumn({
     actualView.columns = Object.fromEntries(newList);
   }
 
+  // If it's a calculated column, also update the order in the calculatedColumns array
+  if (isCalculatedColumn && update.order !== undefined) {
+    const calculatedColumnId = columnId.replace('calc_', '');
+    const calculatedColumns = table.details.calculatedColumns || [];
+    const calculatedColumn = calculatedColumns.find(
+      (c) => c.id === calculatedColumnId
+    );
+    if (calculatedColumn) {
+      calculatedColumn.order = update.order;
+    }
+  }
+
   Object.assign(actualView, {
     ...actualView,
     columns: {
       ...actualView.columns,
-      [columnName]: {
-        ...actualView.columns[columnName],
+      [columnId]: {
+        ...actualView.columns[columnId],
         ...update,
       },
     },

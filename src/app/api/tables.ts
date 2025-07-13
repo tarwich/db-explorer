@@ -152,6 +152,7 @@ export async function getTable(
     const updateViewColumns = (columns?: LiteColumnDictionary) => {
       const result: LiteColumnDictionary = {};
 
+      // Add regular database columns
       for (const formattedColumn of formattedColumns) {
         const column = columns?.[formattedColumn.name];
 
@@ -159,6 +160,19 @@ export async function getTable(
           ...column,
           order: column?.order ?? formattedColumn.order ?? Infinity,
           hidden: column?.hidden ?? formattedColumn.hidden ?? false,
+        };
+      }
+
+      // Add calculated columns
+      const calculatedColumns = knownTable?.details.calculatedColumns || [];
+      for (const calcColumn of calculatedColumns) {
+        const calcColumnKey = `calc_${calcColumn.id}`;
+        const column = columns?.[calcColumnKey];
+
+        result[calcColumnKey] = {
+          ...column,
+          order: column?.order ?? calcColumn.order ?? Infinity,
+          hidden: column?.hidden ?? calcColumn.hidden ?? false,
         };
       }
 
@@ -184,6 +198,7 @@ export async function getTable(
           'Table',
         pk: knownTable?.details.pk || [],
         columns,
+        calculatedColumns: knownTable?.details.calculatedColumns || [],
         inlineView: {
           ...knownTable?.details.inlineView,
           columns: updateViewColumns(knownTable?.details.inlineView?.columns),
@@ -330,8 +345,17 @@ export async function getTableRecords(
     return newRecord;
   });
 
+  // 5. Add calculated columns to records
+  const {
+    addCalculatedColumnsToRecords,
+  } = require('@/utils/calculated-columns');
+  const finalRecords = addCalculatedColumnsToRecords(
+    recordsWithDisplay,
+    table.details.calculatedColumns || []
+  );
+
   return {
-    records: recordsWithDisplay,
+    records: finalRecords,
     pagination: {
       page,
       pageSize,

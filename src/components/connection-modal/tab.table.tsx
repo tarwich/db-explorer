@@ -4,8 +4,17 @@ import { getConnection } from '@/app/api/connections';
 import { getTable, getTables, saveTable } from '@/app/api/tables';
 import { useToast } from '@/hooks/use-toast';
 import browserLogger from '@/lib/browser-logger';
+import { CalculatedColumn } from '@/types/connections';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { EyeIcon, EyeOffIcon, Filter, icons, PencilIcon } from 'lucide-react';
+import {
+  EyeIcon,
+  EyeOffIcon,
+  Filter,
+  icons,
+  PencilIcon,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 import { sort } from 'radash';
 import {
   createContext,
@@ -411,6 +420,13 @@ export function TableTabGeneralPage({
             ))}
           </div>
 
+          {/* Calculated Columns */}
+          <CalculatedColumnsSection
+            connectionId={connectionId}
+            tableName={tableName}
+            table={tableQuery.data}
+          />
+
           {/* Inline View */}
           <div className="flex flex-col gap-2">
             <div className="flex flex-row items-center justify-between">
@@ -691,6 +707,245 @@ function TableTabColumnEditPage({
           {saving ? 'Saving...' : 'Save Changes'}
         </Button>
       </form>
+    </div>
+  );
+}
+
+// --- Calculated Columns Section ---
+
+function CalculatedColumnsSection({
+  connectionId,
+  tableName,
+  table,
+}: {
+  connectionId: string;
+  tableName: string;
+  table: any;
+}) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [newColumnName, setNewColumnName] = useState('');
+  const [newColumnTemplate, setNewColumnTemplate] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
+
+  const calculatedColumns = table?.details.calculatedColumns || [];
+
+  const addCalculatedColumnMutation = useMutation({
+    mutationFn: async (newColumn: Omit<CalculatedColumn, 'id'>) => {
+      if (!table) throw new Error('Table not found');
+
+      const updatedTable = { ...table };
+      const newCalculatedColumn: CalculatedColumn = {
+        ...newColumn,
+        id: `calc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      };
+
+      updatedTable.details.calculatedColumns = [
+        ...(updatedTable.details.calculatedColumns || []),
+        newCalculatedColumn,
+      ];
+
+      // Add calculated column to all view configurations
+      const calcColumnId = `calc_${newCalculatedColumn.id}`;
+      const columnConfig = {
+        order: Object.keys(updatedTable.details.cardView?.columns || {}).length,
+        hidden: false,
+      };
+
+      // Add to card view
+      if (!updatedTable.details.cardView)
+        updatedTable.details.cardView = { columns: {} };
+      updatedTable.details.cardView.columns[calcColumnId] = columnConfig;
+
+      // Add to list view
+      if (!updatedTable.details.listView)
+        updatedTable.details.listView = { columns: {} };
+      updatedTable.details.listView.columns[calcColumnId] = columnConfig;
+
+      // Add to inline view
+      if (!updatedTable.details.inlineView)
+        updatedTable.details.inlineView = { columns: {} };
+      updatedTable.details.inlineView.columns[calcColumnId] = columnConfig;
+
+      await saveTable(updatedTable);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['connections', connectionId, 'tables'],
+      });
+      setNewColumnName('');
+      setNewColumnTemplate('');
+      setIsAdding(false);
+      toast({
+        title: 'Calculated column added',
+        description: 'The calculated column has been created successfully.',
+      });
+    },
+    onError: (error) => {
+      browserLogger.error('Failed to add calculated column', {
+        connectionId,
+        tableName,
+        error: error.message || error,
+      });
+      toast({
+        title: 'Error adding calculated column',
+        variant: 'destructive',
+        description: error.message,
+      });
+    },
+  });
+
+  const deleteCalculatedColumnMutation = useMutation({
+    mutationFn: async (columnId: string) => {
+      if (!table) throw new Error('Table not found');
+
+      const updatedTable = { ...table };
+      updatedTable.details.calculatedColumns = (
+        updatedTable.details.calculatedColumns || []
+      ).filter((col: CalculatedColumn) => col.id !== columnId);
+
+      await saveTable(updatedTable);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['connections', connectionId, 'tables'],
+      });
+      toast({
+        title: 'Calculated column deleted',
+        description: 'The calculated column has been removed.',
+      });
+    },
+    onError: (error) => {
+      browserLogger.error('Failed to delete calculated column', {
+        connectionId,
+        tableName,
+        error: error.message || error,
+      });
+      toast({
+        title: 'Error deleting calculated column',
+        variant: 'destructive',
+        description: error.message,
+      });
+    },
+  });
+
+  const handleAddColumn = () => {
+    if (!newColumnName.trim() || !newColumnTemplate.trim()) {
+      toast({
+        title: 'Missing information',
+        description:
+          'Please provide both a name and template for the calculated column.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    addCalculatedColumnMutation.mutate({
+      name: newColumnName.trim(),
+      displayName: newColumnName.trim(),
+      template: newColumnTemplate.trim(),
+      icon: 'Calculator',
+      order: calculatedColumns.length,
+      hidden: false,
+    });
+  };
+
+  const availableColumns = Object.keys(table?.details.columns || {});
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-row items-center justify-between">
+        <div className="text-sm font-medium">Calculated Columns</div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsAdding(!isAdding)}
+          type="button"
+        >
+          <Plus className="size-4" />
+        </Button>
+      </div>
+
+      {/* Existing calculated columns */}
+      <div className="flex flex-col gap-2 max-h-32 overflow-y-auto">
+        {calculatedColumns.map((column: CalculatedColumn) => (
+          <div
+            key={column.id}
+            className="flex flex-row gap-2 items-center p-2 bg-blue-50 rounded border"
+          >
+            <Button variant="ghost" size="icon">
+              {column.hidden ? (
+                <EyeOffIcon className="size-4" />
+              ) : (
+                <EyeIcon className="size-4" />
+              )}
+            </Button>
+            <ItemIcon item={{ icon: column.icon }} />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium truncate">
+                {column.displayName}
+              </div>
+              <div className="text-xs text-blue-600 font-mono truncate">
+                {column.template}
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => deleteCalculatedColumnMutation.mutate(column.id)}
+              type="button"
+              className="text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </div>
+        ))}
+      </div>
+
+      {/* Add new calculated column form */}
+      {isAdding && (
+        <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded border">
+          <Input
+            placeholder="Column name (e.g., Full Name)"
+            value={newColumnName}
+            onChange={(e) => setNewColumnName(e.target.value)}
+            className="text-sm"
+          />
+          <Input
+            placeholder={`Template (e.g., {${
+              availableColumns[0] || 'column1'
+            }} {${availableColumns[1] || 'column2'}})`}
+            value={newColumnTemplate}
+            onChange={(e) => setNewColumnTemplate(e.target.value)}
+            className="text-sm font-mono"
+          />
+          <div className="text-xs text-gray-500">
+            Available columns: {availableColumns.join(', ')}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={handleAddColumn}
+              disabled={addCalculatedColumnMutation.isPending}
+              type="button"
+            >
+              {addCalculatedColumnMutation.isPending ? 'Adding...' : 'Add'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIsAdding(false);
+                setNewColumnName('');
+                setNewColumnTemplate('');
+              }}
+              type="button"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

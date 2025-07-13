@@ -369,7 +369,7 @@ function GridView({ table, items }: { table: DatabaseTable; items: any[] }) {
               };
             }),
           }}
-          onMenuClick={() => connectionModal.onOpen()}
+          onEdit={() => connectionModal.onOpen()}
         />
       ))}
       {connectionModal.isOpen && (
@@ -425,7 +425,7 @@ function ListView({ table, items }: { table: DatabaseTable; items: any[] }) {
               };
             }),
           }}
-          onMenuClick={connectionModal.onOpen}
+          onEdit={connectionModal.onOpen}
         />
       ))}
       {connectionModal.isOpen && (

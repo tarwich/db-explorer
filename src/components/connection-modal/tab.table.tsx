@@ -26,7 +26,7 @@ import { Button } from '../ui/button';
 import { ColorPicker } from '../ui/color-picker';
 import { IconPicker } from '../ui/icon-picker';
 import { Input } from '../ui/input';
-import { autoAssignTableSettings } from './auto-assign.actions';
+import { autoAssignTableSettingsOptimized } from './auto-assign-optimized.actions';
 import { Breadcrumbs } from './breadcrumbs';
 import { ViewEditor } from './view-editor';
 
@@ -244,8 +244,9 @@ export function TableTabGeneralPage({
   });
 
   const autoAssignMutation = useMutation({
-    mutationFn: () => autoAssignTableSettings({ connectionId, tableName }),
-    onSuccess: (result) => {
+    mutationFn: () =>
+      autoAssignTableSettingsOptimized({ connectionId, tableName }),
+    onSuccess: (result: { success: boolean; message: string }) => {
       if (result.success) {
         queryClient.invalidateQueries({
           queryKey: ['connections', connectionId, 'tables'],
@@ -267,7 +268,7 @@ export function TableTabGeneralPage({
         });
       }
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: 'Auto-assignment failed',
         description: error.message || 'An unexpected error occurred',
@@ -275,9 +276,6 @@ export function TableTabGeneralPage({
       });
     },
   });
-
-
-
 
   return (
     <>

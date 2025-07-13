@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import { autoAssignAllTables } from './auto-assign-optimized.actions';
 import { loadConnection, saveConnection } from './connection-modal.actions';
 import { deleteConnection } from './delete-connection.action';
 
@@ -99,6 +100,35 @@ export const ConnectionTab = forwardRef<
       // Invalidate connections query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['connections'] });
       onDelete?.();
+    },
+  });
+
+  const autoAssignAllMutation = useMutation({
+    mutationFn: () => autoAssignAllTables({ connectionId: connectionId ?? '' }),
+    onError: (error) => {
+      browserLogger.error('Failed to auto-assign all tables', {
+        connectionId,
+        error: error.message || error,
+      });
+      toast({
+        title: 'Auto-assignment failed',
+        description: error.message || 'Failed to auto-assign all tables',
+        variant: 'destructive',
+      });
+    },
+    onSuccess: (result) => {
+      toast({
+        title: 'Auto-assignment completed',
+        description: result.message,
+        variant: 'default',
+      });
+      // Invalidate tables queries to refresh the data
+      queryClient.invalidateQueries({
+        queryKey: ['connections', connectionId, 'tables'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['tables-list', connectionId],
+      });
     },
   });
 
@@ -222,18 +252,55 @@ export const ConnectionTab = forwardRef<
           {connectionType === 'sqlite' && <SqliteConnectionSettings />}
         </div>
 
-        <div className="flex flex-row gap-4 justify-end">
-          <Button type="submit">Save</Button>
+        <div className="flex flex-row gap-4 justify-between">
+          {/* Auto-assign all tables - only show for existing connections */}
           {connectionId && (
             <Button
               type="button"
-              variant="destructive"
-              onClick={() => deleteConnectionMutation.mutate()}
-              disabled={deleteConnectionMutation.status === 'pending'}
+              variant="outline"
+              onClick={() => autoAssignAllMutation.mutate()}
+              disabled={autoAssignAllMutation.status === 'pending'}
+              className="flex items-center gap-2"
             >
-              Delete
+              {autoAssignAllMutation.status === 'pending' ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  Auto-assigning...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  Auto-assign All Tables
+                </>
+              )}
             </Button>
           )}
+
+          <div className="flex flex-row gap-4">
+            <Button type="submit">Save</Button>
+            {connectionId && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => deleteConnectionMutation.mutate()}
+                disabled={deleteConnectionMutation.status === 'pending'}
+              >
+                Delete
+              </Button>
+            )}
+          </div>
         </div>
       </form>
     </FormProvider>

@@ -168,3 +168,76 @@ export async function deleteRecord({
 
   await db.deleteFrom(tableName).where(pkField, '=', pk).execute();
 }
+
+export async function getBacklinks({
+  connectionId,
+  tableName,
+  recordId,
+}: {
+  connectionId: string;
+  tableName: string;
+  recordId: any;
+}) {
+  const db = await openConnection(connectionId);
+  
+  if (!db) {
+    throw new Error('Database connection is null');
+  }
+
+  console.log('Getting backlinks for:', { connectionId, tableName, recordId });
+
+  // For now, focus on the existing foreign key guessing system
+  // since database constraint introspection is complex
+  const { getTables } = await import('@/app/api/tables');
+  const allTables = await getTables(connectionId);
+  
+  const guessingReferences = [];
+  for (const table of allTables) {
+    for (const [columnName, column] of Object.entries(table.details.columns)) {
+      if (column.foreignKey && column.foreignKey.targetTable === tableName) {
+        guessingReferences.push({
+          sourceTable: table.name,
+          sourceColumn: columnName,
+          targetTable: tableName,
+          targetColumn: column.foreignKey.targetColumn,
+          isGuessed: column.foreignKey.isGuessed,
+        });
+      }
+    }
+  }
+
+  console.log('Found guessed references:', guessingReferences);
+
+  // For each reference, fetch the actual records that point to this record
+  const backlinks = [];
+  
+  for (const ref of guessingReferences) {
+    try {
+      const records = await db
+        .selectFrom(ref.sourceTable)
+        .selectAll()
+        .where(ref.sourceColumn, '=', recordId)
+        .limit(10) // Limit to avoid too much data
+        .execute();
+
+      if (records.length > 0) {
+        // Get table details for display
+        const sourceTableInfo = allTables.find((t: any) => t.name === ref.sourceTable);
+        
+        backlinks.push({
+          table: ref.sourceTable,
+          column: ref.sourceColumn,
+          count: records.length,
+          records: records,
+          tableInfo: sourceTableInfo,
+          isGuessed: ref.isGuessed,
+        });
+      }
+    } catch (error) {
+      console.warn(`Error fetching backlinks from ${ref.sourceTable}.${ref.sourceColumn}:`, error);
+    }
+  }
+
+  console.log('Final backlinks:', backlinks);
+  return backlinks;
+}

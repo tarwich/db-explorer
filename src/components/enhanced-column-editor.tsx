@@ -23,6 +23,7 @@ interface EnhancedColumnEditorProps {
   isForeignKey: boolean;
   isNullable: boolean;
   isGenerated?: boolean;
+  onNavigateToRecord?: (targetConnectionId: string, targetTableName: string, targetRecordId: any, displayValue?: string) => void;
 }
 
 export function EnhancedColumnEditor({
@@ -32,6 +33,7 @@ export function EnhancedColumnEditor({
   isForeignKey,
   isNullable,
   isGenerated = false,
+  onNavigateToRecord,
 }: EnhancedColumnEditorProps) {
   const { register, setValue, watch } = useFormContext();
   const [fkSearchOpen, setFkSearchOpen] = useState(false);
@@ -54,6 +56,25 @@ export function EnhancedColumnEditor({
     enabled: isForeignKey && !!column.foreignKey && fkSearchOpen,
   });
 
+  // For foreign keys, fetch the target table info for inline view configuration
+  const { getTableInfo } = require('./recored-editor-sidebar.actions');
+  const fkTableInfoQuery = useQuery({
+    queryKey: ['connection', connectionId, 'table', column.foreignKey?.targetTable],
+    queryFn: () => column.foreignKey ? getTableInfo({ connectionId, tableName: column.foreignKey.targetTable }) : null,
+    enabled: isForeignKey && !!column.foreignKey && !!value,
+  });
+
+  // For foreign keys, fetch the current FK record to display its inline view
+  const fkCurrentRecordQuery = useQuery({
+    queryKey: ['fk-current-record', connectionId, column.foreignKey?.targetTable, value],
+    queryFn: () => {
+      if (!column.foreignKey || !value) return null;
+      const { getRecord } = require('./recored-editor-sidebar.actions');
+      return getRecord({ connectionId, tableName: column.foreignKey.targetTable, pk: value });
+    },
+    enabled: isForeignKey && !!column.foreignKey && !!value,
+  });
+
   const handleFkSelect = (recordId: string) => {
     setValue(column.name, recordId);
     setFkSearchOpen(false);
@@ -62,6 +83,74 @@ export function EnhancedColumnEditor({
 
   const handleClearValue = () => {
     setValue(column.name, null);
+  };
+
+  const getFkDisplayValue = (record: any, tableInfo: any) => {
+    if (!record || !tableInfo) return null;
+    
+    // Use display field if available
+    const displayField = tableInfo.details?.displayField;
+    if (displayField && record[displayField]) {
+      return record[displayField];
+    }
+    
+    // Use inline view configuration if available
+    const inlineViewColumns = tableInfo.details?.inlineView?.columns;
+    if (inlineViewColumns) {
+      // Get visible columns in order
+      const visibleColumns = Object.entries(inlineViewColumns)
+        .filter(([_, config]: [string, any]) => !config.hidden)
+        .sort(([_, a]: [string, any], [__, b]: [string, any]) => a.order - b.order)
+        .map(([columnName]) => columnName);
+      
+      if (visibleColumns.length > 0) {
+        // Prioritize non-timestamp fields for display
+        const nonTimestampColumns = visibleColumns.filter((colName: string) => {
+          const value = record[colName];
+          if (!value) return false;
+          
+          // Check if it's a timestamp field by name or value format
+          const isTimestampField = colName.toLowerCase().includes('created') || 
+                                   colName.toLowerCase().includes('updated') ||
+                                   colName.toLowerCase().includes('date') ||
+                                   colName.toLowerCase().includes('time');
+          
+          const isTimestampValue = typeof value === 'string' && 
+                                   (value.includes('GMT') || value.includes('UTC') || 
+                                    /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value));
+          
+          return !isTimestampField && !isTimestampValue;
+        });
+        
+        // Use non-timestamp fields first, fallback to all fields
+        const fieldsToUse = nonTimestampColumns.length > 0 ? nonTimestampColumns : visibleColumns;
+        
+        // Take only the first 2 fields to avoid overwhelming display
+        const displayValues = fieldsToUse
+          .slice(0, 2)
+          .map((colName: string) => record[colName])
+          .filter(Boolean);
+        
+        if (displayValues.length > 0) {
+          return displayValues.join(' ');
+        }
+      }
+    }
+    
+    // Fall back to determine display columns logic
+    const { determineDisplayColumns } = require('@/utils/display-columns');
+    const displayColumns = determineDisplayColumns(tableInfo);
+    
+    const displayValues = displayColumns
+      .slice(0, 2) // Limit to 2 fields
+      .map((colName: string) => record[colName])
+      .filter(Boolean);
+    
+    if (displayValues.length > 0) {
+      return displayValues.join(' ');
+    }
+    
+    return null;
   };
 
   const renderField = () => {
@@ -77,18 +166,46 @@ export function EnhancedColumnEditor({
     }
 
     if (isForeignKey && !isDirectInput) {
+      const currentRecord = fkCurrentRecordQuery.data;
+      const tableInfo = fkTableInfoQuery.data;
+      const displayValue = getFkDisplayValue(currentRecord, tableInfo);
+      
       return (
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full">
+          {value && (
+            <div className="flex-1 min-w-0 max-w-[200px]">
+              {onNavigateToRecord ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="px-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 w-full justify-start text-left h-auto min-h-[32px] max-w-full"
+                  onClick={() => onNavigateToRecord(connectionId, column.foreignKey?.targetTable, value)}
+                >
+                  <LinkIcon className="h-4 w-4 mr-1 flex-shrink-0" />
+                  <span className="truncate block max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                    {displayValue || `ID: ${value}`}
+                  </span>
+                </Button>
+              ) : (
+                <div className="px-2 py-1 text-sm text-gray-600 bg-gray-50 rounded max-w-full overflow-hidden">
+                  <span className="truncate block overflow-hidden text-ellipsis whitespace-nowrap">
+                    {displayValue || `ID: ${value}`}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+          
           <Popover open={fkSearchOpen} onOpenChange={setFkSearchOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 role="combobox"
                 aria-expanded={fkSearchOpen}
-                className="flex-1 justify-between"
+                className={cn("justify-between", value ? "flex-shrink-0" : "flex-1")}
                 disabled={isGenerated}
               >
-                {value ? `ID: ${value}` : 'Select record...'}
+                {value ? 'Change...' : 'Select record...'}
                 <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -127,6 +244,7 @@ export function EnhancedColumnEditor({
             onClick={() => setIsDirectInput(!isDirectInput)}
             title="Enter ID directly"
             disabled={isGenerated}
+            className="flex-shrink-0"
           >
             ID
           </Button>
@@ -292,7 +410,7 @@ export function EnhancedColumnEditor({
       </Label>
 
       <div className="flex items-center gap-2">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           {renderField()}
         </div>
         {isNullable && value !== null && value !== undefined && value !== '' && (

@@ -4,7 +4,7 @@ import { toast } from '@/hooks/use-toast';
 import browserLogger from '@/lib/browser-logger';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import {
   deleteRecord,
@@ -17,6 +17,8 @@ import { Dialog, DialogHeader, DialogTitle, DialogPortal, DialogOverlay } from '
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
 import { EnhancedColumnEditor } from './enhanced-column-editor';
+import { Backlinks } from './backlinks';
+import { RecordNavigationBreadcrumbs, BreadcrumbItem } from './record-navigation-breadcrumbs';
 
 // Custom DialogContent without the automatic close button
 const CustomDialogContent = React.forwardRef<
@@ -45,6 +47,7 @@ interface RecordEditorModalProps {
   connectionId: string;
   tableName: string;
   recordId: any;
+  initialBreadcrumbs?: BreadcrumbItem[];
 }
 
 export function RecordEditorModal({
@@ -53,19 +56,38 @@ export function RecordEditorModal({
   connectionId,
   tableName,
   recordId,
+  initialBreadcrumbs = [],
 }: RecordEditorModalProps) {
   const queryClient = useQueryClient();
+  
+  // Navigation state
+  const [currentConnectionId, setCurrentConnectionId] = useState(connectionId);
+  const [currentTableName, setCurrentTableName] = useState(tableName);
+  const [currentRecordId, setCurrentRecordId] = useState(recordId);
+  const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>(initialBreadcrumbs);
+  
+  // Update state when props change
+  useEffect(() => {
+    setCurrentConnectionId(connectionId);
+    setCurrentTableName(tableName);
+    setCurrentRecordId(recordId);
+    if (initialBreadcrumbs.length > 0) {
+      setBreadcrumbs(initialBreadcrumbs);
+    } else {
+      setBreadcrumbs([]);
+    }
+  }, [connectionId, tableName, recordId, initialBreadcrumbs.length]);
 
   const tableInfoQuery = useQuery({
-    queryKey: ['connection', connectionId, 'table', tableName],
-    queryFn: () => getTableInfo({ connectionId, tableName }),
+    queryKey: ['connection', currentConnectionId, 'table', currentTableName],
+    queryFn: () => getTableInfo({ connectionId: currentConnectionId, tableName: currentTableName }),
     enabled: isOpen,
   });
 
   const recordQuery = useQuery({
-    queryKey: ['connection', connectionId, 'table', tableName, 'record', recordId],
-    queryFn: () => getRecord({ connectionId, tableName, pk: recordId }),
-    enabled: isOpen && !!recordId,
+    queryKey: ['connection', currentConnectionId, 'table', currentTableName, 'record', currentRecordId],
+    queryFn: () => getRecord({ connectionId: currentConnectionId, tableName: currentTableName, pk: currentRecordId }),
+    enabled: isOpen && !!currentRecordId,
   });
 
   const tableInfo = tableInfoQuery.data;
@@ -83,7 +105,7 @@ export function RecordEditorModal({
 
   const saveRecordMutation = useMutation({
     mutationFn: (data: Record<string, any>) => {
-      return updateRecord({ connectionId, tableName, pk: recordId, record: data });
+      return updateRecord({ connectionId: currentConnectionId, tableName: currentTableName, pk: currentRecordId, record: data });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -97,9 +119,9 @@ export function RecordEditorModal({
     },
     onError: (error) => {
       browserLogger.error('Failed to update record', {
-        connectionId,
-        tableName,
-        recordId,
+        connectionId: currentConnectionId,
+        tableName: currentTableName,
+        recordId: currentRecordId,
         error: error.message || error,
       });
       toast({
@@ -111,7 +133,7 @@ export function RecordEditorModal({
   });
 
   const deleteRecordMutation = useMutation({
-    mutationFn: () => deleteRecord({ connectionId, tableName, pk: recordId }),
+    mutationFn: () => deleteRecord({ connectionId: currentConnectionId, tableName: currentTableName, pk: currentRecordId }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['connections', connectionId, 'records'],
@@ -124,9 +146,9 @@ export function RecordEditorModal({
     },
     onError: (error) => {
       browserLogger.error('Failed to delete record', {
-        connectionId,
-        tableName,
-        recordId,
+        connectionId: currentConnectionId,
+        tableName: currentTableName,
+        recordId: currentRecordId,
         error: error.message || error,
       });
       toast({
@@ -136,6 +158,99 @@ export function RecordEditorModal({
       });
     },
   });
+
+  // Navigation functions
+  const navigateToRecord = (targetConnectionId: string, targetTableName: string, targetRecordId: any, displayValue?: string) => {
+    if (!targetRecordId) return;
+    
+    // Create breadcrumb item for current record
+    const currentBreadcrumbItem: BreadcrumbItem = {
+      connectionId: currentConnectionId,
+      tableName: currentTableName,
+      recordId: currentRecordId,
+      displayValue: getRecordDisplayValue(record, tableInfo) || `${tableInfo?.details?.singularName || currentTableName}`,
+      tableInfo
+    };
+    
+    // Add current record to breadcrumbs if it's not already there
+    const newBreadcrumbs = breadcrumbs.some(b => 
+      b.connectionId === currentConnectionId && 
+      b.tableName === currentTableName && 
+      b.recordId === currentRecordId
+    ) ? breadcrumbs : [...breadcrumbs, currentBreadcrumbItem];
+    
+    // Update navigation state
+    setCurrentConnectionId(targetConnectionId);
+    setCurrentTableName(targetTableName);
+    setCurrentRecordId(targetRecordId);
+    setBreadcrumbs(newBreadcrumbs);
+    
+    // Reset form for new record
+    form.reset({});
+  };
+
+  const navigateToBreadcrumb = (item: BreadcrumbItem, index: number) => {
+    // Don't navigate if clicking on the current record (last item)
+    const totalItems = breadcrumbs.length + (record && tableInfo ? 1 : 0);
+    if (index === totalItems - 1) {
+      return; // Current record, do nothing
+    }
+    
+    // Navigate to the selected breadcrumb item
+    setCurrentConnectionId(item.connectionId);
+    setCurrentTableName(item.tableName);
+    setCurrentRecordId(item.recordId);
+    
+    // Trim breadcrumbs to the selected index (exclude the current record)
+    setBreadcrumbs(breadcrumbs.slice(0, index));
+    
+    // Reset form for new record
+    form.reset({});
+  };
+
+  const getRecordDisplayValue = (record: any, tableInfo: any) => {
+    if (!record || !tableInfo) return null;
+    
+    // Use display field if available
+    const displayField = tableInfo.details?.displayField;
+    if (displayField && record[displayField]) {
+      return record[displayField];
+    }
+    
+    // Use inline view configuration if available
+    const inlineViewColumns = tableInfo.details?.inlineView?.columns;
+    if (inlineViewColumns) {
+      // Get visible columns in order
+      const visibleColumns = Object.entries(inlineViewColumns)
+        .filter(([_, config]: [string, any]) => !config.hidden)
+        .sort(([_, a]: [string, any], [__, b]: [string, any]) => a.order - b.order)
+        .map(([columnName]) => columnName);
+      
+      if (visibleColumns.length > 0) {
+        const displayValues = visibleColumns
+          .map((colName: string) => record[colName])
+          .filter(Boolean);
+        
+        if (displayValues.length > 0) {
+          return displayValues.join(' ');
+        }
+      }
+    }
+    
+    // Fall back to determine display columns logic
+    const { determineDisplayColumns } = require('@/utils/display-columns');
+    const displayColumns = determineDisplayColumns(tableInfo);
+    
+    const displayValues = displayColumns
+      .map((colName: string) => record[colName])
+      .filter(Boolean);
+    
+    if (displayValues.length > 0) {
+      return displayValues.join(' ');
+    }
+    
+    return null;
+  };
 
   const onSubmit = form.handleSubmit((data) => {
     saveRecordMutation.mutate(data);
@@ -152,10 +267,28 @@ export function RecordEditorModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <CustomDialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
+        <DialogHeader className="flex-shrink-0 space-y-3">
           <DialogTitle>
-            Edit {tableInfo?.details.singularName || tableName}
+            Edit {tableInfo?.details.singularName || currentTableName}
           </DialogTitle>
+          
+          {(breadcrumbs.length > 0 || (record && tableInfo)) && (
+            <RecordNavigationBreadcrumbs
+              items={[
+                ...breadcrumbs,
+                // Add current record as the last breadcrumb
+                ...(record && tableInfo ? [{
+                  connectionId: currentConnectionId,
+                  tableName: currentTableName,
+                  recordId: currentRecordId,
+                  displayValue: getRecordDisplayValue(record, tableInfo) || `${tableInfo?.details?.singularName || currentTableName}`,
+                  tableInfo
+                }] : [])
+              ]}
+              onNavigate={navigateToBreadcrumb}
+              className="text-sm"
+            />
+          )}
         </DialogHeader>
 
         {tableInfoQuery.isLoading || recordQuery.isLoading ? (
@@ -182,15 +315,24 @@ export function RecordEditorModal({
                       <EnhancedColumnEditor
                         key={column.name}
                         column={column}
-                        connectionId={connectionId}
+                        connectionId={currentConnectionId}
                         isPrimaryKey={isPrimaryKey}
                         isForeignKey={isForeignKey}
                         isNullable={isNullable}
                         isGenerated={isGenerated}
+                        onNavigateToRecord={navigateToRecord}
                       />
                     );
                   })}
                 </div>
+
+                {/* Backlinks Section */}
+                <Backlinks 
+                  connectionId={currentConnectionId}
+                  tableName={currentTableName}
+                  recordId={currentRecordId}
+                  onNavigateToRecord={navigateToRecord}
+                />
               </div>
 
               <div className="flex-shrink-0 flex items-center justify-between p-4 border-t bg-white">

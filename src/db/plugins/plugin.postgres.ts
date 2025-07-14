@@ -81,4 +81,50 @@ export class PostgresPlugin implements IDatabasePlugin {
 
     return result;
   }
+
+  async getForeignKeyConstraints(table?: string, schema: string = 'public') {
+    let query = this.db
+      .selectFrom('information_schema.referential_constraints as rc')
+      .innerJoin('information_schema.key_column_usage as kcu_src', (join) =>
+        join
+          .onRef('rc.constraint_name', '=', 'kcu_src.constraint_name')
+          .onRef('rc.constraint_schema', '=', 'kcu_src.constraint_schema')
+      )
+      .innerJoin('information_schema.key_column_usage as kcu_tgt', (join) =>
+        join
+          .onRef('rc.unique_constraint_name', '=', 'kcu_tgt.constraint_name')
+          .onRef('rc.unique_constraint_schema', '=', 'kcu_tgt.constraint_schema')
+      )
+      .select([
+        'rc.constraint_name as constraintName',
+        'kcu_src.table_name as sourceTable',
+        'kcu_src.column_name as sourceColumn',
+        'kcu_tgt.table_name as targetTable',
+        'kcu_tgt.column_name as targetColumn',
+        'kcu_src.table_schema as sourceSchema',
+        'kcu_tgt.table_schema as targetSchema',
+      ]);
+
+    if (table) {
+      // If table is specified, find FKs where this table is either source OR target
+      query = query.where((eb) =>
+        eb.or([
+          eb('kcu_src.table_name', '=', table),
+          eb('kcu_tgt.table_name', '=', table),
+        ])
+      );
+    }
+
+    if (schema) {
+      query = query.where((eb) =>
+        eb.or([
+          eb('kcu_src.table_schema', '=', schema),
+          eb('kcu_tgt.table_schema', '=', schema),
+        ])
+      );
+    }
+
+    const result = await query.execute();
+    return result;
+  }
 }

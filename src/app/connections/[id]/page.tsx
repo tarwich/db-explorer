@@ -472,41 +472,73 @@ function GridView({
     return sort(allColumns, (c: any) => c.order).filter((c: any) => !c.hidden);
   }, [table]);
 
+  // Generate unique key for record using primary key columns
+  const getRecordKey = (record: any, index: number) => {
+    const pk = table.details.pk;
+    if (pk && pk.length > 0) {
+      const keyValues = pk.map(col => record[col]).filter(val => val !== null && val !== undefined);
+      if (keyValues.length === pk.length) {
+        return keyValues.join('|');
+      }
+    }
+    // Fallback to record.id or record.rowid, then index
+    return record.id ?? record.rowid ?? `row-${index}`;
+  };
+
+  // Generate record ID for modal opening
+  const getRecordId = (record: any, index: number) => {
+    const pk = table.details.pk;
+    if (pk && pk.length > 0) {
+      const keyValues = pk.map(col => record[col]).filter(val => val !== null && val !== undefined);
+      if (keyValues.length === pk.length && keyValues.length === 1) {
+        return keyValues[0]; // Single primary key
+      } else if (keyValues.length === pk.length) {
+        return keyValues.join('|'); // Composite primary key
+      }
+    }
+    // Should not fall back to synthetic IDs - use actual record values
+    return record.id ?? record.rowid ?? null;
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-      {items.map((record: any) => (
-        <div
-          key={record.id}
-          className="cursor-pointer"
-          onClick={() => onRecordClick(record.id)}
-        >
-          <ItemCardView
-            item={{
-              id: record.id,
-            icon: table.details.icon,
-            columns: columns.map((c) => {
-              const val = record[c.id];
-              if (
-                val &&
-                typeof val === 'object' &&
-                'value' in val &&
-                'icon' in val
-              ) {
-                return {
-                  name: c.displayName,
-                  value: val.value,
-                  icon: val.icon,
-                };
-              }
-              return {
-                name: c.displayName,
-                value: String(val),
-              };
-            }),
-          }}
-        />
-        </div>
-      ))}
+      {items.map((record: any, index: number) => {
+        const recordKey = getRecordKey(record, index);
+        const recordId = getRecordId(record, index);
+        return (
+          <div
+            key={recordKey}
+            className="cursor-pointer"
+            onClick={() => onRecordClick(recordId)}
+          >
+            <ItemCardView
+              item={{
+                id: recordId,
+                icon: table.details.icon,
+                columns: columns.map((c) => {
+                  const val = record[c.id];
+                  if (
+                    val &&
+                    typeof val === 'object' &&
+                    'value' in val &&
+                    'icon' in val
+                  ) {
+                    return {
+                      name: c.displayName,
+                      value: val.value,
+                      icon: val.icon,
+                    };
+                  }
+                  return {
+                    name: c.displayName,
+                    value: String(val),
+                  };
+                }),
+              }}
+            />
+          </div>
+        );
+      })}
       {connectionModal.isOpen && (
         <ConnectionModal
           isOpen={connectionModal.isOpen}
@@ -563,41 +595,73 @@ function ListView({
     return sort(allColumns, (c: any) => c.order).filter((c: any) => !c.hidden);
   }, [table]);
 
+  // Generate unique key for record using primary key columns
+  const getRecordKey = (record: any, index: number) => {
+    const pk = table.details.pk;
+    if (pk && pk.length > 0) {
+      const keyValues = pk.map(col => record[col]).filter(val => val !== null && val !== undefined);
+      if (keyValues.length === pk.length) {
+        return keyValues.join('|');
+      }
+    }
+    // Fallback to record.id or record.rowid, then index
+    return record.id ?? record.rowid ?? `row-${index}`;
+  };
+
+  // Generate record ID for modal opening
+  const getRecordId = (record: any, index: number) => {
+    const pk = table.details.pk;
+    if (pk && pk.length > 0) {
+      const keyValues = pk.map(col => record[col]).filter(val => val !== null && val !== undefined);
+      if (keyValues.length === pk.length && keyValues.length === 1) {
+        return keyValues[0]; // Single primary key
+      } else if (keyValues.length === pk.length) {
+        return keyValues.join('|'); // Composite primary key
+      }
+    }
+    // Should not fall back to synthetic IDs - use actual record values
+    return record.id ?? record.rowid ?? null;
+  };
+
   return (
     <div className="space-y-2">
-      {items.map((record: any) => (
-        <div
-          key={record.id}
-          className="cursor-pointer"
-          onClick={() => onRecordClick(record.id)}
-        >
-          <ItemListView
-            item={{
-              id: record.id,
-            icon: table.details.icon,
-            columns: columns.map((c) => {
-              const val = record[c.id];
-              if (
-                val &&
-                typeof val === 'object' &&
-                'value' in val &&
-                'icon' in val
-              ) {
-                return {
-                  name: c.displayName,
-                  value: val.value,
-                  icon: val.icon,
-                };
-              }
-              return {
-                name: c.displayName,
-                value: String(val),
-              };
-            }),
-          }}
-        />
-        </div>
-      ))}
+      {items.map((record: any, index: number) => {
+        const recordKey = getRecordKey(record, index);
+        const recordId = getRecordId(record, index);
+        return (
+          <div
+            key={recordKey}
+            className="cursor-pointer"
+            onClick={() => onRecordClick(recordId)}
+          >
+            <ItemListView
+              item={{
+                id: recordId,
+                icon: table.details.icon,
+                columns: columns.map((c) => {
+                  const val = record[c.id];
+                  if (
+                    val &&
+                    typeof val === 'object' &&
+                    'value' in val &&
+                    'icon' in val
+                  ) {
+                    return {
+                      name: c.displayName,
+                      value: val.value,
+                      icon: val.icon,
+                    };
+                  }
+                  return {
+                    name: c.displayName,
+                    value: String(val),
+                  };
+                }),
+              }}
+            />
+          </div>
+        );
+      })}
       {connectionModal.isOpen && (
         <ConnectionModal
           isOpen={connectionModal.isOpen}
@@ -659,12 +723,40 @@ function TableView({
           </tr>
         </thead>
         <tbody className="bg-white divide-y">
-          {items.map((record: any) => (
-            <tr
-              key={record.id}
-              className="cursor-pointer hover:bg-gray-50"
-              onClick={() => onRecordClick(record.id)}
-            >
+          {items.map((record: any, index: number) => {
+            // Generate unique key for record using primary key columns
+            const pk = table.details.pk;
+            let recordKey;
+            if (pk && pk.length > 0) {
+              const keyValues = pk.map(col => record[col]).filter(val => val !== null && val !== undefined);
+              if (keyValues.length === pk.length) {
+                recordKey = keyValues.join('|');
+              }
+            }
+            if (!recordKey) {
+              recordKey = record.id ?? record.rowid ?? `row-${index}`;
+            }
+            
+            // Generate record ID for modal opening
+            let recordId;
+            if (pk && pk.length > 0) {
+              const keyValues = pk.map(col => record[col]).filter(val => val !== null && val !== undefined);
+              if (keyValues.length === pk.length && keyValues.length === 1) {
+                recordId = keyValues[0]; // Single primary key
+              } else if (keyValues.length === pk.length) {
+                recordId = keyValues.join('|'); // Composite primary key
+              }
+            }
+            if (!recordId) {
+              recordId = record.id ?? record.rowid ?? null;
+            }
+            
+            return (
+              <tr
+                key={recordKey}
+                className="cursor-pointer hover:bg-gray-50"
+                onClick={() => onRecordClick(recordId)}
+              >
               {columns.map((column: any) => {
                 const val = record[column.name];
                 if (
@@ -689,21 +781,22 @@ function TableView({
                   </td>
                 );
               })}
-              <td className="px-2 py-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRecordClick(record.id);
-                  }}
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </td>
-            </tr>
-          ))}
+                <td className="px-2 py-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRecordClick(recordId);
+                    }}
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
       {connectionModal.isOpen && (

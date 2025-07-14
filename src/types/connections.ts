@@ -82,6 +82,7 @@ export type LiteColumnInformation = { order: number; hidden: boolean };
 export type LiteColumnDictionary = Record<string, LiteColumnInformation>;
 
 export interface DatabaseTable {
+  id?: string;
   name: string;
   schema: string;
   connectionId: string;

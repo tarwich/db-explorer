@@ -263,12 +263,28 @@ export async function getTableRecords(
 
   // Get records with pagination
   const offset = (page - 1) * pageSize;
-  const records = await db
-    .selectFrom(tableName)
-    .selectAll()
-    .limit(pageSize)
-    .offset(offset)
-    .execute();
+  
+  // For SQLite tables without explicit primary keys, include rowid
+  const connection = await loadConnection(connectionId);
+  const hasExplicitPk = table.details.pk && table.details.pk.length > 0 && !table.details.pk.includes('rowid');
+  
+  let records: any[];
+  if (connection!.type === 'sqlite' && !hasExplicitPk) {
+    // For SQLite tables relying on implicit rowid, explicitly select it
+    records = await db
+      .selectFrom(tableName)
+      .select(['rowid', '*'])
+      .limit(pageSize)
+      .offset(offset)
+      .execute() as any[];
+  } else {
+    records = await db
+      .selectFrom(tableName)
+      .selectAll()
+      .limit(pageSize)
+      .offset(offset)
+      .execute();
+  }
 
   // Get total count for pagination
   const [{ count }] = await db
@@ -286,7 +302,7 @@ export async function getTableRecords(
   const fkValueMap: Record<string, Set<any>> = {};
   for (const col of fkColumns) {
     fkValueMap[col.name] = new Set(
-      records.map((r) => r[col.name]).filter((v) => v != null)
+      records.map((r: any) => r[col.name]).filter((v) => v != null)
     );
   }
 
@@ -333,14 +349,13 @@ export async function getTableRecords(
   }
 
   // 4. Replace FK values in records with display value and icon
-  const recordsWithDisplay = records.map((record) => {
+  const recordsWithDisplay = records.map((record: any) => {
     const newRecord: Record<string, any> = { ...record };
     for (const col of fkColumns) {
       const val = record[col.name];
       if (val != null && fkDisplayMap[col.name][val] !== undefined) {
         // Get the related table's icon
         const fk = col.foreignKey!;
-        const targetTable = fk.targetTable;
         // Find the icon from the already-fetched table (from previous getTable call)
         // (We could optimize by caching, but for now, fetch again)
         newRecord[col.name] = {
@@ -412,10 +427,12 @@ export async function saveTable(table: DatabaseTable): Promise<DatabaseTable> {
       .where('name', '=', table.name)
       .execute();
   } else {
-    // Insert new table
+    // Insert new table with generated UUID
+    const { randomUUID } = await import('crypto');
     await stateDb
       .insertInto('tables')
       .values({
+        id: randomUUID(),
         name: table.name,
         schema: table.schema,
         connectionId: table.connectionId,

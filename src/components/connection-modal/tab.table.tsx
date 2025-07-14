@@ -289,13 +289,12 @@ export function TableTabGeneralPage({
     <div className="flex flex-col gap-4 h-full overflow-hidden">
       {/* Header */}
       <div className="flex flex-row items-center gap-4">
-        <ItemIcon item={{ icon: form.watch('icon') }} />
         <div className="flex flex-col">
           <div className="text-lg font-semibold">
             {form.watch('pluralName')}
           </div>
-          <div className="text-sm text-neutral-500">
-            {form.watch('singularName')}
+          <div className="text-xs font-mono text-neutral-400 mt-1">
+            Database Name: {tableName}
           </div>
         </div>
         <div className="flex-1" />
@@ -727,7 +726,9 @@ function CalculatedColumnsSection({
   const [newColumnName, setNewColumnName] = useState('');
   const [newColumnTemplate, setNewColumnTemplate] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-  const [editingColumn, setEditingColumn] = useState<CalculatedColumn | null>(null);
+  const [editingColumn, setEditingColumn] = useState<CalculatedColumn | null>(
+    null
+  );
   const [editColumnName, setEditColumnName] = useState('');
   const [editColumnTemplate, setEditColumnTemplate] = useState('');
 
@@ -839,7 +840,7 @@ function CalculatedColumnsSection({
       const updatedTable = { ...table };
       updatedTable.details.calculatedColumns = (
         updatedTable.details.calculatedColumns || []
-      ).map((col: CalculatedColumn) => 
+      ).map((col: CalculatedColumn) =>
         col.id === updatedColumn.id ? updatedColumn : col
       );
 
@@ -900,7 +901,11 @@ function CalculatedColumnsSection({
   };
 
   const handleUpdateColumn = () => {
-    if (!editingColumn || !editColumnName.trim() || !editColumnTemplate.trim()) {
+    if (
+      !editingColumn ||
+      !editColumnName.trim() ||
+      !editColumnTemplate.trim()
+    ) {
       toast({
         title: 'Missing information',
         description:
@@ -1065,7 +1070,9 @@ function CalculatedColumnsSection({
               disabled={updateCalculatedColumnMutation.isPending}
               type="button"
             >
-              {updateCalculatedColumnMutation.isPending ? 'Updating...' : 'Update'}
+              {updateCalculatedColumnMutation.isPending
+                ? 'Updating...'
+                : 'Update'}
             </Button>
             <Button
               variant="outline"

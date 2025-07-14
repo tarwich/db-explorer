@@ -30,6 +30,7 @@ export class PostgresPlugin implements IDatabasePlugin {
         'column_default',
         'character_maximum_length',
         'udt_name',
+        'is_generated',
       ])
       .where('table_name', '=', table)
       .orderBy('ordinal_position')
@@ -44,6 +45,7 @@ export class PostgresPlugin implements IDatabasePlugin {
             isNullable: row.is_nullable === 'YES',
             default: row.column_default,
             userDefined,
+            isGenerated: row.is_generated === 'ALWAYS',
           };
         })
       );
@@ -57,6 +59,25 @@ export class PostgresPlugin implements IDatabasePlugin {
       .where('pg_type.typname', '=', enumName)
       .execute()
       .then((rows) => rows.map((row) => row.value));
+
+    return result;
+  }
+
+  async getPrimaryKeys(table: string, schema: string = 'public') {
+    const result = await this.db
+      .selectFrom('information_schema.table_constraints as tc')
+      .innerJoin('information_schema.key_column_usage as kcu', (join) =>
+        join
+          .onRef('tc.constraint_name', '=', 'kcu.constraint_name')
+          .onRef('tc.table_schema', '=', 'kcu.table_schema')
+      )
+      .select('kcu.column_name')
+      .where('tc.constraint_type', '=', 'PRIMARY KEY')
+      .where('tc.table_name', '=', table)
+      .where('tc.table_schema', '=', schema)
+      .orderBy('kcu.ordinal_position')
+      .execute()
+      .then((rows) => rows.map((row) => row.column_name));
 
     return result;
   }

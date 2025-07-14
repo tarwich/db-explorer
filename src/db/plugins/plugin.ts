@@ -12,8 +12,11 @@ export interface IDatabasePlugin {
       isNullable: boolean;
       default?: string;
       userDefined: boolean;
+      isGenerated?: boolean;
     }[]
   >;
 
   describeEnum(enumName: string): Promise<string[]>;
+
+  getPrimaryKeys(table: string, schema?: string): Promise<string[]>;
 }

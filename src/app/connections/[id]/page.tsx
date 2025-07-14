@@ -3,6 +3,7 @@
 import { getTable, getTableRecords, getTables } from '@/app/api/tables';
 import { analyzeTable, getTablesList } from '@/app/api/tables-list';
 import { ConnectionModal } from '@/components/connection-modal/connection-modal';
+import { RecordEditorModal } from '@/components/record-editor-modal';
 import { ItemCardView } from '@/components/explorer/item-views/item-card-view';
 import { ItemIcon } from '@/components/explorer/item-views/item-icon';
 import { ItemListView } from '@/components/explorer/item-views/item-list-view';
@@ -45,6 +46,10 @@ export default function DataBrowserPage({
   const pageSize = 10;
   const [viewType, setViewType] = useState<ViewType>('grid');
   const tableConfigModal = useDisclosure();
+  const [recordEditorModal, setRecordEditorModal] = useState<{
+    isOpen: boolean;
+    recordId: any;
+  }>({ isOpen: false, recordId: null });
   const { width, startResizing, isResizing, resizerProps } = useResizable({
     initialWidth: 256,
   });
@@ -79,6 +84,14 @@ export default function DataBrowserPage({
   });
 
   const currentTable = selectedTableQuery.data;
+
+  const handleRecordClick = (recordId: any) => {
+    setRecordEditorModal({ isOpen: true, recordId });
+  };
+
+  const closeRecordEditor = () => {
+    setRecordEditorModal({ isOpen: false, recordId: null });
+  };
 
   const fuse = useMemo(() => {
     if (!tablesListQuery.data) return null;
@@ -320,6 +333,7 @@ export default function DataBrowserPage({
                     <GridView
                       table={currentTable}
                       items={recordsQuery.data?.records}
+                      onRecordClick={handleRecordClick}
                     />
                   </div>
                 )}
@@ -330,6 +344,7 @@ export default function DataBrowserPage({
                     <ListView
                       table={currentTable}
                       items={recordsQuery.data?.records}
+                      onRecordClick={handleRecordClick}
                     />
                   </div>
                 )}
@@ -340,6 +355,7 @@ export default function DataBrowserPage({
                     <TableView
                       table={currentTable}
                       items={recordsQuery.data?.records}
+                      onRecordClick={handleRecordClick}
                     />
                   </div>
                 )}
@@ -398,11 +414,30 @@ export default function DataBrowserPage({
           initialTablePage="general"
         />
       )}
+
+      {/* Record Editor Modal */}
+      {recordEditorModal.isOpen && selectedTable && recordEditorModal.recordId && (
+        <RecordEditorModal
+          isOpen={recordEditorModal.isOpen}
+          onClose={closeRecordEditor}
+          connectionId={params.id}
+          tableName={selectedTable}
+          recordId={recordEditorModal.recordId}
+        />
+      )}
     </div>
   );
 }
 
-function GridView({ table, items }: { table: DatabaseTable; items: any[] }) {
+function GridView({ 
+  table, 
+  items,
+  onRecordClick
+}: { 
+  table: DatabaseTable; 
+  items: any[];
+  onRecordClick: (recordId: any) => void;
+}) {
   const connectionModal = useDisclosure();
   const columns = useMemo(() => {
     // Get regular columns from view configuration
@@ -440,10 +475,14 @@ function GridView({ table, items }: { table: DatabaseTable; items: any[] }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
       {items.map((record: any) => (
-        <ItemCardView
+        <div
           key={record.id}
-          item={{
-            id: record.id,
+          className="cursor-pointer"
+          onClick={() => onRecordClick(record.id)}
+        >
+          <ItemCardView
+            item={{
+              id: record.id,
             icon: table.details.icon,
             columns: columns.map((c) => {
               const val = record[c.id];
@@ -466,6 +505,7 @@ function GridView({ table, items }: { table: DatabaseTable; items: any[] }) {
             }),
           }}
         />
+        </div>
       ))}
       {connectionModal.isOpen && (
         <ConnectionModal
@@ -480,7 +520,15 @@ function GridView({ table, items }: { table: DatabaseTable; items: any[] }) {
   );
 }
 
-function ListView({ table, items }: { table: DatabaseTable; items: any[] }) {
+function ListView({ 
+  table, 
+  items,
+  onRecordClick
+}: { 
+  table: DatabaseTable; 
+  items: any[];
+  onRecordClick: (recordId: any) => void;
+}) {
   const connectionModal = useDisclosure();
   const columns = useMemo(() => {
     // Get regular columns from view configuration
@@ -518,10 +566,14 @@ function ListView({ table, items }: { table: DatabaseTable; items: any[] }) {
   return (
     <div className="space-y-2">
       {items.map((record: any) => (
-        <ItemListView
+        <div
           key={record.id}
-          item={{
-            id: record.id,
+          className="cursor-pointer"
+          onClick={() => onRecordClick(record.id)}
+        >
+          <ItemListView
+            item={{
+              id: record.id,
             icon: table.details.icon,
             columns: columns.map((c) => {
               const val = record[c.id];
@@ -544,6 +596,7 @@ function ListView({ table, items }: { table: DatabaseTable; items: any[] }) {
             }),
           }}
         />
+        </div>
       ))}
       {connectionModal.isOpen && (
         <ConnectionModal
@@ -558,7 +611,15 @@ function ListView({ table, items }: { table: DatabaseTable; items: any[] }) {
   );
 }
 
-function TableView({ table, items }: { table: DatabaseTable; items: any[] }) {
+function TableView({ 
+  table, 
+  items,
+  onRecordClick
+}: { 
+  table: DatabaseTable; 
+  items: any[];
+  onRecordClick: (recordId: any) => void;
+}) {
   const connectionModal = useDisclosure();
   const columns = useMemo(() => {
     const { mergeColumnsForDisplay } = require('@/utils/calculated-columns');
@@ -602,7 +663,7 @@ function TableView({ table, items }: { table: DatabaseTable; items: any[] }) {
             <tr
               key={record.id}
               className="cursor-pointer hover:bg-gray-50"
-              onClick={connectionModal.onOpen}
+              onClick={() => onRecordClick(record.id)}
             >
               {columns.map((column: any) => {
                 const val = record[column.name];
@@ -633,7 +694,10 @@ function TableView({ table, items }: { table: DatabaseTable; items: any[] }) {
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0"
-                  onClick={connectionModal.onOpen}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRecordClick(record.id);
+                  }}
                 >
                   <MoreVertical className="w-4 h-4" />
                 </Button>

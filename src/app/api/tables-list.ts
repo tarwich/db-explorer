@@ -78,10 +78,13 @@ interface TableAnalysisResult {
 export async function analyzeTable(connectionId: string, tableName: string): Promise<TableAnalysisResult> {
   try {
     // Import the full table analysis logic
-    const { getTable } = await import('./tables');
+    const { getTable, saveTable } = await import('./tables');
     
     // This will do the heavy processing and cache results in state DB
     const tableDetails = await getTable(connectionId, tableName);
+    
+    // Save the updated table details (including newly detected primary keys) to state DB
+    await saveTable(tableDetails);
     
     return {
       name: tableName,

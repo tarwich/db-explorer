@@ -59,9 +59,16 @@ export async function getTables(connectionId: string) {
             nullable: c.isNullable,
             hidden: false,
             order: i,
+            isGenerated: c.isGenerated || false,
           }))
         );
         columns = objectify(columnsArr, (c) => c.name);
+      }
+
+      // Get primary keys if not already known
+      let primaryKeys = knownTable?.details.pk;
+      if (!primaryKeys || primaryKeys.length === 0) {
+        primaryKeys = await dbPlugin.getPrimaryKeys(t.name, t.schema);
       }
 
       const inlineView = knownTable?.details.inlineView || {};
@@ -80,7 +87,7 @@ export async function getTables(connectionId: string) {
           pluralName,
           icon: knownTable?.details.icon || getBestIcon(pluralName) || 'Table',
           color: knownTable?.details.color || 'green',
-          pk: knownTable?.details.pk || [],
+          pk: primaryKeys || [],
           columns,
           inlineView: {
             ...inlineView,
@@ -149,6 +156,12 @@ export async function getTable(
 
     const columns = objectify(formattedColumns, (c) => c.name);
 
+    // Get primary keys if not already known
+    let primaryKeys = knownTable?.details.pk;
+    if (!primaryKeys || primaryKeys.length === 0) {
+      primaryKeys = await dbPlugin.getPrimaryKeys(name, 'public');
+    }
+
     const updateViewColumns = (columns?: LiteColumnDictionary) => {
       const result: LiteColumnDictionary = {};
 
@@ -196,7 +209,7 @@ export async function getTable(
           (knownTable?.details.icon as TIconName) ||
           getBestIcon(name) ||
           'Table',
-        pk: knownTable?.details.pk || [],
+        pk: primaryKeys || [],
         columns,
         calculatedColumns: knownTable?.details.calculatedColumns || [],
         inlineView: {

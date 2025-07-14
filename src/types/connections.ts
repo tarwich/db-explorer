@@ -59,6 +59,7 @@ export type ColumnInformation = {
   hidden: boolean;
   order: number;
   enumOptions?: string[];
+  isGenerated?: boolean;
   foreignKey?: {
     targetTable: string;
     targetColumn: string;

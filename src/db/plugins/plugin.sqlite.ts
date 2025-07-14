@@ -90,13 +90,19 @@ export class SqlitePlugin implements IDatabasePlugin {
         // Extract primary key columns from CREATE TABLE statement
         const tableStatement = statements.find((s) => s.variant === 'createTable');
         if (!tableStatement) {
-          return [];
+          // If we can't parse the statement, fall back to rowid
+          return ['rowid'];
         }
 
         // Look for columns with PRIMARY KEY constraint
         const primaryKeyColumns = tableStatement.columns
           .filter((c) => c.variant === 'columnDefinition' && c.isPrimaryKey)
           .map((c) => c.name);
+
+        // If no explicit primary key is found, SQLite uses rowid as implicit primary key
+        if (primaryKeyColumns.length === 0) {
+          return ['rowid'];
+        }
 
         return primaryKeyColumns;
       });

@@ -50,15 +50,18 @@ export async function getRecord({
   const tableInfo = await getTable(connectionId, tableName);
   console.log('Table info:', tableInfo);
   
-  const pkField = tableInfo.details.pk[0];
+  const pkField = tableInfo.details.pk?.[0];
   console.log('Primary key field:', pkField);
+  console.log('Available pk fields:', tableInfo.details.pk);
 
   if (!db) {
     throw new Error('Database connection is null');
   }
 
   if (!pkField) {
-    throw new Error('Primary key field not found');
+    console.error('No primary key field found for table:', tableName);
+    console.error('Table info:', tableInfo);
+    throw new Error(`Primary key field not found for table ${tableName}. Available pk fields: ${JSON.stringify(tableInfo.details.pk)}`);
   }
 
   const record = await db
@@ -85,7 +88,11 @@ export async function updateRecord({
   const db = await openConnection(connectionId);
   const { getTable } = await import('@/app/api/tables');
   const tableInfo = await getTable(connectionId, tableName);
-  const pkField = tableInfo.details.pk[0];
+  const pkField = tableInfo.details.pk?.[0];
+  
+  if (!pkField) {
+    throw new Error(`Primary key field not found for table ${tableName}`);
+  }
 
   // Known generated/computed columns that should be excluded from updates
   const knownGeneratedColumns = new Set(['searchText', 'searchtext', 'search_text']);
@@ -164,7 +171,11 @@ export async function deleteRecord({
   const db = await openConnection(connectionId);
   const { getTable } = await import('@/app/api/tables');
   const tableInfo = await getTable(connectionId, tableName);
-  const pkField = tableInfo.details.pk[0];
+  const pkField = tableInfo.details.pk?.[0];
+  
+  if (!pkField) {
+    throw new Error(`Primary key field not found for table ${tableName}`);
+  }
 
   await db.deleteFrom(tableName).where(pkField, '=', pk).execute();
 }

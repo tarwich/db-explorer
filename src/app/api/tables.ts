@@ -378,6 +378,17 @@ export async function getTableRecords(
   };
 }
 
+export async function clearTablesForConnection(connectionId: string): Promise<void> {
+  const stateDb = await getStateDb();
+  
+  await stateDb
+    .deleteFrom('tables')
+    .where('connectionId', '=', connectionId)
+    .execute();
+  
+  logger.info(`Cleared all table metadata for connection ${connectionId}`);
+}
+
 export async function saveTable(table: DatabaseTable): Promise<DatabaseTable> {
   const stateDb = await getStateDb();
 

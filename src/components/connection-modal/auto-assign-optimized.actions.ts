@@ -1,4 +1,4 @@
-import { getTable, getTables, saveTable } from '@/app/api/tables';
+import { getTable, getTables, saveTable, clearTablesForConnection } from '@/app/api/tables';
 import { getTablesList } from '@/app/api/tables-list';
 import { TIconName } from '@/components/explorer/item-views/item-icon';
 import { getBestIcon, getBestIconForType } from '@/utils/best-icon';
@@ -173,6 +173,11 @@ export async function autoAssignAllTables({
   ) => void;
 }) {
   try {
+    // IMPORTANT: Clear all existing table metadata first to avoid conflicts
+    console.log(`Clearing existing table metadata for connection ${connectionId}`);
+    await clearTablesForConnection(connectionId);
+    console.log('Existing table metadata cleared successfully');
+    
     // Get list of all tables (fast operation)
     const tablesList = await getTablesList(connectionId);
     const totalTables = tablesList.length;

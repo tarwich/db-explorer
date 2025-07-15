@@ -328,14 +328,39 @@ async function performFullTextSearch(
   // Use simple LIKE pattern for text search
   const searchPattern = `%${query}%`;
 
+  // Determine sort columns for deterministic ordering
+  const getSortColumns = (table: any) => {
+    const pk = table.details.pk;
+    if (pk && pk.length > 0) {
+      return pk; // Use primary key columns for sorting
+    }
+    
+    // Fallback: use the first column for sorting
+    const firstColumn = Object.keys(table.details.columns)[0];
+    if (firstColumn) {
+      return [firstColumn];
+    }
+    
+    return [];
+  };
+
+  const sortColumns = getSortColumns(table);
+
   // Build OR conditions for all text columns using expression builder
-  const queryBuilder = db.selectFrom(tableName).selectAll()
+  let queryBuilder = db.selectFrom(tableName).selectAll()
     .where((eb) => {
       const conditions = textColumns.map(col => 
         eb(col, 'like', searchPattern)
       );
       return eb.or(conditions);
     });
+
+  // Add deterministic ordering
+  if (sortColumns.length > 0) {
+    sortColumns.forEach(col => {
+      queryBuilder = queryBuilder.orderBy(col, 'asc');
+    });
+  }
 
   // Get total count
   const countBuilder = db.selectFrom(tableName)
@@ -407,9 +432,34 @@ async function performColumnSpecificSearch(
     return { records: [], total: 0 };
   }
 
+  // Determine sort columns for deterministic ordering
+  const getSortColumns = (table: any) => {
+    const pk = table.details.pk;
+    if (pk && pk.length > 0) {
+      return pk; // Use primary key columns for sorting
+    }
+    
+    // Fallback: use the first column for sorting
+    const firstColumn = Object.keys(table.details.columns)[0];
+    if (firstColumn) {
+      return [firstColumn];
+    }
+    
+    return [];
+  };
+
+  const sortColumns = getSortColumns(table);
+
   // Build query with OR conditions using expression builder
-  const queryBuilder = db.selectFrom(tableName).selectAll()
+  let queryBuilder = db.selectFrom(tableName).selectAll()
     .where((eb) => eb.or(conditions.map(condition => condition(eb))));
+
+  // Add deterministic ordering
+  if (sortColumns.length > 0) {
+    sortColumns.forEach(col => {
+      queryBuilder = queryBuilder.orderBy(col, 'asc');
+    });
+  }
 
   // Get total count
   const countBuilder = db.selectFrom(tableName)
@@ -469,8 +519,33 @@ async function performExactMatchSearch(
     return { records: [], total: 0 };
   }
 
-  const queryBuilder = db.selectFrom(tableName).selectAll()
+  // Determine sort columns for deterministic ordering
+  const getSortColumns = (table: any) => {
+    const pk = table.details.pk;
+    if (pk && pk.length > 0) {
+      return pk; // Use primary key columns for sorting
+    }
+    
+    // Fallback: use the first column for sorting
+    const firstColumn = Object.keys(table.details.columns)[0];
+    if (firstColumn) {
+      return [firstColumn];
+    }
+    
+    return [];
+  };
+
+  const sortColumns = getSortColumns(table);
+
+  let queryBuilder = db.selectFrom(tableName).selectAll()
     .where((eb) => eb.or(validConditions.map(condition => condition(eb))));
+
+  // Add deterministic ordering
+  if (sortColumns.length > 0) {
+    sortColumns.forEach(col => {
+      queryBuilder = queryBuilder.orderBy(col, 'asc');
+    });
+  }
 
   // Get total count
   const countBuilder = db.selectFrom(tableName)

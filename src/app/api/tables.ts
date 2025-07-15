@@ -268,19 +268,60 @@ export async function getTableRecords(
   const connection = await loadConnection(connectionId);
   const hasExplicitPk = table.details.pk && table.details.pk.length > 0 && !table.details.pk.includes('rowid');
   
+  // Determine sort columns for deterministic ordering
+  const getSortColumns = (table: DatabaseTable) => {
+    const pk = table.details.pk;
+    if (pk && pk.length > 0) {
+      return pk; // Use primary key columns for sorting
+    }
+    
+    // Fallback: use the first column for sorting
+    const firstColumn = Object.keys(table.details.columns)[0];
+    if (firstColumn) {
+      return [firstColumn];
+    }
+    
+    // Last resort: use 'rowid' for SQLite
+    if (connection!.type === 'sqlite') {
+      return ['rowid'];
+    }
+    
+    return [];
+  };
+
+  const sortColumns = getSortColumns(table);
+  
   let records: any[];
   if (connection!.type === 'sqlite' && !hasExplicitPk) {
     // For SQLite tables relying on implicit rowid, explicitly select it
-    records = await db
+    let query = db
       .selectFrom(tableName)
-      .select(['rowid', '*'])
+      .select(['rowid', '*']);
+    
+    // Add deterministic ordering
+    if (sortColumns.length > 0) {
+      sortColumns.forEach(col => {
+        query = query.orderBy(col, 'asc');
+      });
+    }
+    
+    records = await query
       .limit(pageSize)
       .offset(offset)
       .execute() as any[];
   } else {
-    records = await db
+    let query = db
       .selectFrom(tableName)
-      .selectAll()
+      .selectAll();
+    
+    // Add deterministic ordering
+    if (sortColumns.length > 0) {
+      sortColumns.forEach(col => {
+        query = query.orderBy(col, 'asc');
+      });
+    }
+    
+    records = await query
       .limit(pageSize)
       .offset(offset)
       .execute();
@@ -409,19 +450,60 @@ export async function getTableRecordsInfinite(
   const connection = await loadConnection(connectionId);
   const hasExplicitPk = table.details.pk && table.details.pk.length > 0 && !table.details.pk.includes('rowid');
   
+  // Determine sort columns for deterministic ordering
+  const getSortColumns = (table: DatabaseTable) => {
+    const pk = table.details.pk;
+    if (pk && pk.length > 0) {
+      return pk; // Use primary key columns for sorting
+    }
+    
+    // Fallback: use the first column for sorting
+    const firstColumn = Object.keys(table.details.columns)[0];
+    if (firstColumn) {
+      return [firstColumn];
+    }
+    
+    // Last resort: use 'rowid' for SQLite
+    if (connection!.type === 'sqlite') {
+      return ['rowid'];
+    }
+    
+    return [];
+  };
+
+  const sortColumns = getSortColumns(table);
+  
   let records: any[];
   if (connection!.type === 'sqlite' && !hasExplicitPk) {
     // For SQLite tables relying on implicit rowid, explicitly select it
-    records = await db
+    let query = db
       .selectFrom(tableName)
-      .select(['rowid', '*'])
+      .select(['rowid', '*']);
+    
+    // Add deterministic ordering
+    if (sortColumns.length > 0) {
+      sortColumns.forEach(col => {
+        query = query.orderBy(col, 'asc');
+      });
+    }
+    
+    records = await query
       .limit(limit)
       .offset(offset)
       .execute() as any[];
   } else {
-    records = await db
+    let query = db
       .selectFrom(tableName)
-      .selectAll()
+      .selectAll();
+    
+    // Add deterministic ordering
+    if (sortColumns.length > 0) {
+      sortColumns.forEach(col => {
+        query = query.orderBy(col, 'asc');
+      });
+    }
+    
+    records = await query
       .limit(limit)
       .offset(offset)
       .execute();

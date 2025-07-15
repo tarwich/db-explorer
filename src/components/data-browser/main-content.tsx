@@ -1,20 +1,20 @@
 'use client';
 
 import { getTable, getTableRecordsInfinite } from '@/app/api/tables';
+import { analyzeTableSearchCapabilities, searchTableRecords } from '@/app/api/search';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { DatabaseTable } from '@/types/connections';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import {
   LayoutGrid,
   List,
   Plus,
-  Search,
   Table as TableIcon,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GridView } from './grid-view';
 import { ListView } from './list-view';
+import { SearchInput } from './search-input';
 import { TableView } from './table-view';
 
 type ViewType = 'grid' | 'list' | 'table';
@@ -40,6 +40,8 @@ export function MainContent({
   onRecordClick,
   onTableConfigClick,
 }: MainContentProps) {
+  const [searchType, setSearchType] = useState<string>('column_specific');
+
   // Full table details - only load when a table is selected
   const selectedTableQuery = useQuery({
     queryKey: ['connections', connectionId, 'table-details', selectedTable],
@@ -48,7 +50,18 @@ export function MainContent({
     enabled: !!selectedTable,
   });
 
-  // Infinite query for records
+  // Search capabilities - load when table is selected
+  const searchCapabilitiesQuery = useQuery({
+    queryKey: ['connections', connectionId, 'search-capabilities', selectedTable],
+    queryFn: () =>
+      selectedTable ? analyzeTableSearchCapabilities(connectionId, selectedTable) : null,
+    enabled: !!selectedTable,
+  });
+
+  // Determine if we should use search or regular infinite scroll
+  const isSearching = searchQuery.trim().length > 0;
+
+  // Infinite query for records (when not searching)
   const recordsQuery = useInfiniteQuery({
     queryKey: ['connections', connectionId, 'records-infinite', selectedTable],
     queryFn: ({ pageParam = 0 }) =>
@@ -58,17 +71,36 @@ export function MainContent({
             limit: 50 
           })
         : null,
-    enabled: !!selectedTable,
+    enabled: !!selectedTable && !isSearching,
+    getNextPageParam: (lastPage) => lastPage?.nextOffset,
+    initialPageParam: 0,
+  });
+
+  // Infinite query for search results (when searching)
+  const searchResultsQuery = useInfiniteQuery({
+    queryKey: ['connections', connectionId, 'search-infinite', selectedTable, searchQuery, searchType],
+    queryFn: ({ pageParam = 0 }) =>
+      selectedTable && searchQuery.trim()
+        ? searchTableRecords(connectionId, selectedTable, searchQuery.trim(), {
+            searchType: searchType as any,
+            offset: pageParam,
+            limit: 50,
+          })
+        : null,
+    enabled: !!selectedTable && isSearching,
     getNextPageParam: (lastPage) => lastPage?.nextOffset,
     initialPageParam: 0,
   });
 
   const currentTable = selectedTableQuery.data;
 
+  // Use appropriate query based on search state
+  const activeQuery = isSearching ? searchResultsQuery : recordsQuery;
+
   // Flatten all records from all pages
   const allRecords = useMemo(() => {
-    return recordsQuery.data?.pages.flatMap(page => page?.records || []) || [];
-  }, [recordsQuery.data]);
+    return activeQuery.data?.pages.flatMap(page => page?.records || []) || [];
+  }, [activeQuery.data]);
 
   // Infinite scroll handler
   const handleScroll = useCallback((e: Event) => {
@@ -79,11 +111,11 @@ export function MainContent({
     const threshold = 200; // Load more when 200px from bottom
     
     if (scrollHeight - scrollTop - clientHeight < threshold && 
-        recordsQuery.hasNextPage && 
-        !recordsQuery.isFetchingNextPage) {
-      recordsQuery.fetchNextPage();
+        activeQuery.hasNextPage && 
+        !activeQuery.isFetchingNextPage) {
+      activeQuery.fetchNextPage();
     }
-  }, [recordsQuery]);
+  }, [activeQuery]);
 
   // Add scroll listener to the main content container
   useEffect(() => {
@@ -117,15 +149,14 @@ export function MainContent({
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Input
-              className="pl-9 w-64"
-              placeholder="Search records"
-              value={searchQuery}
-              onChange={(e) => onSearchQueryChange(e.target.value)}
-            />
-          </div>
+          <SearchInput
+            value={searchQuery}
+            onChange={onSearchQueryChange}
+            onSearchTypeChange={setSearchType}
+            searchCapabilities={searchCapabilitiesQuery.data || undefined}
+            className="w-80"
+            placeholder="Search records..."
+          />
           <Button className="gap-1">
             <Plus className="w-4 h-4" />
             New Record
@@ -136,8 +167,18 @@ export function MainContent({
       {/* View Controls */}
       <div className="flex items-center justify-between mb-4">
         <div className="text-sm font-medium">
-          {recordsQuery.data?.pages[0]?.total} Records
+          {isSearching && searchResultsQuery.data?.pages[0]?.searchInfo && (
+            <span className="text-blue-600 mr-2">
+              Search: "{searchQuery}" • 
+            </span>
+          )}
+          {activeQuery.data?.pages[0]?.total} Records
           {allRecords.length > 0 && ` (${allRecords.length} loaded)`}
+          {isSearching && searchCapabilitiesQuery.data && (
+            <span className="text-gray-500 text-xs ml-2">
+              ({searchCapabilitiesQuery.data.tableSize} table)
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1 bg-white rounded-lg border p-1">
           <Button
@@ -168,23 +209,26 @@ export function MainContent({
       </div>
 
       {/* Loading State */}
-      {recordsQuery.isLoading && (
+      {activeQuery.isLoading && (
         <div className="flex items-center justify-center py-8 text-gray-500">
-          Loading records...
+          {isSearching ? 'Searching...' : 'Loading records...'}
         </div>
       )}
 
       {/* Error State */}
-      {recordsQuery.isError && (
+      {activeQuery.isError && (
         <div className="flex items-center justify-center py-8 text-red-500">
-          Error loading records. Please try again.
+          {isSearching ? 'Search failed. Please try again.' : 'Error loading records. Please try again.'}
         </div>
       )}
 
       {/* Empty State */}
-      {!recordsQuery.isLoading && allRecords.length === 0 && (
+      {!activeQuery.isLoading && allRecords.length === 0 && (
         <div className="flex items-center justify-center py-8 text-gray-500">
-          No records found in this table.
+          {isSearching 
+            ? `No records found matching "${searchQuery}"` 
+            : 'No records found in this table.'
+          }
         </div>
       )}
 
@@ -225,9 +269,9 @@ export function MainContent({
           )}
 
           {/* Loading More Indicator */}
-          {recordsQuery.isFetchingNextPage && (
+          {activeQuery.isFetchingNextPage && (
             <div className="flex items-center justify-center py-4 text-gray-500">
-              Loading more records...
+              {isSearching ? 'Loading more search results...' : 'Loading more records...'}
             </div>
           )}
         </div>

@@ -1,10 +1,10 @@
 'use client';
 
-import { getTable, getTableRecords } from '@/app/api/tables';
+import { getTable, getTableRecordsInfinite } from '@/app/api/tables';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DatabaseTable } from '@/types/connections';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import {
   LayoutGrid,
   List,
@@ -12,6 +12,7 @@ import {
   Search,
   Table as TableIcon,
 } from 'lucide-react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { GridView } from './grid-view';
 import { ListView } from './list-view';
 import { TableView } from './table-view';
@@ -23,13 +24,10 @@ interface MainContentProps {
   selectedTable: string | null;
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
-  page: number;
-  pageSize: number;
   viewType: ViewType;
   onViewTypeChange: (viewType: ViewType) => void;
   onRecordClick: (recordId: any) => void;
   onTableConfigClick: () => void;
-  onPageChange: (page: number) => void;
 }
 
 export function MainContent({
@@ -37,13 +35,10 @@ export function MainContent({
   selectedTable,
   searchQuery,
   onSearchQueryChange,
-  page,
-  pageSize,
   viewType,
   onViewTypeChange,
   onRecordClick,
   onTableConfigClick,
-  onPageChange,
 }: MainContentProps) {
   // Full table details - only load when a table is selected
   const selectedTableQuery = useQuery({
@@ -53,16 +48,51 @@ export function MainContent({
     enabled: !!selectedTable,
   });
 
-  const recordsQuery = useQuery({
-    queryKey: ['connections', connectionId, 'records', selectedTable, page],
-    queryFn: () =>
+  // Infinite query for records
+  const recordsQuery = useInfiniteQuery({
+    queryKey: ['connections', connectionId, 'records-infinite', selectedTable],
+    queryFn: ({ pageParam = 0 }) =>
       selectedTable
-        ? getTableRecords(connectionId, selectedTable, { page, pageSize })
+        ? getTableRecordsInfinite(connectionId, selectedTable, { 
+            offset: pageParam, 
+            limit: 50 
+          })
         : null,
     enabled: !!selectedTable,
+    getNextPageParam: (lastPage) => lastPage?.nextOffset,
+    initialPageParam: 0,
   });
 
   const currentTable = selectedTableQuery.data;
+
+  // Flatten all records from all pages
+  const allRecords = useMemo(() => {
+    return recordsQuery.data?.pages.flatMap(page => page?.records || []) || [];
+  }, [recordsQuery.data]);
+
+  // Infinite scroll handler
+  const handleScroll = useCallback((e: Event) => {
+    const target = e.target as Element;
+    if (!target) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = target;
+    const threshold = 200; // Load more when 200px from bottom
+    
+    if (scrollHeight - scrollTop - clientHeight < threshold && 
+        recordsQuery.hasNextPage && 
+        !recordsQuery.isFetchingNextPage) {
+      recordsQuery.fetchNextPage();
+    }
+  }, [recordsQuery]);
+
+  // Add scroll listener to the main content container
+  useEffect(() => {
+    const mainContent = document.querySelector('[data-main-content]');
+    if (mainContent) {
+      mainContent.addEventListener('scroll', handleScroll);
+      return () => mainContent.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
 
   if (!selectedTable) {
     return (
@@ -106,7 +136,8 @@ export function MainContent({
       {/* View Controls */}
       <div className="flex items-center justify-between mb-4">
         <div className="text-sm font-medium">
-          {recordsQuery.data?.pagination.total} Records
+          {recordsQuery.data?.pages[0]?.total} Records
+          {allRecords.length > 0 && ` (${allRecords.length} loaded)`}
         </div>
         <div className="flex items-center gap-1 bg-white rounded-lg border p-1">
           <Button
@@ -151,21 +182,21 @@ export function MainContent({
       )}
 
       {/* Empty State */}
-      {!recordsQuery.data?.records.length && (
+      {!recordsQuery.isLoading && allRecords.length === 0 && (
         <div className="flex items-center justify-center py-8 text-gray-500">
           No records found in this table.
         </div>
       )}
 
       {/* Records Display */}
-      {currentTable && !!recordsQuery.data?.records?.length && (
-        <div className="flex-1 min-h-0 overflow-y-auto">
+      {currentTable && allRecords.length > 0 && (
+        <div className="flex-1 min-h-0 overflow-y-auto" data-main-content>
           {/* Grid View */}
           {viewType === 'grid' && (
             <div className="h-full min-h-0">
               <GridView
                 table={currentTable}
-                items={recordsQuery.data?.records}
+                items={allRecords}
                 onRecordClick={onRecordClick}
               />
             </div>
@@ -176,7 +207,7 @@ export function MainContent({
             <div className="h-full min-h-0">
               <ListView
                 table={currentTable}
-                items={recordsQuery.data?.records}
+                items={allRecords}
                 onRecordClick={onRecordClick}
               />
             </div>
@@ -187,46 +218,18 @@ export function MainContent({
             <div className="h-full min-h-0">
               <TableView
                 table={currentTable}
-                items={recordsQuery.data?.records}
+                items={allRecords}
                 onRecordClick={onRecordClick}
               />
             </div>
           )}
-        </div>
-      )}
 
-      {/* Pagination */}
-      {(recordsQuery.data?.pagination?.totalPages ?? 0) > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(Math.max(1, page - 1))}
-            disabled={page === 1}
-          >
-            Previous
-          </Button>
-          <div className="text-sm text-gray-500">
-            Page {page} of{' '}
-            {recordsQuery.data?.pagination?.totalPages ?? 1}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              onPageChange(
-                Math.min(
-                  recordsQuery.data?.pagination?.totalPages ?? 1,
-                  page + 1
-                )
-              )
-            }
-            disabled={
-              page === (recordsQuery.data?.pagination?.totalPages ?? 1)
-            }
-          >
-            Next
-          </Button>
+          {/* Loading More Indicator */}
+          {recordsQuery.isFetchingNextPage && (
+            <div className="flex items-center justify-center py-4 text-gray-500">
+              Loading more records...
+            </div>
+          )}
         </div>
       )}
     </>

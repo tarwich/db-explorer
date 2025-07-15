@@ -23,8 +23,6 @@ export default function DataBrowserPage({
   const searchParams = useSearchParams();
   const selectedTable = searchParams.get('table');
   const [searchQuery, setSearchQuery] = useState('');
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
   const [viewType, setViewType] = useState<ViewType>('grid');
   const tableConfigModal = useDisclosure();
   const [recordEditorModal, setRecordEditorModal] = useState<{
@@ -50,10 +48,6 @@ export default function DataBrowserPage({
     router.push(`/connections/${params.id}?table=${tableName}`);
   };
 
-  const handleResetPage = () => {
-    setPage(1);
-  };
-
   // Background analysis of tables is now handled in DatabaseSidebar component
 
   return (
@@ -64,7 +58,7 @@ export default function DataBrowserPage({
         connectionName={connectionQuery.data?.name}
         selectedTable={selectedTable}
         onTableSelect={handleTableSelect}
-        onResetPage={handleResetPage}
+        onResetPage={() => {}} // No longer needed for infinite scroll
       />
 
       {/* Main Content */}
@@ -74,13 +68,10 @@ export default function DataBrowserPage({
           selectedTable={selectedTable}
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
-          page={page}
-          pageSize={pageSize}
           viewType={viewType}
           onViewTypeChange={setViewType}
           onRecordClick={handleRecordClick}
           onTableConfigClick={() => tableConfigModal.onOpen()}
-          onPageChange={setPage}
         />
       </div>
 

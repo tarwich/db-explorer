@@ -393,6 +393,147 @@ export async function getTableRecords(
   };
 }
 
+export async function getTableRecordsInfinite(
+  connectionId: string,
+  tableName: string,
+  options: {
+    offset?: number;
+    limit?: number;
+  } = {}
+) {
+  const { offset = 0, limit = 50 } = options;
+  const db = await openConnection(connectionId);
+  const table = await getTable(connectionId, tableName);
+  
+  // For SQLite tables without explicit primary keys, include rowid
+  const connection = await loadConnection(connectionId);
+  const hasExplicitPk = table.details.pk && table.details.pk.length > 0 && !table.details.pk.includes('rowid');
+  
+  let records: any[];
+  if (connection!.type === 'sqlite' && !hasExplicitPk) {
+    // For SQLite tables relying on implicit rowid, explicitly select it
+    records = await db
+      .selectFrom(tableName)
+      .select(['rowid', '*'])
+      .limit(limit)
+      .offset(offset)
+      .execute() as any[];
+  } else {
+    records = await db
+      .selectFrom(tableName)
+      .selectAll()
+      .limit(limit)
+      .offset(offset)
+      .execute();
+  }
+
+  // Get total count for hasNextPage calculation
+  const [{ count }] = await db
+    .selectFrom(tableName)
+    .select((eb) => eb.fn.countAll().as('count'))
+    .execute();
+
+  // --- FK display value resolution ---
+  // 1. Find all columns with a foreignKey
+  const fkColumns = Object.values(table.details.columns).filter(
+    (col) => col.foreignKey
+  );
+
+  // 2. For each FK column, collect all unique FK values in this batch
+  const fkValueMap: Record<string, Set<any>> = {};
+  for (const col of fkColumns) {
+    fkValueMap[col.name] = new Set(
+      records.map((r: any) => r[col.name]).filter((v) => v != null)
+    );
+  }
+
+  // 3. For each FK column, batch fetch related records
+  const fkDisplayMap: Record<
+    string,
+    Record<any, { displayValue: string; icon: string }>
+  > = {};
+  for (const col of fkColumns) {
+    const fk = col.foreignKey!;
+    const targetTable = await getTable(connectionId, fk.targetTable);
+    const displayColumns =
+      require('@/utils/display-columns').determineDisplayColumns({
+        ...targetTable,
+        details: {
+          ...targetTable.details,
+          columns: Object.values(targetTable.details.columns),
+        },
+      });
+    const values = Array.from(fkValueMap[col.name]);
+    if (values.length === 0) {
+      fkDisplayMap[col.name] = {};
+      continue;
+    }
+    // Fetch related records
+    const relatedRecords = await db
+      .selectFrom(fk.targetTable)
+      .select([...displayColumns, fk.targetColumn])
+      .where(fk.targetColumn, 'in', values)
+      .execute();
+    // Map FK value to display value and icon
+    fkDisplayMap[col.name] = Object.fromEntries(
+      relatedRecords.map((r: any) => [
+        r[fk.targetColumn],
+        {
+          displayValue: displayColumns
+            .map((colName: string) => r[colName])
+            .filter(Boolean)
+            .join(' '),
+          icon: targetTable.details.icon,
+        },
+      ])
+    );
+  }
+
+  // 4. Replace FK values in records with display value and icon
+  const recordsWithDisplay = records.map((record: any) => {
+    const newRecord: Record<string, any> = { ...record };
+    for (const col of fkColumns) {
+      const val = record[col.name];
+      if (val != null && fkDisplayMap[col.name][val] !== undefined) {
+        // Get the related table's icon
+        const fk = col.foreignKey!;
+        // Find the icon from the already-fetched table (from previous getTable call)
+        // (We could optimize by caching, but for now, fetch again)
+        newRecord[col.name] = {
+          value: fkDisplayMap[col.name][val].displayValue,
+          icon: fkDisplayMap[col.name][val].icon,
+        };
+      }
+    }
+    // For non-FK fields, keep as is
+    for (const colName in newRecord) {
+      if (!fkColumns.find((c) => c.name === colName)) {
+        newRecord[colName] = record[colName];
+      }
+    }
+    return newRecord;
+  });
+
+  // 5. Add calculated columns to records
+  const {
+    addCalculatedColumnsToRecords,
+  } = require('@/utils/calculated-columns');
+  const finalRecords = addCalculatedColumnsToRecords(
+    recordsWithDisplay,
+    table.details.calculatedColumns || []
+  );
+
+  const totalCount = Number(count);
+  const hasNextPage = offset + records.length < totalCount;
+
+  return {
+    records: finalRecords,
+    hasNextPage,
+    nextOffset: hasNextPage ? offset + records.length : undefined,
+    total: totalCount,
+  };
+}
+
 export async function clearTablesForConnection(connectionId: string): Promise<void> {
   const stateDb = await getStateDb();
   

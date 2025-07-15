@@ -1,0 +1,59 @@
+{
+  "tests": [
+    {
+      "view": "Connection Settings",
+      "modalDimensions": "800x810",
+      "viewport": "1400x900",
+      "overflows": false,
+      "hasScrollbars": true
+    },
+    {
+      "view": "Accounts General Tab",
+      "modalDimensions": "800x810",
+      "viewport": "1400x900",
+      "overflows": false,
+      "hasScrollbars": true
+    },
+    {
+      "view": "Accounts Inline View Editor",
+      "error": "Cannot read properties of null (reading 'height')",
+      "overflows": false,
+      "hasScrollbars": false
+    },
+    {
+      "view": "Accounts Card View Editor",
+      "error": "Cannot read properties of null (reading 'height')",
+      "overflows": false,
+      "hasScrollbars": false
+    },
+    {
+      "view": "Accounts List View Editor",
+      "error": "Cannot read properties of null (reading 'height')",
+      "overflows": false,
+      "hasScrollbars": false
+    },
+    {
+      "view": "AccountCurrencies Card View",
+      "modalDimensions": "800x810",
+      "viewport": "1400x900",
+      "overflows": false,
+      "hasScrollbars": true
+    },
+    {
+      "view": "Aircrafts Card View",
+      "modalDimensions": "800x810",
+      "viewport": "1400x900",
+      "overflows": false,
+      "hasScrollbars": true
+    },
+    {
+      "view": "AircraftModels Card View",
+      "modalDimensions": "800x810",
+      "viewport": "1400x900",
+      "overflows": false,
+      "hasScrollbars": true
+    }
+  ],
+  "overflowIssues": [],
+  "summary": "\n📊 OVERFLOW TEST SUMMARY\n========================\nTotal Tests: 8\nSuccessful Tests: 5\nOverflow Issues Found: 0\n    \n✅ NO OVERFLOW ISSUES DETECTED\n\n\n📁 Screenshots saved to: /Users/tarwich/Projects/db-explorer/final-overflow-test\n"
+}

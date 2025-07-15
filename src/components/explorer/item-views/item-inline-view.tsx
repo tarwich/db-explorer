@@ -5,16 +5,20 @@ import { TIconName } from './item-icon';
 
 export function ItemInlineView({
   item,
+  leftElement,
   ...props
 }: {
   item: {
     /** @deprecated Use `columns` instead */
     name?: string;
-    icon: TIconName;
+    icon?: TIconName;
     columns: { name: string; value: Exclude<Primitive, symbol> }[];
   };
+  leftElement?: React.ReactElement;
 } & React.HTMLAttributes<HTMLDivElement>) {
-  const IconComponent = icons[item.icon as keyof typeof icons] || FileQuestion;
+  const IconComponent = item.icon
+    ? icons[item.icon as keyof typeof icons] || FileQuestion
+    : null;
   const [name, ...columns] = item.name
     ? [{ name: 'name', value: item.name }, ...item.columns]
     : item.columns;
@@ -27,11 +31,15 @@ export function ItemInlineView({
         props.className
       )}
     >
-      <IconComponent className="size-4" />
-      {name?.value}
-      {columns?.map((column) => (
-        <span key={column.name}>{column.value}</span>
-      ))}
+      {leftElement || (IconComponent && <IconComponent className="size-4" />)}
+      <div className="flex flex-row items-center gap-1">
+        <span>{name?.value}</span>
+        {columns.map((column, index) => (
+          <span key={index} className="text-neutral-500">
+            {column.value}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

@@ -1,25 +1,18 @@
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Ellipsis } from 'lucide-react';
 import { ItemIcon, TIconName } from './item-icon';
+import { ReactNode } from 'react';
 
 export function ItemListView({
   item,
-  onMenuClick,
+  rightElement,
 }: {
   item: {
     id: string;
     icon: TIconName;
     columns: { name: string; value: string; icon?: string }[];
   };
-  onMenuClick?: () => void;
+  rightElement?: ReactNode;
 }) {
-  const handleMenuClick = onMenuClick
-    ? (event: React.MouseEvent<HTMLButtonElement>) => {
-        event.preventDefault();
-        onMenuClick();
-      }
-    : undefined;
 
   return (
     <div
@@ -53,11 +46,7 @@ export function ItemListView({
         ))}
       </div>
 
-      {onMenuClick && (
-        <Button variant="ghost" size="icon" onClick={handleMenuClick}>
-          <Ellipsis className="w-4 h-4" />
-        </Button>
-      )}
+      {rightElement}
     </div>
   );
 }

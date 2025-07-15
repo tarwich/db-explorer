@@ -19,7 +19,7 @@ const TEXT_TYPES = [
  * @returns Array of column names to use for displaying records
  */
 export function determineDisplayColumns(table: DatabaseTable): string[] {
-  const columns = table.details.columns;
+  const columns = Object.values(table.details.columns);
   const primaryKey = table.details.pk;
 
   // First, look for common meaningful column names

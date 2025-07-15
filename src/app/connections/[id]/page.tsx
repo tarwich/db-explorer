@@ -1,31 +1,15 @@
 'use client';
 
-import { getTableRecords, getTables } from '@/app/api/tables';
+import { analyzeTable } from '@/app/api/tables-list';
+import { DatabaseSidebar } from '@/components/data-browser/database-sidebar';
+import { MainContent } from '@/components/data-browser/main-content';
 import { ConnectionModal } from '@/components/connection-modal/connection-modal';
-import { ItemCardView } from '@/components/explorer/item-views/item-card-view';
-import { ItemIcon } from '@/components/explorer/item-views/item-icon';
-import { ItemListView } from '@/components/explorer/item-views/item-list-view';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useResizable } from '@/hooks/use-resizable';
+import { RecordEditorModal } from '@/components/record-editor-modal';
 import { cn } from '@/lib/utils';
-import { DatabaseTable } from '@/types/connections';
 import { useDisclosure } from '@reactuses/core';
-import { useQuery } from '@tanstack/react-query';
-import Fuse from 'fuse.js';
-import {
-  ArrowLeft,
-  LayoutGrid,
-  List,
-  MoreVertical,
-  Plus,
-  Search,
-  Table as TableIcon,
-} from 'lucide-react';
-import Link from 'next/link';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { sort } from 'radash';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getConnections } from '../../api/connections';
 
 type ViewType = 'grid' | 'list' | 'table';
@@ -39,13 +23,12 @@ export default function DataBrowserPage({
   const searchParams = useSearchParams();
   const selectedTable = searchParams.get('table');
   const [searchQuery, setSearchQuery] = useState('');
-  const [tableFilter, setTableFilter] = useState('');
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
   const [viewType, setViewType] = useState<ViewType>('grid');
-  const { width, startResizing, isResizing, resizerProps } = useResizable({
-    initialWidth: 256,
-  });
+  const tableConfigModal = useDisclosure();
+  const [recordEditorModal, setRecordEditorModal] = useState<{
+    isOpen: boolean;
+    recordId: any;
+  }>({ isOpen: false, recordId: null });
 
   const connectionQuery = useQuery({
     queryKey: ['connections', params.id],
@@ -53,470 +36,64 @@ export default function DataBrowserPage({
     select: (data) => data.find((conn) => conn.id === params.id),
   });
 
-  const tablesQuery = useQuery({
-    queryKey: ['connections', params.id, 'tables'],
-    queryFn: () => getTables(params.id),
-  });
+  const handleRecordClick = (recordId: any) => {
+    setRecordEditorModal({ isOpen: true, recordId });
+  };
 
-  const recordsQuery = useQuery({
-    queryKey: ['connections', params.id, 'records', selectedTable, page],
-    queryFn: () =>
-      selectedTable
-        ? getTableRecords(params.id, selectedTable, { page, pageSize })
-        : null,
-    enabled: !!selectedTable,
-  });
+  const closeRecordEditor = () => {
+    setRecordEditorModal({ isOpen: false, recordId: null });
+  };
 
-  const currentTable = tablesQuery.data?.find((t) => t.name === selectedTable);
+  const handleTableSelect = (tableName: string) => {
+    router.push(`/connections/${params.id}?table=${tableName}`);
+  };
 
-  const fuse = useMemo(() => {
-    if (!tablesQuery.data) return null;
-    return new Fuse(tablesQuery.data, {
-      keys: ['name', 'details.pluralName', 'details.singularName'],
-      threshold: 0.3,
-    });
-  }, [tablesQuery.data]);
-
-  const filteredTables = useMemo(() => {
-    if (!tablesQuery.data) return [];
-    if (!tableFilter || !fuse) return tablesQuery.data;
-    return fuse.search(tableFilter).map((result) => result.item);
-  }, [tablesQuery.data, tableFilter, fuse]);
+  // Background analysis of tables is now handled in DatabaseSidebar component
 
   return (
-    <div
-      className={cn(
-        'min-h-screen bg-gray-50 flex flex-row h-full overflow-hidden',
-        isResizing && 'select-none'
-      )}
-    >
+    <div className="min-h-screen bg-gray-50 flex flex-row h-full overflow-hidden">
       {/* Sidebar */}
-      <div
-        className="bg-white border-r flex flex-col h-screen flex-none"
-        style={{ width }}
-      >
-        {/* Connection Info */}
-        <div className="p-4 border-b flex-none">
-          <Link
-            href="/connections"
-            className="flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back to Connections</span>
-          </Link>
-          <div className="text-sm text-gray-500">
-            {connectionQuery.data?.name}
-          </div>
-        </div>
-
-        {/* Tables List */}
-        <div className="flex-1 p-4 overflow-y-auto">
-          <div className="text-sm font-medium mb-2">Tables</div>
-          {tablesQuery.data && tablesQuery.data.length > 10 && (
-            <div className="relative mb-3">
-              <Search className="w-4 h-4 absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
-                className="pl-8 h-8 text-sm"
-                placeholder="Filter tables..."
-                value={tableFilter}
-                onChange={(e) => setTableFilter(e.target.value)}
-              />
-            </div>
-          )}
-          <div className="space-y-1">
-            {tablesQuery.isLoading ? (
-              <div className="text-sm text-gray-500">Loading tables...</div>
-            ) : (
-              filteredTables.map((table) => (
-                <button
-                  key={table.name}
-                  onClick={() => {
-                    setPage(1);
-                    router.push(
-                      `/connections/${params.id}?table=${table.name}`
-                    );
-                  }}
-                  className={cn(
-                    'w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm',
-                    selectedTable === table.name
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  )}
-                >
-                  <ItemIcon item={{ icon: table.details.icon }} />
-                  <span className="truncate flex-1 text-left">
-                    {table.details.pluralName}
-                  </span>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Resize Handle */}
-      <div className="relative">
-        <div
-          {...resizerProps}
-          className={cn(
-            resizerProps.className,
-            'w-2 cursor-col-resize hover:bg-gray-200'
-          )}
-        />
-      </div>
+      <DatabaseSidebar
+        connectionId={params.id}
+        connectionName={connectionQuery.data?.name}
+        selectedTable={selectedTable}
+        onTableSelect={handleTableSelect}
+        onResetPage={() => {}} // No longer needed for infinite scroll
+      />
 
       {/* Main Content */}
       <div className="flex-1 p-4 flex flex-col min-h-0 overflow-y-auto">
-        {selectedTable ? (
-          <>
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <TableIcon className="w-5 h-5 text-emerald-500" />
-                <h1 className="text-xl font-semibold">
-                  {currentTable?.details.pluralName}
-                </h1>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    className="pl-9 w-64"
-                    placeholder="Search records"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <Button className="gap-1">
-                  <Plus className="w-4 h-4" />
-                  New Record
-                </Button>
-              </div>
-            </div>
-
-            {/* View Controls */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-sm font-medium">
-                {recordsQuery.data?.pagination.total} Records
-              </div>
-              <div className="flex items-center gap-1 bg-white rounded-lg border p-1">
-                <Button
-                  variant={viewType === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() => setViewType('grid')}
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewType === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() => setViewType('list')}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewType === 'table' ? 'default' : 'ghost'}
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() => setViewType('table')}
-                >
-                  <TableIcon className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Loading State */}
-            {recordsQuery.isLoading && (
-              <div className="flex items-center justify-center py-8 text-gray-500">
-                Loading records...
-              </div>
-            )}
-
-            {/* Error State */}
-            {recordsQuery.isError && (
-              <div className="flex items-center justify-center py-8 text-red-500">
-                Error loading records. Please try again.
-              </div>
-            )}
-
-            {/* Empty State */}
-            {!recordsQuery.data?.records.length && (
-              <div className="flex items-center justify-center py-8 text-gray-500">
-                No records found in this table.
-              </div>
-            )}
-
-            {/* Records Display */}
-            {currentTable && !!recordsQuery.data?.records?.length && (
-              <div className="flex-1 min-h-0 overflow-y-auto">
-                {/* Grid View */}
-                {viewType === 'grid' && (
-                  <div className="h-full min-h-0">
-                    <GridView
-                      table={currentTable}
-                      items={recordsQuery.data?.records}
-                    />
-                  </div>
-                )}
-
-                {/* List View */}
-                {viewType === 'list' && (
-                  <div className="h-full min-h-0">
-                    <ListView
-                      table={currentTable}
-                      items={recordsQuery.data?.records}
-                    />
-                  </div>
-                )}
-
-                {/* Table View */}
-                {viewType === 'table' && (
-                  <div className="h-full min-h-0">
-                    <TableView
-                      table={currentTable}
-                      items={recordsQuery.data?.records}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Pagination */}
-            {(recordsQuery.data?.pagination?.totalPages ?? 0) > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Previous
-                </Button>
-                <div className="text-sm text-gray-500">
-                  Page {page} of{' '}
-                  {recordsQuery.data?.pagination?.totalPages ?? 1}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setPage((p) =>
-                      Math.min(
-                        recordsQuery.data?.pagination?.totalPages ?? 1,
-                        p + 1
-                      )
-                    )
-                  }
-                  disabled={
-                    page === (recordsQuery.data?.pagination?.totalPages ?? 1)
-                  }
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="flex items-center justify-center h-full text-gray-500">
-            Select a table to view its records
-          </div>
-        )}
+        <MainContent
+          connectionId={params.id}
+          selectedTable={selectedTable}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
+          viewType={viewType}
+          onViewTypeChange={setViewType}
+          onRecordClick={handleRecordClick}
+          onTableConfigClick={() => tableConfigModal.onOpen()}
+        />
       </div>
-    </div>
-  );
-}
 
-function GridView({ table, items }: { table: DatabaseTable; items: any[] }) {
-  const connectionModal = useDisclosure();
-  const columns = useMemo(() => {
-    return sort(
-      Object.entries(table.details.cardView.columns),
-      ([, c]) => c.order
-    )
-      .filter(([, c]) => !c.hidden)
-      .map(([name]) => table.details.columns[name])
-      .filter(Boolean);
-  }, [table]);
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-      {items.map((record: any) => (
-        <ItemCardView
-          key={record.id}
-          item={{
-            id: record.id,
-            icon: table.details.icon,
-            columns: columns.map((c) => {
-              const val = record[c.name];
-              if (
-                val &&
-                typeof val === 'object' &&
-                'value' in val &&
-                'icon' in val
-              ) {
-                return {
-                  name: c.name,
-                  value: val.value,
-                  icon: val.icon,
-                };
-              }
-              return {
-                name: c.name,
-                value: String(val),
-              };
-            }),
-          }}
-          onMenuClick={() => connectionModal.onOpen()}
-        />
-      ))}
-      {connectionModal.isOpen && (
+      {/* Table Configuration Modal */}
+      {tableConfigModal.isOpen && selectedTable && (
         <ConnectionModal
-          isOpen={connectionModal.isOpen}
-          onOpenChange={connectionModal.onOpenChange}
-          connectionId={table.connectionId}
-          initialTableName={table.name}
-          initialTablePage="card-view"
+          isOpen={tableConfigModal.isOpen}
+          onOpenChange={tableConfigModal.onOpenChange}
+          connectionId={params.id}
+          initialTableName={selectedTable}
+          initialTablePage="general"
         />
       )}
-    </div>
-  );
-}
 
-function ListView({ table, items }: { table: DatabaseTable; items: any[] }) {
-  const connectionModal = useDisclosure();
-  const columns = useMemo(() => {
-    return sort(
-      Object.entries(table.details.listView.columns),
-      ([, c]) => c.order
-    )
-      .filter(([, c]) => !c.hidden)
-      .map(([name]) => table.details.columns[name])
-      .filter(Boolean);
-  }, [table]);
-
-  return (
-    <div className="space-y-2">
-      {items.map((record: any) => (
-        <ItemListView
-          key={record.id}
-          item={{
-            id: record.id,
-            icon: table.details.icon,
-            columns: columns.map((c) => {
-              const val = record[c.name];
-              if (
-                val &&
-                typeof val === 'object' &&
-                'value' in val &&
-                'icon' in val
-              ) {
-                return {
-                  name: c.name,
-                  value: val.value,
-                  icon: val.icon,
-                };
-              }
-              return {
-                name: c.name,
-                value: String(val),
-              };
-            }),
-          }}
-          onMenuClick={connectionModal.onOpen}
-        />
-      ))}
-      {connectionModal.isOpen && (
-        <ConnectionModal
-          isOpen={connectionModal.isOpen}
-          onOpenChange={connectionModal.onOpenChange}
-          connectionId={table.connectionId}
-          initialTableName={table.name}
-          initialTablePage="list-view"
-        />
-      )}
-    </div>
-  );
-}
-
-function TableView({ table, items }: { table: DatabaseTable; items: any[] }) {
-  const connectionModal = useDisclosure();
-  const columns = useMemo(() => {
-    return sort(Object.entries(table.details.columns), ([, c]) => c.order)
-      .filter(([, c]) => !c.hidden)
-      .map(([name]) => table.details.columns[name])
-      .filter(Boolean);
-  }, [table]);
-
-  return (
-    <div className="border rounded-lg overflow-hidden">
-      <table className="w-full">
-        <thead className="bg-gray-50 border-b">
-          <tr>
-            {columns.map((column) => (
-              <th
-                key={column.name}
-                className="px-4 py-2 text-left text-sm font-medium text-gray-900"
-              >
-                {column.displayName}
-              </th>
-            ))}
-            <th className="w-8"></th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y">
-          {items.map((record: any) => (
-            <tr
-              key={record.id}
-              className="cursor-pointer hover:bg-gray-50"
-              onClick={connectionModal.onOpen}
-            >
-              {columns.map((column) => {
-                const val = record[column.name];
-                if (
-                  val &&
-                  typeof val === 'object' &&
-                  'value' in val &&
-                  'icon' in val
-                ) {
-                  return (
-                    <td
-                      key={column.name}
-                      className="px-4 py-2 text-sm flex items-center gap-1"
-                    >
-                      <ItemIcon item={{ icon: val.icon }} />
-                      {val.value}
-                    </td>
-                  );
-                }
-                return (
-                  <td key={column.name} className="px-4 py-2 text-sm">
-                    {String(val)}
-                  </td>
-                );
-              })}
-              <td className="px-2 py-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={connectionModal.onOpen}
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {connectionModal.isOpen && (
-        <ConnectionModal
-          isOpen={connectionModal.isOpen}
-          onOpenChange={connectionModal.onOpenChange}
-          connectionId={table.connectionId}
-          initialTableName={table.name}
+      {/* Record Editor Modal */}
+      {recordEditorModal.isOpen && selectedTable && recordEditorModal.recordId && (
+        <RecordEditorModal
+          isOpen={recordEditorModal.isOpen}
+          onClose={closeRecordEditor}
+          connectionId={params.id}
+          tableName={selectedTable}
+          recordId={recordEditorModal.recordId}
         />
       )}
     </div>

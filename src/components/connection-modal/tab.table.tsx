@@ -4,9 +4,17 @@ import { getConnection } from '@/app/api/connections';
 import { getTable, getTables, saveTable } from '@/app/api/tables';
 import { useToast } from '@/hooks/use-toast';
 import browserLogger from '@/lib/browser-logger';
-import { cn } from '@/lib/utils';
+import { CalculatedColumn } from '@/types/connections';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { EyeIcon, EyeOffIcon, icons, PencilIcon } from 'lucide-react';
+import {
+  EyeIcon,
+  EyeOffIcon,
+  Filter,
+  icons,
+  PencilIcon,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 import { sort } from 'radash';
 import {
   createContext,
@@ -26,7 +34,7 @@ import { Button } from '../ui/button';
 import { ColorPicker } from '../ui/color-picker';
 import { IconPicker } from '../ui/icon-picker';
 import { Input } from '../ui/input';
-import { autoAssignTableSettings } from './auto-assign.actions';
+import { autoAssignTableSettingsOptimized } from './auto-assign-optimized.actions';
 import { Breadcrumbs } from './breadcrumbs';
 import { ViewEditor } from './view-editor';
 
@@ -181,25 +189,31 @@ export const TableTab = forwardRef<HTMLDivElement, TableTabProps>(
             />
           )}
           {page === 'inline-view' && (
-            <ViewEditor
-              type="inline"
-              connectionId={connectionId}
-              tableName={tableName}
-            />
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <ViewEditor
+                type="inline"
+                connectionId={connectionId}
+                tableName={tableName}
+              />
+            </div>
           )}
           {page === 'card-view' && (
-            <ViewEditor
-              type="card"
-              connectionId={connectionId}
-              tableName={tableName}
-            />
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <ViewEditor
+                type="card"
+                connectionId={connectionId}
+                tableName={tableName}
+              />
+            </div>
           )}
           {page === 'list-view' && (
-            <ViewEditor
-              type="list"
-              connectionId={connectionId}
-              tableName={tableName}
-            />
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <ViewEditor
+                type="list"
+                connectionId={connectionId}
+                tableName={tableName}
+              />
+            </div>
           )}
           {page === 'column-edit' && editingColumn && (
             <TableTabColumnEditPage
@@ -228,9 +242,10 @@ export function TableTabGeneralPage({
   saveTableMutation: any;
   onEditColumn?: (colName: string) => void;
 }) {
-  const { setPage } = useTableTabContext();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { setPage } = useTableTabContext();
+  const [showOnlyEnabled, setShowOnlyEnabled] = useState(false);
 
   const tableQuery = useQuery({
     queryKey: ['connections', connectionId, 'tables', tableName],
@@ -238,95 +253,67 @@ export function TableTabGeneralPage({
   });
 
   const autoAssignMutation = useMutation({
-    mutationFn: () => autoAssignTableSettings({ connectionId, tableName }),
-    onSuccess: (result) => {
-      if (result.success) {
-        queryClient.invalidateQueries({
-          queryKey: ['connections', connectionId, 'tables'],
-        });
-        // Also invalidate the sidebar's tables query
-        queryClient.invalidateQueries({
-          queryKey: ['tables', connectionId],
-        });
-        toast({
-          title: 'Auto-assignment completed',
-          description: result.message,
-          variant: 'default',
-        });
-      } else {
-        toast({
-          title: 'Auto-assignment failed',
-          description: result.message,
-          variant: 'destructive',
-        });
-      }
+    mutationFn: () =>
+      autoAssignTableSettingsOptimized({ connectionId, tableName }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['connections', connectionId, 'tables'],
+      });
+      toast({
+        title: 'Table settings auto-assigned',
+        description:
+          'Icons and display names have been automatically assigned.',
+      });
     },
     onError: (error) => {
+      browserLogger.error('Failed to auto-assign table settings', {
+        connectionId,
+        tableName,
+        error: error.message || error,
+      });
       toast({
-        title: 'Auto-assignment failed',
-        description: error.message || 'An unexpected error occurred',
+        title: 'Error auto-assigning table settings',
         variant: 'destructive',
+        description: error.message,
       });
     },
   });
 
-
-
+  const allColumns = Object.values(tableQuery.data?.details.columns || {});
+  const displayedColumns = showOnlyEnabled
+    ? allColumns.filter((c) => !c.hidden)
+    : allColumns;
+  const visibleColumns = allColumns.filter((c) => !c.hidden);
 
   return (
-    <>
-      <form className="flex flex-col gap-3 h-full overflow-hidden">
-        <div
-          className={cn(
-            'flex flex-col gap-4',
-            'flex-1 min-h-0 overflow-y-auto'
-          )}
+    <div className="flex flex-col gap-4 h-full overflow-hidden">
+      {/* Header */}
+      <div className="flex flex-row items-center gap-4">
+        <div className="flex flex-col">
+          <div className="text-lg font-semibold">
+            {form.watch('pluralName')}
+          </div>
+          <div className="text-xs font-mono text-neutral-400 mt-1">
+            Database Name: {tableName}
+          </div>
+        </div>
+        <div className="flex-1" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => autoAssignMutation.mutate()}
+          disabled={autoAssignMutation.isPending}
         >
-          <div className="flex flex-row items-center justify-between">
-            <div className="text-sm font-medium">Table Information</div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => autoAssignMutation.mutate()}
-              disabled={autoAssignMutation.isPending}
-              className="flex items-center gap-2"
-            >
-              {autoAssignMutation.isPending ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  Auto-assigning...
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                  Auto-assign
-                </>
-              )}
-            </Button>
-          </div>
+          {autoAssignMutation.isPending ? 'Auto-assigning...' : 'Auto-assign'}
+        </Button>
+      </div>
 
-          {/* Database name */}
-          <div className="flex flex-row gap-2 text-xs text-neutral-800">
-            <span>Database Name: </span>
-            <span>{tableName}</span>
-          </div>
-
-          <div className="flex flex-row gap-2">
-            {/* Icon */}
-            <div className="flex flex-col gap-1 justify-center items-center">
+      {/* Scrollable content */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="flex flex-col gap-4">
+          {/* Icon and color */}
+          <div className="flex flex-row gap-4">
+            <div className="flex flex-col gap-1">
               <div className="text-sm font-medium">Icon</div>
               <IconPicker
                 value={form.watch('icon')}
@@ -334,12 +321,9 @@ export function TableTabGeneralPage({
                   form.setValue('icon', value);
                   saveTableMutation.mutate({ icon: value });
                 }}
-                className="size-8"
               />
             </div>
-
-            {/* Color */}
-            <div className="flex flex-col gap-1 justify-center items-center">
+            <div className="flex flex-col gap-1">
               <div className="text-sm font-medium">Color</div>
               <ColorPicker
                 value={form.watch('color')}
@@ -347,10 +331,12 @@ export function TableTabGeneralPage({
                   form.setValue('color', value);
                   saveTableMutation.mutate({ color: value });
                 }}
-                className="size-8"
               />
             </div>
+          </div>
 
+          {/* Singular and plural names */}
+          <div className="flex flex-row gap-4">
             {/* Singular name */}
             <div className="flex flex-col gap-1 flex-1">
               <div className="text-sm font-medium">Singular Name</div>
@@ -380,42 +366,65 @@ export function TableTabGeneralPage({
             </div>
           </div>
 
-          <div className="text-sm font-medium">Columns</div>
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-medium">Columns</div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={showOnlyEnabled ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowOnlyEnabled(!showOnlyEnabled)}
+                className="text-xs"
+              >
+                <Filter className="size-3 mr-1" />
+                {showOnlyEnabled ? 'Show All' : 'Show Only Enabled'}
+              </Button>
+              <span className="text-xs text-neutral-500">
+                {showOnlyEnabled
+                  ? `${displayedColumns.length} enabled`
+                  : `${displayedColumns.length} total (${visibleColumns.length} enabled)`}
+              </span>
+            </div>
+          </div>
 
           {/* Columns */}
           <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
-            {Object.values(tableQuery.data?.details.columns || {}).map(
-              (column) => (
-                <div
-                  key={column.name}
-                  className="flex flex-row gap-2 items-center"
-                >
-                  <Button variant="ghost" size="icon">
-                    {column.hidden ? (
-                      <EyeOffIcon className="size-4" />
-                    ) : (
-                      <EyeIcon className="size-4" />
-                    )}
-                  </Button>
-                  <ItemIcon item={{ icon: column.icon }} />
-                  <span>{column.displayName}</span>
-                  <span className="font-mono text-xs text-neutral-700">
-                    {column.type}
-                  </span>
-                  {onEditColumn && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onEditColumn(column.name)}
-                      type="button"
-                    >
-                      <PencilIcon className="size-4" />
-                    </Button>
+            {displayedColumns.map((column) => (
+              <div
+                key={column.name}
+                className="flex flex-row gap-2 items-center"
+              >
+                <Button variant="ghost" size="icon">
+                  {column.hidden ? (
+                    <EyeOffIcon className="size-4" />
+                  ) : (
+                    <EyeIcon className="size-4" />
                   )}
-                </div>
-              )
-            )}
+                </Button>
+                <ItemIcon item={{ icon: column.icon }} />
+                <span>{column.displayName}</span>
+                <span className="font-mono text-xs text-neutral-700">
+                  {column.type}
+                </span>
+                {onEditColumn && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onEditColumn(column.name)}
+                    type="button"
+                  >
+                    <PencilIcon className="size-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
           </div>
+
+          {/* Calculated Columns */}
+          <CalculatedColumnsSection
+            connectionId={connectionId}
+            tableName={tableName}
+            table={tableQuery.data}
+          />
 
           {/* Inline View */}
           <div className="flex flex-col gap-2">
@@ -524,8 +533,8 @@ export function TableTabGeneralPage({
             </div>
           </div>
         </div>
-      </form>
-    </>
+      </div>
+    </div>
   );
 }
 
@@ -697,6 +706,385 @@ function TableTabColumnEditPage({
           {saving ? 'Saving...' : 'Save Changes'}
         </Button>
       </form>
+    </div>
+  );
+}
+
+// --- Calculated Columns Section ---
+
+function CalculatedColumnsSection({
+  connectionId,
+  tableName,
+  table,
+}: {
+  connectionId: string;
+  tableName: string;
+  table: any;
+}) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [newColumnName, setNewColumnName] = useState('');
+  const [newColumnTemplate, setNewColumnTemplate] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
+  const [editingColumn, setEditingColumn] = useState<CalculatedColumn | null>(
+    null
+  );
+  const [editColumnName, setEditColumnName] = useState('');
+  const [editColumnTemplate, setEditColumnTemplate] = useState('');
+
+  const calculatedColumns = table?.details.calculatedColumns || [];
+
+  const addCalculatedColumnMutation = useMutation({
+    mutationFn: async (newColumn: Omit<CalculatedColumn, 'id'>) => {
+      if (!table) throw new Error('Table not found');
+
+      const updatedTable = { ...table };
+      const newCalculatedColumn: CalculatedColumn = {
+        ...newColumn,
+        id: `calc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      };
+
+      updatedTable.details.calculatedColumns = [
+        ...(updatedTable.details.calculatedColumns || []),
+        newCalculatedColumn,
+      ];
+
+      // Add calculated column to all view configurations
+      const calcColumnId = `calc_${newCalculatedColumn.id}`;
+      const columnConfig = {
+        order: Object.keys(updatedTable.details.cardView?.columns || {}).length,
+        hidden: false,
+      };
+
+      // Add to card view
+      if (!updatedTable.details.cardView)
+        updatedTable.details.cardView = { columns: {} };
+      updatedTable.details.cardView.columns[calcColumnId] = columnConfig;
+
+      // Add to list view
+      if (!updatedTable.details.listView)
+        updatedTable.details.listView = { columns: {} };
+      updatedTable.details.listView.columns[calcColumnId] = columnConfig;
+
+      // Add to inline view
+      if (!updatedTable.details.inlineView)
+        updatedTable.details.inlineView = { columns: {} };
+      updatedTable.details.inlineView.columns[calcColumnId] = columnConfig;
+
+      await saveTable(updatedTable);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['connections', connectionId, 'tables'],
+      });
+      setNewColumnName('');
+      setNewColumnTemplate('');
+      setIsAdding(false);
+      toast({
+        title: 'Calculated column added',
+        description: 'The calculated column has been created successfully.',
+      });
+    },
+    onError: (error) => {
+      browserLogger.error('Failed to add calculated column', {
+        connectionId,
+        tableName,
+        error: error.message || error,
+      });
+      toast({
+        title: 'Error adding calculated column',
+        variant: 'destructive',
+        description: error.message,
+      });
+    },
+  });
+
+  const deleteCalculatedColumnMutation = useMutation({
+    mutationFn: async (columnId: string) => {
+      if (!table) throw new Error('Table not found');
+
+      const updatedTable = { ...table };
+      updatedTable.details.calculatedColumns = (
+        updatedTable.details.calculatedColumns || []
+      ).filter((col: CalculatedColumn) => col.id !== columnId);
+
+      await saveTable(updatedTable);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['connections', connectionId, 'tables'],
+      });
+      toast({
+        title: 'Calculated column deleted',
+        description: 'The calculated column has been removed.',
+      });
+    },
+    onError: (error) => {
+      browserLogger.error('Failed to delete calculated column', {
+        connectionId,
+        tableName,
+        error: error.message || error,
+      });
+      toast({
+        title: 'Error deleting calculated column',
+        variant: 'destructive',
+        description: error.message,
+      });
+    },
+  });
+
+  const updateCalculatedColumnMutation = useMutation({
+    mutationFn: async (updatedColumn: CalculatedColumn) => {
+      if (!table) throw new Error('Table not found');
+
+      const updatedTable = { ...table };
+      updatedTable.details.calculatedColumns = (
+        updatedTable.details.calculatedColumns || []
+      ).map((col: CalculatedColumn) =>
+        col.id === updatedColumn.id ? updatedColumn : col
+      );
+
+      await saveTable(updatedTable);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['connections', connectionId, 'tables'],
+      });
+      setEditingColumn(null);
+      setEditColumnName('');
+      setEditColumnTemplate('');
+      toast({
+        title: 'Calculated column updated',
+        description: 'The calculated column has been updated successfully.',
+      });
+    },
+    onError: (error) => {
+      browserLogger.error('Failed to update calculated column', {
+        connectionId,
+        tableName,
+        error: error.message || error,
+      });
+      toast({
+        title: 'Error updating calculated column',
+        variant: 'destructive',
+        description: error.message,
+      });
+    },
+  });
+
+  const handleAddColumn = () => {
+    if (!newColumnName.trim() || !newColumnTemplate.trim()) {
+      toast({
+        title: 'Missing information',
+        description:
+          'Please provide both a name and template for the calculated column.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    addCalculatedColumnMutation.mutate({
+      name: newColumnName.trim(),
+      displayName: newColumnName.trim(),
+      template: newColumnTemplate.trim(),
+      icon: 'Calculator',
+      order: calculatedColumns.length,
+      hidden: false,
+    });
+  };
+
+  const handleEditColumn = (column: CalculatedColumn) => {
+    setEditingColumn(column);
+    setEditColumnName(column.displayName);
+    setEditColumnTemplate(column.template);
+    setIsAdding(false); // Close add form if open
+  };
+
+  const handleUpdateColumn = () => {
+    if (
+      !editingColumn ||
+      !editColumnName.trim() ||
+      !editColumnTemplate.trim()
+    ) {
+      toast({
+        title: 'Missing information',
+        description:
+          'Please provide both a name and template for the calculated column.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    updateCalculatedColumnMutation.mutate({
+      ...editingColumn,
+      name: editColumnName.trim(),
+      displayName: editColumnName.trim(),
+      template: editColumnTemplate.trim(),
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingColumn(null);
+    setEditColumnName('');
+    setEditColumnTemplate('');
+  };
+
+  const availableColumns = Object.keys(table?.details.columns || {});
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-row items-center justify-between">
+        <div className="text-sm font-medium">Calculated Columns</div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setIsAdding(!isAdding);
+            setEditingColumn(null); // Close edit form if open
+            setEditColumnName('');
+            setEditColumnTemplate('');
+          }}
+          type="button"
+        >
+          <Plus className="size-4" />
+        </Button>
+      </div>
+
+      {/* Existing calculated columns */}
+      <div className="flex flex-col gap-2 max-h-32 overflow-y-auto">
+        {calculatedColumns.map((column: CalculatedColumn) => (
+          <div
+            key={column.id}
+            className="flex flex-row gap-2 items-center p-2 bg-blue-50 rounded border"
+          >
+            <Button variant="ghost" size="icon">
+              {column.hidden ? (
+                <EyeOffIcon className="size-4" />
+              ) : (
+                <EyeIcon className="size-4" />
+              )}
+            </Button>
+            <ItemIcon item={{ icon: column.icon }} />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium truncate">
+                {column.displayName}
+              </div>
+              <div className="text-xs text-blue-600 font-mono truncate">
+                {column.template}
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleEditColumn(column)}
+              type="button"
+              className="text-blue-600 hover:text-blue-700"
+            >
+              <PencilIcon className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => deleteCalculatedColumnMutation.mutate(column.id)}
+              type="button"
+              className="text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </div>
+        ))}
+      </div>
+
+      {/* Add new calculated column form */}
+      {isAdding && (
+        <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded border">
+          <Input
+            placeholder="Column name (e.g., Full Name)"
+            value={newColumnName}
+            onChange={(e) => setNewColumnName(e.target.value)}
+            className="text-sm"
+          />
+          <Input
+            placeholder={`Template (e.g., {${
+              availableColumns[0] || 'column1'
+            }} {${availableColumns[1] || 'column2'}})`}
+            value={newColumnTemplate}
+            onChange={(e) => setNewColumnTemplate(e.target.value)}
+            className="text-sm font-mono"
+          />
+          <div className="text-xs text-gray-500">
+            Available columns: {availableColumns.join(', ')}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={handleAddColumn}
+              disabled={addCalculatedColumnMutation.isPending}
+              type="button"
+            >
+              {addCalculatedColumnMutation.isPending ? 'Adding...' : 'Add'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIsAdding(false);
+                setNewColumnName('');
+                setNewColumnTemplate('');
+              }}
+              type="button"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit calculated column form */}
+      {editingColumn && (
+        <div className="flex flex-col gap-2 p-3 bg-blue-50 rounded border">
+          <div className="text-sm font-medium text-blue-800">
+            Edit: {editingColumn.displayName}
+          </div>
+          <Input
+            placeholder="Column name (e.g., Full Name)"
+            value={editColumnName}
+            onChange={(e) => setEditColumnName(e.target.value)}
+            className="text-sm"
+          />
+          <Input
+            placeholder={`Template (e.g., {${
+              availableColumns[0] || 'column1'
+            }} {${availableColumns[1] || 'column2'}})`}
+            value={editColumnTemplate}
+            onChange={(e) => setEditColumnTemplate(e.target.value)}
+            className="text-sm font-mono"
+          />
+          <div className="text-xs text-gray-500">
+            Available columns: {availableColumns.join(', ')}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={handleUpdateColumn}
+              disabled={updateCalculatedColumnMutation.isPending}
+              type="button"
+            >
+              {updateCalculatedColumnMutation.isPending
+                ? 'Updating...'
+                : 'Update'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCancelEdit}
+              type="button"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

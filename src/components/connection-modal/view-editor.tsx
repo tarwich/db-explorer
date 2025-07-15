@@ -9,9 +9,9 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { EyeIcon, EyeOffIcon, GripVertical } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, Filter, GripVertical } from 'lucide-react';
 import { sort } from 'radash';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ItemCardView } from '../explorer/item-views/item-card-view';
 import { ItemIcon } from '../explorer/item-views/item-icon';
 import { ItemInlineView } from '../explorer/item-views/item-inline-view';
@@ -33,6 +33,7 @@ interface Column {
   type: string;
   hidden: boolean;
   order: number;
+  calculated?: boolean; // Add this to distinguish calculated columns
 }
 
 interface SortableColumnProps {
@@ -72,7 +73,7 @@ function SortableColumn({ column, onVisibilityToggle }: SortableColumnProps) {
       <ItemIcon item={{ icon: column.icon }} />
       <span className="flex-1">{column.displayName}</span>
       <span className="font-mono text-xs text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded">
-        {column.type}
+        {column.calculated ? 'calculated' : column.type}
       </span>
     </div>
   );
@@ -81,6 +82,8 @@ function SortableColumn({ column, onVisibilityToggle }: SortableColumnProps) {
 export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showOnlyEnabled, setShowOnlyEnabled] = useState(false);
+
   const tableQuery = useQuery({
     queryKey: ['connections', connectionId, 'tables', tableName],
     queryFn: () => getTable(connectionId, tableName),
@@ -105,42 +108,69 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
     [tableQuery.data]
   );
 
-  // Convert database columns to state
+  // Convert database columns to state - include both regular and calculated columns
   const columns = useMemo(() => {
-    return sort(
-      Object.values(table?.details.columns || {}),
-      (c) => view?.columns[c.name]?.order ?? 0
-    ).map((c, index) => ({
-      id: c.name,
-      name: c.name,
-      displayName: c.displayName,
-      icon: c.icon,
-      type: c.type,
-      hidden: view?.columns[c.name]?.hidden ?? c.hidden,
-      order: index,
-    }));
+    const regularColumns = Object.values(table?.details.columns || {}).map(
+      (c) => ({
+        id: c.name,
+        name: c.name,
+        displayName: c.displayName,
+        icon: c.icon,
+        type: c.type,
+        hidden: view?.columns[c.name]?.hidden ?? c.hidden,
+        order: view?.columns[c.name]?.order ?? 0,
+        calculated: false,
+      })
+    );
+
+    const calculatedColumns = (table?.details.calculatedColumns || []).map(
+      (c) => ({
+        id: `calc_${c.id}`,
+        name: `calc_${c.id}`, // Use consistent naming format
+        displayName: c.displayName,
+        icon: c.icon,
+        type: 'calculated',
+        hidden: view?.columns[`calc_${c.id}`]?.hidden ?? c.hidden,
+        order: view?.columns[`calc_${c.id}`]?.order ?? c.order,
+        calculated: true,
+      })
+    );
+
+    // Combine and sort all columns
+    return sort([...regularColumns, ...calculatedColumns], (c) => c.order);
   }, [table, view]);
+
+  // Filter columns based on toggle state
+  const displayedColumns = useMemo(() => {
+    return showOnlyEnabled ? columns.filter((c) => !c.hidden) : columns;
+  }, [columns, showOnlyEnabled]);
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const newIndex = columns.findIndex((c) => c.id === over.id);
+    const newIndex = displayedColumns.findIndex((c) => c.id === over.id);
 
     // Update the column's order using the mutation
     updateColumnMutation.mutate({
-      name: active.id as string,
+      columnId: active.id as string,
       update: { order: newIndex },
     });
   };
 
   const updateColumnMutation = useMutation({
-    mutationFn: ({ name, update }: { name: string; update: Partial<Column> }) =>
+    mutationFn: ({
+      columnId,
+      update,
+    }: {
+      columnId: string;
+      update: Partial<Column>;
+    }) =>
       updateColumn({
         connectionId,
         tableName,
         view: type,
-        columnName: name,
+        columnId,
         update,
       }),
     onSuccess: () => {
@@ -152,7 +182,7 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
       browserLogger.error('Failed to update column', {
         connectionId,
         tableName,
-        columnName: name,
+        columnId: 'unknown',
         error: error.message || error,
       });
       toast({
@@ -166,36 +196,76 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
   const visibleColumns = columns.filter((c) => !c.hidden);
 
   return (
-    <div className="flex flex-col gap-4">
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={columns} strategy={verticalListSortingStrategy}>
-          <div className="flex flex-col gap-2">
-            {columns.map((column, index) => (
-              <SortableColumn
-                key={column.name}
-                column={column}
-                onVisibilityToggle={() =>
-                  updateColumnMutation.mutate({
-                    name: column.name,
-                    update: { hidden: !column.hidden },
-                  })
-                }
-              />
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+    <div className="flex flex-col gap-4 h-full overflow-hidden">
+      {/* Filter toggle */}
+      <div className="flex items-center gap-2 px-1">
+        <Button
+          variant={showOnlyEnabled ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setShowOnlyEnabled(!showOnlyEnabled)}
+          className="text-xs"
+        >
+          <Filter className="size-3 mr-1" />
+          {showOnlyEnabled ? 'Show All' : 'Show Only Enabled'}
+        </Button>
+        <span className="text-xs text-neutral-500">
+          {showOnlyEnabled
+            ? `${displayedColumns.length} enabled columns`
+            : `${displayedColumns.length} total columns (${visibleColumns.length} enabled)`}
+        </span>
+      </div>
 
-      <div className="flex flex-col gap-2">
+      {/* Scrollable columns section */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={displayedColumns}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="flex flex-col gap-2">
+              {displayedColumns.map((column) => (
+                <SortableColumn
+                  key={column.name}
+                  column={column}
+                  onVisibilityToggle={() =>
+                    updateColumnMutation.mutate({
+                      columnId: column.id,
+                      update: { hidden: !column.hidden },
+                    })
+                  }
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      </div>
+
+      {/* Fixed preview section - always visible */}
+      <div className="flex flex-col gap-2 border-t border-neutral-200 pt-4">
         <div className="text-sm font-medium">Preview</div>
         {type === 'inline' ? (
           <ItemInlineView
             item={{
               icon: 'Table',
-              columns: visibleColumns.map((c) => ({
-                name: c.name,
-                value: c.name,
-              })),
+              columns: visibleColumns.map((c) => {
+                if (c.calculated) {
+                  // For calculated columns, show template preview
+                  const calcColumn = table?.details.calculatedColumns?.find(
+                    (calc) => `calc_${calc.id}` === c.name
+                  );
+                  return {
+                    name: c.displayName,
+                    value: calcColumn?.template || c.displayName,
+                  };
+                }
+                return {
+                  name: c.displayName,
+                  value: c.displayName,
+                };
+              }),
             }}
           />
         ) : type === 'card' ? (
@@ -203,10 +273,22 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
             item={{
               id: '1',
               icon: 'Table',
-              columns: visibleColumns.map((c) => ({
-                name: c.name,
-                value: c.name,
-              })),
+              columns: visibleColumns.map((c) => {
+                if (c.calculated) {
+                  // For calculated columns, show template preview
+                  const calcColumn = table?.details.calculatedColumns?.find(
+                    (calc) => `calc_${calc.id}` === c.name
+                  );
+                  return {
+                    name: c.displayName,
+                    value: calcColumn?.template || c.displayName,
+                  };
+                }
+                return {
+                  name: c.displayName,
+                  value: c.displayName,
+                };
+              }),
             }}
           />
         ) : (
@@ -214,10 +296,22 @@ export function ViewEditor({ type, connectionId, tableName }: ViewEditorProps) {
             item={{
               id: '1',
               icon: 'Table',
-              columns: visibleColumns.map((c) => ({
-                name: c.name,
-                value: c.name,
-              })),
+              columns: visibleColumns.map((c) => {
+                if (c.calculated) {
+                  // For calculated columns, show template preview
+                  const calcColumn = table?.details.calculatedColumns?.find(
+                    (calc) => `calc_${calc.id}` === c.name
+                  );
+                  return {
+                    name: c.displayName,
+                    value: calcColumn?.template || c.displayName,
+                  };
+                }
+                return {
+                  name: c.displayName,
+                  value: c.displayName,
+                };
+              }),
             }}
           />
         )}

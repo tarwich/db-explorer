@@ -2,6 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import electronSquirrelStartup from 'electron-squirrel-startup';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { startNextServer } from './next.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,16 +18,15 @@ async function createWindow() {
     },
   });
 
-  // Load the app
-  const startUrl = isDev
-    ? 'http://localhost:3005'
-    : `file://${path.join(__dirname, '../out/index.html')}`;
+  for await (const { port, address } of startNextServer()) {
+    console.log(`Server detected on port ${port} (${address})`);
 
-  await mainWindow.loadURL(startUrl);
+    await mainWindow.loadURL(address);
 
-  // Enable DevTools in development
-  if (isDev) {
-    mainWindow.webContents.openDevTools();
+    // Enable DevTools in development
+    if (isDev) {
+      mainWindow.webContents.openDevTools();
+    }
   }
 }
 

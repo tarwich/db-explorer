@@ -1,2 +1,9 @@
 [tasks.dev]
 run = "bun run dev"
+
+[tasks.electron-dev]
+run = """
+  mprocs \
+    "bun run dev" \
+    "wait-on http://localhost:3005 && electron ."
+"""

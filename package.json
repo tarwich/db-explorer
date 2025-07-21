@@ -11,7 +11,6 @@
     "dev": "electron .",
     "build": "electron-builder",
     "lint": "next lint",
-    "electron-dev": "NODE_ENV=development concurrently \"npm run dev\" \"wait-on http://localhost:3005 && electron .\"",
     "electron-build": "next build && electron-builder",
     "seed": "node scripts/seed.ts",
     "start": "electron-forge start",

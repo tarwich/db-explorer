@@ -37,7 +37,7 @@ npm install
 To run the application in development mode:
 
 ```bash
-npm run electron-dev
+npm run dev
 ```
 
 This will start both the Next.js development server and the Electron application.

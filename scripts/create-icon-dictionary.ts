@@ -1,7 +1,6 @@
 import { writeFileSync } from 'fs';
 import Fuse from 'fuse.js';
 import { icons } from 'lucide-react';
-import natural from 'natural';
 import { sort, unique } from 'radash';
 import type { Synset } from 'wordpos';
 import WordPOS from 'wordpos';
@@ -97,11 +96,6 @@ export async function main() {
   const search = 'employee';
   const results = await recursiveSearch(search, fuse, wordpos, 10);
   console.log([results[0]]);
-
-  const wordnet = new natural.WordNet();
-  const synonyms = await wordnet.lookup('employee', (results) => {
-    console.log(results);
-  });
 }
 
 main().catch(console.error);

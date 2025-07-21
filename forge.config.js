@@ -5,6 +5,7 @@ export default {
   packagerConfig: {
     name: 'DB Explorer',
     asar: true,
+    ignore: ['out', 'tmp'],
   },
   rebuildConfig: {},
   makers: [

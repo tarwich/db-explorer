@@ -6,7 +6,7 @@ import { startNextServer } from './next.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const isDev = process.env.NODE_ENV !== 'production';
+const isDev = process.env.NODE_ENV === 'development';
 
 async function createWindow() {
   const mainWindow = new BrowserWindow({

@@ -13,7 +13,7 @@ export async function* startNextServer() {
 
 async function runNewServer() {
   return new Promise((resolve, reject) => {
-    const child = spawn('bun', ['next', 'dev', '--port', '0']);
+    const child = spawn('node_modules/.bin/next', ['start', '--port', '0']);
 
     const serverIsRunningPromise = new Promise((resolve) => {
       child.on('close', (code) => {

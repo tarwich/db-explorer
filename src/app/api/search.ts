@@ -4,7 +4,7 @@ import { openConnection } from '@/app/api/connections';
 import { getTable } from '@/app/api/tables';
 import { loadConnection } from '@/components/connection-modal/connection-modal.actions';
 import { getPlugin } from '@/db/plugins';
-import { sql } from 'kysely';
+import { Kysely } from 'kysely';
 import logger from '../../lib/logger';
 
 export interface TableSearchCapabilities {
@@ -72,8 +72,8 @@ export async function analyzeTableSearchCapabilities(
       searchableColumns
     );
 
-    const maxSearchResults = tableSize === 'small' ? recordCount : 
-                           tableSize === 'medium' ? 1000 : 500;
+    const maxSearchResults =
+      tableSize === 'small' ? recordCount : tableSize === 'medium' ? 1000 : 500;
 
     const supportsFullText = connection!.type === 'postgres';
 
@@ -105,7 +105,7 @@ async function analyzeSearchableColumns(
   // TODO: Implement proper index detection in the future
   const indexedColumns = new Set<string>();
   const primaryKeys = table.details.pk || [];
-  primaryKeys.forEach(pk => indexedColumns.add(pk));
+  primaryKeys.forEach((pk) => indexedColumns.add(pk));
 
   for (const [columnName, column] of Object.entries(columns)) {
     const isIndexed = indexedColumns.has(columnName);
@@ -114,16 +114,35 @@ async function analyzeSearchableColumns(
 
     // Determine search type based on column type and characteristics
     const columnType = column.type.toLowerCase();
-    
-    if (columnType.includes('text') || columnType.includes('varchar') || columnType.includes('char') || columnType.includes('string')) {
+
+    if (
+      columnType.includes('text') ||
+      columnType.includes('varchar') ||
+      columnType.includes('char') ||
+      columnType.includes('string')
+    ) {
       searchType = 'text';
-      priority = column.name.toLowerCase().includes('name') ? 10 : 
-                 column.name.toLowerCase().includes('title') ? 9 :
-                 column.name.toLowerCase().includes('description') ? 8 : 5;
-    } else if (columnType.includes('int') || columnType.includes('numeric') || columnType.includes('decimal') || columnType.includes('float') || columnType.includes('double')) {
+      priority = column.name.toLowerCase().includes('name')
+        ? 10
+        : column.name.toLowerCase().includes('title')
+        ? 9
+        : column.name.toLowerCase().includes('description')
+        ? 8
+        : 5;
+    } else if (
+      columnType.includes('int') ||
+      columnType.includes('numeric') ||
+      columnType.includes('decimal') ||
+      columnType.includes('float') ||
+      columnType.includes('double')
+    ) {
       searchType = 'numeric';
       priority = column.name.toLowerCase().includes('id') ? 3 : 4;
-    } else if (columnType.includes('date') || columnType.includes('timestamp') || columnType.includes('time')) {
+    } else if (
+      columnType.includes('date') ||
+      columnType.includes('timestamp') ||
+      columnType.includes('time')
+    ) {
       searchType = 'date';
       priority = 6;
     } else if (columnType.includes('uuid')) {
@@ -182,22 +201,23 @@ function determineSearchStrategies(
   }
 
   // Column-specific search
-  const hasIndexedTextColumns = searchableColumns.some(col => 
-    col.indexed && col.searchType === 'text'
+  const hasIndexedTextColumns = searchableColumns.some(
+    (col) => col.indexed && col.searchType === 'text'
   );
-  
+
   strategies.push({
     type: 'column_specific',
-    description: 'Search within specific columns with intelligent type handling',
+    description:
+      'Search within specific columns with intelligent type handling',
     performance: hasIndexedTextColumns ? 'fast' : 'medium',
     recommended: true,
   });
 
   // Exact match for IDs and specific values
-  const hasIdColumns = searchableColumns.some(col => 
-    col.name.toLowerCase().includes('id') || col.searchType === 'exact'
+  const hasIdColumns = searchableColumns.some(
+    (col) => col.name.toLowerCase().includes('id') || col.searchType === 'exact'
   );
-  
+
   if (hasIdColumns) {
     strategies.push({
       type: 'exact_match',
@@ -231,14 +251,22 @@ export async function searchTableRecords(
     limit?: number;
   } = {}
 ) {
-  const { searchType = 'column_specific', columns, offset = 0, limit = 50 } = options;
-  
+  const {
+    searchType = 'column_specific',
+    columns,
+    offset = 0,
+    limit = 50,
+  } = options;
+
   try {
     const db = await openConnection(connectionId);
     const connection = await loadConnection(connectionId);
     const table = await getTable(connectionId, tableName);
-    const capabilities = await analyzeTableSearchCapabilities(connectionId, tableName);
-    
+    const capabilities = await analyzeTableSearchCapabilities(
+      connectionId,
+      tableName
+    );
+
     if (!query.trim()) {
       // Return empty results for empty queries
       return {
@@ -260,33 +288,62 @@ export async function searchTableRecords(
 
     switch (searchType) {
       case 'fulltext':
-        ({ records: searchResults, total: totalCount } = await performFullTextSearch(
-          db, tableName, query, table, capabilities, offset, limit, connection!.type
-        ));
+        ({ records: searchResults, total: totalCount } =
+          await performFullTextSearch(
+            db,
+            tableName,
+            query,
+            table,
+            capabilities,
+            offset,
+            limit,
+            connection!.type
+          ));
         break;
-        
+
       case 'column_specific':
-        ({ records: searchResults, total: totalCount } = await performColumnSpecificSearch(
-          db, tableName, query, table, capabilities, columns, offset, limit
-        ));
+        ({ records: searchResults, total: totalCount } =
+          await performColumnSpecificSearch(
+            db,
+            tableName,
+            query,
+            table,
+            capabilities,
+            columns,
+            offset,
+            limit
+          ));
         break;
-        
+
       case 'exact_match':
-        ({ records: searchResults, total: totalCount } = await performExactMatchSearch(
-          db, tableName, query, table, capabilities, columns, offset, limit
-        ));
+        ({ records: searchResults, total: totalCount } =
+          await performExactMatchSearch(
+            db,
+            tableName,
+            query,
+            table,
+            capabilities,
+            columns,
+            offset,
+            limit
+          ));
         break;
-        
+
       default:
         throw new Error(`Unsupported search type: ${searchType}`);
     }
 
     // Apply the same FK resolution and calculated columns as the regular records API
     const processedResults = await processSearchResults(
-      searchResults, table, connectionId, db
+      searchResults,
+      table,
+      connectionId,
+      db
     );
 
-    const hasNextPage = offset + searchResults.length < Math.min(totalCount, capabilities.maxSearchResults);
+    const hasNextPage =
+      offset + searchResults.length <
+      Math.min(totalCount, capabilities.maxSearchResults);
 
     return {
       records: processedResults,
@@ -300,7 +357,6 @@ export async function searchTableRecords(
         performance: getSearchPerformance(capabilities, searchType),
       },
     };
-
   } catch (error) {
     logger.error('Search failed:', error);
     throw error;
@@ -308,18 +364,18 @@ export async function searchTableRecords(
 }
 
 async function performFullTextSearch(
-  db: any, 
-  tableName: string, 
-  query: string, 
-  table: any, 
+  db: Kysely<any>,
+  tableName: string,
+  query: string,
+  table: any,
   capabilities: TableSearchCapabilities,
   offset: number,
   limit: number,
   dbType: string
 ) {
   const textColumns = capabilities.searchableColumns
-    .filter(col => col.searchType === 'text')
-    .map(col => col.name);
+    .filter((col) => col.searchType === 'text')
+    .map((col) => col.name);
 
   if (textColumns.length === 0) {
     return { records: [], total: 0 };
@@ -329,19 +385,22 @@ async function performFullTextSearch(
   const searchPattern = `%${query}%`;
 
   // Build OR conditions for all text columns using expression builder
-  const queryBuilder = db.selectFrom(tableName).selectAll()
+  const queryBuilder = db
+    .selectFrom(tableName)
+    .selectAll()
     .where((eb) => {
-      const conditions = textColumns.map(col => 
+      const conditions = textColumns.map((col) =>
         eb(col, 'like', searchPattern)
       );
       return eb.or(conditions);
     });
 
   // Get total count
-  const countBuilder = db.selectFrom(tableName)
+  const countBuilder = db
+    .selectFrom(tableName)
     .select(db.fn.countAll().as('count'))
     .where((eb) => {
-      const conditions = textColumns.map(col => 
+      const conditions = textColumns.map((col) =>
         eb(col, 'like', searchPattern)
       );
       return eb.or(conditions);
@@ -350,16 +409,13 @@ async function performFullTextSearch(
   const totalCount = Number(count);
 
   // Get records with limit and offset
-  const records = await queryBuilder
-    .limit(limit)
-    .offset(offset)
-    .execute();
+  const records = await queryBuilder.limit(limit).offset(offset).execute();
 
   return { records, total: totalCount };
 }
 
 async function performColumnSpecificSearch(
-  db: any,
+  db: Kysely<any>,
   tableName: string,
   query: string,
   table: any,
@@ -368,8 +424,10 @@ async function performColumnSpecificSearch(
   offset: number,
   limit: number
 ) {
-  const searchableColumns = targetColumns 
-    ? capabilities.searchableColumns.filter(col => targetColumns.includes(col.name))
+  const searchableColumns = targetColumns
+    ? capabilities.searchableColumns.filter((col) =>
+        targetColumns.includes(col.name)
+      )
     : capabilities.searchableColumns;
 
   if (searchableColumns.length === 0) {
@@ -381,24 +439,25 @@ async function performColumnSpecificSearch(
 
   for (const column of searchableColumns) {
     if (column.searchType === 'text') {
-      conditions.push((eb) => eb(column.name, 'like', `%${query}%`));
+      conditions.push((eb: any) => eb(column.name, 'like', `%${query}%`));
     } else if (column.searchType === 'numeric') {
       const numericQuery = parseFloat(query);
       if (!isNaN(numericQuery)) {
-        conditions.push((eb) => eb(column.name, '=', numericQuery));
+        conditions.push((eb: any) => eb(column.name, '=', numericQuery));
       }
     } else if (column.searchType === 'exact') {
       // Only include exact matches if the query could be valid for this column type
       const columnType = column.type?.toLowerCase() || '';
       if (columnType.includes('uuid')) {
         // Only include UUID columns if the query looks like a UUID
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const uuidRegex =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (uuidRegex.test(query)) {
-          conditions.push((eb) => eb(column.name, '=', query));
+          conditions.push((eb: any) => eb(column.name, '=', query));
         }
       } else {
         // For non-UUID exact matches, include as-is
-        conditions.push((eb) => eb(column.name, '=', query));
+        conditions.push((eb: any) => eb(column.name, '=', query));
       }
     }
   }
@@ -408,27 +467,27 @@ async function performColumnSpecificSearch(
   }
 
   // Build query with OR conditions using expression builder
-  const queryBuilder = db.selectFrom(tableName).selectAll()
-    .where((eb) => eb.or(conditions.map(condition => condition(eb))));
+  const queryBuilder = db
+    .selectFrom(tableName)
+    .selectAll()
+    .where((eb) => eb.or(conditions.map((condition) => condition(eb))));
 
   // Get total count
-  const countBuilder = db.selectFrom(tableName)
+  const countBuilder = db
+    .selectFrom(tableName)
     .select(db.fn.countAll().as('count'))
-    .where((eb) => eb.or(conditions.map(condition => condition(eb))));
+    .where((eb) => eb.or(conditions.map((condition) => condition(eb))));
   const [{ count }] = await countBuilder.execute();
   const totalCount = Number(count);
 
   // Get records with limit and offset
-  const records = await queryBuilder
-    .limit(limit)
-    .offset(offset)
-    .execute();
+  const records = await queryBuilder.limit(limit).offset(offset).execute();
 
   return { records, total: totalCount };
 }
 
 async function performExactMatchSearch(
-  db: any,
+  db: Kysely<any>,
   tableName: string,
   query: string,
   table: any,
@@ -437,11 +496,12 @@ async function performExactMatchSearch(
   offset: number,
   limit: number
 ) {
-  const exactColumns = capabilities.searchableColumns
-    .filter(col => col.searchType === 'exact' || col.name.toLowerCase().includes('id'));
+  const exactColumns = capabilities.searchableColumns.filter(
+    (col) => col.searchType === 'exact' || col.name.toLowerCase().includes('id')
+  );
 
-  const searchColumns = targetColumns 
-    ? exactColumns.filter(col => targetColumns.includes(col.name))
+  const searchColumns = targetColumns
+    ? exactColumns.filter((col) => targetColumns.includes(col.name))
     : exactColumns;
 
   if (searchColumns.length === 0) {
@@ -450,18 +510,19 @@ async function performExactMatchSearch(
 
   // Build OR conditions for exact matching using expression builder with validation
   const validConditions: any[] = [];
-  
+
   for (const col of searchColumns) {
     const columnType = col.type?.toLowerCase() || '';
     if (columnType.includes('uuid')) {
       // Only include UUID columns if the query looks like a UUID
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (uuidRegex.test(query)) {
-        validConditions.push((eb) => eb(col.name, '=', query));
+        validConditions.push((eb: any) => eb(col.name, '=', query));
       }
     } else {
       // For non-UUID exact matches, include as-is
-      validConditions.push((eb) => eb(col.name, '=', query));
+      validConditions.push((eb: any) => eb(col.name, '=', query));
     }
   }
 
@@ -469,21 +530,21 @@ async function performExactMatchSearch(
     return { records: [], total: 0 };
   }
 
-  const queryBuilder = db.selectFrom(tableName).selectAll()
-    .where((eb) => eb.or(validConditions.map(condition => condition(eb))));
+  const queryBuilder = db
+    .selectFrom(tableName)
+    .selectAll()
+    .where((eb) => eb.or(validConditions.map((condition) => condition(eb))));
 
   // Get total count
-  const countBuilder = db.selectFrom(tableName)
+  const countBuilder = db
+    .selectFrom(tableName)
     .select(db.fn.countAll().as('count'))
-    .where((eb) => eb.or(validConditions.map(condition => condition(eb))));
+    .where((eb) => eb.or(validConditions.map((condition) => condition(eb))));
   const [{ count }] = await countBuilder.execute();
   const totalCount = Number(count);
 
   // Get records with limit and offset
-  const records = await queryBuilder
-    .limit(limit)
-    .offset(offset)
-    .execute();
+  const records = await queryBuilder.limit(limit).offset(offset).execute();
 
   return { records, total: totalCount };
 }
@@ -506,29 +567,33 @@ async function processSearchResults(
     );
   }
 
-  const fkDisplayMap: Record<string, Record<any, { displayValue: string; icon: string }>> = {};
+  const fkDisplayMap: Record<
+    string,
+    Record<any, { displayValue: string; icon: string }>
+  > = {};
   for (const col of fkColumns) {
     const fk = (col as any).foreignKey!;
     const targetTable = await getTable(connectionId, fk.targetTable);
-    const displayColumns = require('@/utils/display-columns').determineDisplayColumns({
-      ...targetTable,
-      details: {
-        ...targetTable.details,
-        columns: Object.values(targetTable.details.columns),
-      },
-    });
+    const displayColumns =
+      require('@/utils/display-columns').determineDisplayColumns({
+        ...targetTable,
+        details: {
+          ...targetTable.details,
+          columns: Object.values(targetTable.details.columns),
+        },
+      });
     const values = Array.from(fkValueMap[(col as any).name]);
     if (values.length === 0) {
       fkDisplayMap[(col as any).name] = {};
       continue;
     }
-    
+
     const relatedRecords = await db
       .selectFrom(fk.targetTable)
       .select([...displayColumns, fk.targetColumn])
       .where(fk.targetColumn, 'in', values)
       .execute();
-      
+
     fkDisplayMap[(col as any).name] = Object.fromEntries(
       relatedRecords.map((r: any) => [
         r[fk.targetColumn],
@@ -558,7 +623,9 @@ async function processSearchResults(
   });
 
   // Add calculated columns
-  const { addCalculatedColumnsToRecords } = require('@/utils/calculated-columns');
+  const {
+    addCalculatedColumnsToRecords,
+  } = require('@/utils/calculated-columns');
   return addCalculatedColumnsToRecords(
     recordsWithDisplay,
     table.details.calculatedColumns || []
@@ -569,6 +636,8 @@ function getSearchPerformance(
   capabilities: TableSearchCapabilities,
   searchType: string
 ): 'fast' | 'medium' | 'slow' {
-  const strategy = capabilities.searchStrategies.find(s => s.type === searchType);
+  const strategy = capabilities.searchStrategies.find(
+    (s) => s.type === searchType
+  );
   return strategy?.performance || 'medium';
 }

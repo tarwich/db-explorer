@@ -1,4 +1,12 @@
+[tools]
+node = "22.17.0"
+
+[tasks.node-rebuild]
+hide = true
+run = "npm rebuild"
+
 [tasks.dev]
+depends = ["node-rebuild"]
 run = "bun run dev"
 
 [tasks.electron-dev]
@@ -7,3 +15,10 @@ run = """
     "bun run dev" \
     "wait-on http://localhost:3005 && electron ."
 """
+
+[tasks.build]
+run = "bunx electron-forge make"
+alias = "make"
+
+[tasks.package]
+run = "bunx electron-forge package"

@@ -13,6 +13,37 @@ A modern, user-friendly application for exploring and traversing unknown databas
 - ⚡ Built on Electron for cross-platform compatibility
 - 🚀 Modern UI powered by Next.js
 
+# Installation
+
+Download the latest release (currently not yet published to GitHub Releases).
+
+## Quarantine
+
+You'll get a warning from macOS about the app being damaged if you try to run it.
+
+This is because the app is not signed, and has been quarantined by macOS. You can see the quarantine status by running the following command:
+
+```bash
+xattr -l DB\ Explorer.app
+```
+
+You'll see something like this:
+
+```bash
+com.apple.quarantine: 0181;1721990400;DB Explorer
+```
+
+
+To get around this, you can run the following command to remove the quarantine status:
+
+```bash
+xattr -d com.apple.quarantine DB\ Explorer.app
+```
+
+Now the app should run.
+
+# Development
+
 ## Prerequisites
 
 - Node.js (v23 or higher recommended)
@@ -32,7 +63,7 @@ cd db-explorer
 npm install
 ```
 
-## Development
+## Running the application
 
 To run the application in development mode:
 

@@ -51,7 +51,7 @@
     "kysely": "^0.27.6",
     "lucide-react": "^0.487.0",
     "natural": "^8.0.1",
-    "next": "14.2.30",
+    "next": "16.1.6",
     "node-nlp": "^5.0.0-alpha.5",
     "pg": "^8.14.1",
     "pluralize": "^8.0.0",
